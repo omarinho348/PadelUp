@@ -1,0 +1,47 @@
+:root{
+  --bg:#f4f4f4;
+  --header:#222;
+  --accent:#7ed321; /* green */
+  --booked:#e74c3c; /* red */
+  --muted:#cfcfcf;
+  --white:#ffffff;
+}
+*{box-sizing:border-box}
+body{font-family:Inter, system-ui, Arial, sans-serif;margin:0;background:var(--bg);color:#111}
+.top{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--header);color:white}
+.top h1{margin:0;font-size:18px}
+.top .sub{opacity:0.8;font-size:13px}
+.top button{background:transparent;border:0;color:white;font-size:20px}
+.date-strip{display:flex;gap:10px;padding:12px 16px;background:#2e2e2e;color:white;overflow:auto}
+.date{min-width:56px;text-align:center;padding:8px;border-radius:8px;opacity:0.9}
+.date.selected{background:#0b66ff}
+.courts-header{display:grid;grid-template-columns:1fr 1fr;padding:14px 18px;gap:8px}
+.court-title{color:#8bff4a;font-weight:700;text-align:center}
+.booking{padding:0 12px 40px}
+.slots-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:8px}
+.slot{display:flex;align-items:center;justify-content:center;height:56px;border-radius:10px;background:var(--white);box-shadow:0 1px 0 rgba(0,0,0,0.04);font-weight:700;color:#111}
+.slot.available{background:linear-gradient(180deg,#fff,#fbfbfb);border:2px solid transparent}
+.slot.booked{background:linear-gradient(180deg,#ffd9d5,#ffbdb6);border:2px solid rgba(0,0,0,0.04);color:#fff}
+.slot.in-range{background:linear-gradient(180deg,#d6f5d6,#bff0bf);border:2px solid var(--accent)}
+.slot.selected{background:var(--accent);color:#111}
+.slot.disabled{opacity:0.5;pointer-events:none}
+.summary{position:fixed;left:0;right:0;bottom:0;background:linear-gradient(180deg,#fff,#f6f6f6);padding:12px 16px;display:flex;gap:12px;align-items:center;border-top:1px solid #eee}
+#confirm{background:var(--accent);border:0;padding:10px 16px;border-radius:8px;font-weight:700}
+#confirm[disabled]{opacity:0.5}
+.slot.time-label{height:0;padding:0;border:0}
+
+/* responsive */
+@media (max-width:420px){
+  .slot{height:52px;font-size:15px}
+}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center}
+.modal[aria-hidden="false"]{display:flex}
+.modal-content{background:white;padding:20px;border-radius:10px;max-width:420px;width:90%;box-shadow:0 6px 24px rgba(0,0,0,0.2)}
+.modal-actions{display:flex;justify-content:flex-end;margin-top:12px}
+.modal-actions button{background:var(--accent);border:0;padding:8px 12px;border-radius:8px}
+
+/* booked color stronger */
+.slot.booked{background:linear-gradient(180deg,#ff9b96,#ff6b60);color:white}
+.slot.disabled{opacity:0.45;pointer-events:none}

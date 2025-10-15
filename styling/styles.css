@@ -41,7 +41,7 @@ body {
 
 /* Add padding to body to account for fixed nav */
 body {
-    padding-top: 64px;
+    padding-top: 85px;
 }
 
 .container {
@@ -66,6 +66,8 @@ body {
     background: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(4px);
     box-shadow: 0 1px 0 rgba(5,52,40,0.04);
+        margin-bottom: 22px;
+
 }
 
 .nav-brand {

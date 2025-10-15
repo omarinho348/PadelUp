@@ -1,3 +1,6 @@
+<?php include 'Includes/navbar.php'; ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,15 +12,7 @@
 <body>
     <div class="container">
         <!-- Navigation -->
-        <nav class="nav-bar">
-            <a href="index.html" class="nav-brand">PadelUp</a>
-            <div class="nav-buttons">
-                <a href="index.html" class="btn">Home</a>
-                <a href="marketplace.html" class="btn">Marketplace</a>
-                <a href="signin.html" class="btn">Sign In</a>
-                <a href="signup.html" class="btn btn-primary">Sign Up</a>
-            </div>
-        </nav>
+      
 
         <!-- Top hero banner using the provided image -->
         <section class="top-hero" style="background-image:url('Assets/Photos/padel.jpg')" aria-hidden="false">
@@ -44,7 +39,7 @@
 
         <!-- Main heading -->
         <div class="main-heading">
-            <h1>Everything you need to <span class="accent">level up</span></h1>
+            <h1>Everything you need to <span class="accent">LEVEL UP</span></h1>
             <p>Connect with players, book your next match, buy Padel Gear <br> <span class="accent">ALL IN ONE PLACE.</span></p>
         </div>
 

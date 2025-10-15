@@ -1,3 +1,6 @@
+<?php include 'Includes/navbar.php'; ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,16 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="nav-bar">
-        <a href="index.html" class="nav-brand">PadelUp</a>
-        <div class="nav-buttons">
-            <a href="index.html" class="btn">Home</a>
-            <a href="marketplace.html" class="btn">Marketplace</a>
-            <a href="signin.html" class="btn">Sign In</a>
-            <a href="signup.html" class="btn btn-primary">Sign Up</a>
-        </div>
-    </nav>
+
     <div class="main-content-flex" style="padding-top: 80px;">
         <div class="signup-tagline">Welcome back to your padel community</div>
         <div class="overlay"></div>
