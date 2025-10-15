@@ -149,6 +149,29 @@ body {
     text-decoration: none;
 }
 
+/* Icons inside buttons: align and space consistently */
+.btn svg {
+    vertical-align: middle;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+/* Icon-only button variant (used for home icon) */
+.btn-icon {
+    padding: 10px;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* Remove extra margin for svg inside icon-only button */
+.btn-icon svg {
+    margin-right: 0;
+}
+
 .btn-primary {
     background: var(--accent);
     color: white;
