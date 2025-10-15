@@ -10,17 +10,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- Navigation -->
-        <nav class="nav-bar">
-            <a href="index.html" class="nav-brand">PadelUp</a>
-            <div class="nav-buttons">
-                <a href="index.html" class="btn">Home</a>
-                <a href="marketplace.html" class="btn btn-primary">Marketplace</a>
-                <a href="signin.html" class="btn">Sign In</a>
-                <a href="signup.html" class="btn">Sign Up</a>
-            </div>
-        </nav>
-
     <main class="marketpage">
         <section class="hero">
             <div class="container hero-inner">

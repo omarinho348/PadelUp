@@ -1,59 +1,63 @@
 <?php include 'Includes/navbar.php'; ?>
 
-
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Court Reservation</title>
-    <link rel="stylesheet" href="styling/reservation.css">
-        <link rel="stylesheet" href="styling/styles.css">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Book a Court - PadelUp</title>
+  <link rel="stylesheet" href="styling/styles.css">
+  <link rel="stylesheet" href="styling/reservation.css">
+</head>
 
-  </head>
-  <body>
-    <header class="top">
-      <button id="back" aria-label="back">‹</button>
-      <div class="venue" id="venueHeader">
-        <img id="venueImg" src="Assets/Photos/V1.png" alt="venue" style="height:44px;width:64px;object-fit:cover;border-radius:8px;margin-right:12px;vertical-align:middle">
-        <div>
-          <h1 id="venueName">Tolip El Narges</h1>
-          <div class="sub" id="venueAddress">New Cairo, Cairo</div>
-        </div>
+<body>
+  <div class="container">
+    <div class="top">
+      <button id="back" aria-label="Go back to venues">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+      </button>
+      <div>
+        <h1 id="venueName">Select a court</h1>
+        <p id="venueAddress" class="sub">Choose a date and time</p>
       </div>
-    </header>
+      <img id="venueImg" src="" alt="" style="width: 60px; height: 60px; border-radius: 8px; margin-left: auto; object-fit: cover;">
+    </div>
 
-    <section class="date-strip" role="tablist" aria-label="Dates" id="dateStrip">
-      <!-- Dates will be populated by scripts/reservation.js -->
-    </section>
+    <div id="dateStrip" class="date-strip">
+      <!-- JS populates dates -->
+    </div>
 
-    <main class="booking">
+    <div class="booking">
       <div class="courts-header">
         <div class="court-title">Court A</div>
         <div class="court-title">Court B</div>
       </div>
-
-      <div class="slots-grid" id="slotsGrid">
-        <!-- JS will populate time slots for two courts -->
+      <div id="slotsGrid" class="slots-grid">
+        <!-- JS populates slots -->
       </div>
+    </div>
 
-      <div class="summary" id="summary">
-        <div id="selectionInfo">No selection</div>
-        <button id="confirm" disabled>Confirm</button>
-      </div>
-    </main>
+    <div class="summary">
+      <div id="selectionInfo">No selection</div>
+      <button id="confirm" disabled>Confirm Booking</button>
+    </div>
 
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="modal" aria-hidden="true">
       <div class="modal-content">
-        <h3>Booking confirmed</h3>
-        <p id="modalText">Your court has been reserved. Cancellations must be made at least 4 hours before the booking time.</p>
+        <p id="modalText">Your booking is confirmed.</p>
         <div class="modal-actions">
-          <button id="modalClose">Close</button>
+          <button id="modalClose">OK</button>
         </div>
       </div>
     </div>
 
-    <script src="Assets/scripts/reservation.js"></script>
-  </body>
+    <footer class="minimal-footer">
+        <div class="footer-content">
+            <div class="footer-brand">PadelUp</div>
+        </div>
+    </footer>
+  </div>
+  <script src="Assets/scripts/reservation.js"></script>
+</body>
 </html>

@@ -46,14 +46,14 @@ body {
 }
 
 .user-actions { display: flex; gap: 10px; align-items: center; }
-.btn { border: 0; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+/* .btn { border: 0; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
 .btn-sm { padding: 6px 12px; font-size: .9rem; }
 .btn-outline { background: transparent; border: 1.5px solid var(--border-color); color: var(--muted); }
 .btn-outline:hover { background: var(--border-color); color: var(--accent); }
 .btn-primary { background: var(--accent); color: white; }
-.btn-primary:hover { background: #159a63; transform: translateY(-2px); }
-.icon-btn { background: transparent; border: none; padding: 6px; cursor: pointer; color: var(--muted); }
-.icon-btn:hover { color: var(--accent); }
+.btn-primary:hover { background: #159a63; transform: translateY(-2px); } */
+/* .icon-btn { background: transparent; border: none; padding: 6px; cursor: pointer; color: var(--muted); }
+.icon-btn:hover { color: var(--accent); } */
 
 /* --- Hero Section --- */
 .hero { 

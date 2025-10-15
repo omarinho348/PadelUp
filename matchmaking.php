@@ -17,17 +17,6 @@
     <link rel="stylesheet" href="styling/matchmaking.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="nav-bar">
-        <a href="index.html" class="nav-brand">PadelUp</a>
-        <div class="nav-buttons">
-            <a href="index.html" class="btn">Home</a>
-            <a href="marketplace.html" class="btn">Marketplace</a>
-            <a href="signin.html" class="btn">Sign In</a>
-            <a href="signup.html" class="btn btn-primary">Sign Up</a>
-        </div>
-    </nav>
-
     <main class="matchmaking-container">
         <!-- Hero Section with Filters -->
         <section class="match-finder-hero" style="background-image: url('Assets/Photos/tapia_coello.jpg');">

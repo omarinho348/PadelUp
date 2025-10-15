@@ -2,11 +2,6 @@
 	box-sizing: border-box;
 }
 
-html, body {
-	max-width: 100%;
-	overflow-x: hidden;
-}
-
 #hero-height {
 	min-height: 360px;
 }

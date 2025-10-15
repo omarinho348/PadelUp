@@ -7,7 +7,12 @@
   --white:#ffffff;
 }
 *{box-sizing:border-box}
-body{font-family:Inter, system-ui, Arial, sans-serif;margin:0;background:var(--bg);color:#111}
+/* 
+  The global body styles are now inherited from styles.css to ensure consistency.
+  This includes background, font, and padding for the fixed navbar.
+*/
+body { font-family: Inter, system-ui, Arial, sans-serif; }
+
 .top{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--header);color:white}
 .top h1{margin:0;font-size:18px}
 .top .sub{opacity:0.8;font-size:13px}

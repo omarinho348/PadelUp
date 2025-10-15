@@ -8,6 +8,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Choose a Venue</title>
+  <link rel="stylesheet" href="styling/styles.css">
   <link rel="stylesheet" href="styling/venues.css">
 
 </head>
