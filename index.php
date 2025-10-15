@@ -12,7 +12,19 @@
 <body>
     <div class="container">
         <!-- Navigation -->
+<<<<<<< HEAD:index.php
       
+=======
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-brand">PadelUp</a>
+            <div class="nav-buttons">
+                <a href="index.html" class="btn btn-primary">Home</a>
+                <a href="marketplace.html" class="btn">Marketplace</a>
+                <a href="signin.html" class="btn">Sign In</a>
+                <a href="signup.html" class="btn">Sign Up</a>
+            </div>
+        </nav>
+>>>>>>> d0cc39509c1987019c4f7392459ffde7f545cd09:index.html
 
         <!-- Top hero banner using the provided image -->
         <section class="top-hero" style="background-image:url('Assets/Photos/padel.jpg')" aria-hidden="false">
@@ -44,16 +56,18 @@
         </div>
 
         <section class="content-section">
-            <div class="feature-card" style="background-image: url('Assets/Photos/community.jpg')">
-                <div class="card-content">
-                    <p class="feature-description">Find the perfect match based on your skill level, playing style, and schedule. Our AI-powered system ensures balanced and enjoyable games.</p>
-                    <div class="card-title-row">
-                        <div class="feature-icon">🎯</div>
-                        <h3 class="feature-title">Smart Matchmaking</h3>
+            <a href="matchmaking.html" class="feature-card-link">
+                <div class="feature-card" style="background-image: url('Assets/Photos/community.jpg')">
+                    <div class="card-content">
+                        <p class="feature-description">Find the perfect match based on your skill level, playing style, and schedule. Our AI-powered system ensures balanced and enjoyable games.</p>
+                        <div class="card-title-row">
+                            <div class="feature-icon">🎯</div>
+                            <h3 class="feature-title">Smart Matchmaking</h3>
+                        </div>
                     </div>
                 </div>
-            </div>
-            
+            </a>
+
             <div class="feature-card" style="background-image: url('Assets/Photos/CourtBooking.jfif')">
                 <div class="card-content">
                     <p class="feature-description">Browse and book courts instantly. Real-time availability, weather updates, and integrated payment system for seamless booking.</p>

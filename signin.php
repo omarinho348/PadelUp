@@ -10,21 +10,33 @@
     <link rel="stylesheet" href="styling/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
+<<<<<<< HEAD:signin.php
 <body>
 
+=======
+<body class="form-page">
+    <!-- Navigation -->
+    <nav class="nav-bar">
+        <a href="index.html" class="nav-brand">PadelUp</a>
+        <div class="nav-buttons">
+            <a href="index.html" class="btn">Home</a>
+            <a href="marketplace.html" class="btn">Marketplace</a>
+            <a href="signin.html" class="btn btn-primary">Sign In</a>
+            <a href="signup.html" class="btn">Sign Up</a>
+        </div>
+    </nav>
+>>>>>>> d0cc39509c1987019c4f7392459ffde7f545cd09:signin.html
     <div class="main-content-flex" style="padding-top: 80px;">
-        <div class="signup-tagline">Welcome back to your padel community</div>
-        <div class="overlay"></div>
         <div class="signup-center-container">
             <div class="form-side">
                 <div class="form-container">
                     <h2>Sign In</h2>
                     <form class="auth-form signin-form">
                         <div class="form-group">
-                            <input type="email" id="email" placeholder="Email Address" required>
+                            <input type="email" id="email" placeholder="Your Court Alias or Email" required>
                         </div>
                         <div class="form-group">
-                            <input type="password" id="password" placeholder="Password" required>
+                            <input type="password" id="password" placeholder="Your Winning Smash..." required>
                         </div>
                         <div class="form-links">
                             <div class="form-links-left">
@@ -37,9 +49,9 @@
                                 <a href="#" class="forgot-password">Forgot password?</a>
                             </div>
                         </div>
-                        <button type="submit" class="btn-primary">Sign In</button>
+                        <button type="submit" class="btn-primary">Access The Court</button>
                         <p class="switch-form">
-                            Don't have an account? <a href="signup.html">Create one</a>
+                            Not on the court yet? <a href="signup.html">Sign up</a>
                         </p>
                     </form>
                 </div>

@@ -1,24 +1,27 @@
+<?php include 'Includes/navbar.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PadelUp Market</title>
+    <title>PadelUp Marketplace</title>
+    <link rel="stylesheet" href="styling/styles.css">
     <link rel="stylesheet" href="styling/marketplace.css">
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="nav-bar">
-        <a href="index.html" class="nav-brand">PadelUp <span class="nav-brand-accent">Marketplace</span></a>
-        <div class="nav-buttons">
-            <a href="index.html" class="btn">Home</a>
-            <a href="marketplace.html" class="btn">Marketplace</a>
-            <a href="signin.html" class="btn">Sign In</a>
-            <a href="signup.html" class="btn btn-primary">Sign Up</a>
-        </div>
-    </nav>
+    <div class="container">
+        <!-- Navigation -->
+        <nav class="nav-bar">
+            <a href="index.html" class="nav-brand">PadelUp</a>
+            <div class="nav-buttons">
+                <a href="index.html" class="btn">Home</a>
+                <a href="marketplace.html" class="btn btn-primary">Marketplace</a>
+                <a href="signin.html" class="btn">Sign In</a>
+                <a href="signup.html" class="btn">Sign Up</a>
+            </div>
+        </nav>
 
-    <main class="marketpage" style="padding-top: 64px;">
+    <main class="marketpage">
         <section class="hero">
             <div class="container hero-inner">
                 <div class="hero-copy">
@@ -26,7 +29,7 @@
                     <p class="subtitle">Buy and sell pre-loved padel rackets, balls, and accessories</p>
                     <div class="search-row">
                         <label class="search">
-                            <input id="searchInput" type="search" placeholder="Search for rackets, balls, gear..." />
+                            <input id="searchInput" type="search" placeholder="Search for rackets, balls, etc." />
                             <button class="icon-btn search-btn" aria-label="Search">
                             </button>
                         </label>
