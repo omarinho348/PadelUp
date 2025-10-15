@@ -580,7 +580,10 @@ button:focus, a:focus {
     outline-offset: 3px;
 }
 
-/* --- Styles merged from style.css for Forms --- */
+/* On form pages, make the body background transparent */
+body.form-page {
+    background: transparent;
+}
 
 /* Blurred background for form pages */
 body.form-page::before {
@@ -622,10 +625,13 @@ body.form-page::before {
 /* Form container */
 .form-container {
     text-align: left;
-    background: var(--card);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     padding: 48px;
     border-radius: var(--radius);
-    box-shadow: 0 10px 25px var(--glass), 0 0 0 1px rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 700px;
     margin: 0 auto;
@@ -683,7 +689,7 @@ body.form-page::before {
     border-radius: var(--radius);
     font-size: 1rem;
     transition: all 0.3s ease;
-    background-color: #eaf7ef; /* --gray-light */
+    background-color: rgba(234, 247, 239, 0.8); /* --gray-light with transparency */
     color: var(--text);
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     font-family: var(--ff);
@@ -719,14 +725,63 @@ body.form-page::before {
 
 .form-group input:hover,
 .form-group select:hover {
-    background-color: var(--accent-2);
-    color: var(--muted);
+    background-color: rgba(200, 240, 210, 0.9);
+}
+
+/* --- Visual Skill Selector --- */
+.skill-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.skill-card {
+    cursor: pointer;
+}
+
+.skill-card input[type="radio"] {
+    display: none; /* Hide the actual radio button */
+}
+
+.skill-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+    border-radius: var(--radius);
+    border: 2px solid transparent;
+    background-color: rgba(234, 247, 239, 0.8);
+    transition: all 0.2s ease;
+    height: 100%;
+}
+
+.skill-card:hover .skill-card-content {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(47, 74, 63, 0.07);
+}
+
+.skill-card input[type="radio"]:checked + .skill-card-content {
+    border-color: var(--accent);
+    background-color: #e6fffa;
+    box-shadow: 0 0 0 3px rgba(17, 122, 77, 0.2);
+}
+
+.skill-icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Sign-in page specific form container width */
+.signin-form .form-container {
+    max-width: 550px;
 }
 
 /* Sign-in specific form styles */
 .signin-form {
     max-width: 100% !important;
-    width: 100%;
+    width: 500px;
 }
 
 .signin-form .form-group input {
@@ -748,8 +803,9 @@ body.form-page::before {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--muted);
-    font-size: 0.95rem;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 500;
 }
 
 .remember-me input[type="checkbox"] {
@@ -776,13 +832,18 @@ body.form-page::before {
     font-size: 1rem;
 }
 
-.signup-tagline {
+/* Style for the main action button in forms */
+.auth-form button[type="submit"] {
+    width: auto; /* Let button size to content */
+    justify-self: center; /* Center the button in the form grid */
+    padding: 16px 48px; /* Adjust horizontal padding for a good shape */
     font-size: 1.1rem;
-    background: linear-gradient(90deg, #1976d2, #20bfa9 60%, #66d98a);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    font-weight: 500;
-    letter-spacing: 0.2px;
-    z-index: 1;
+    margin-top: 1rem; /* Add some space above the button */
+    border-radius: 999px; /* Create pill shape */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-form button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(17,122,77,0.15);
 }

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="styling/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="form-page">
     <!-- Navigation -->
     <nav class="nav-bar">
         <a href="index.html" class="nav-brand">PadelUp</a>
@@ -20,18 +20,16 @@
     </nav>
 
     <div class="main-content-flex" style="padding-top: 80px;">
-        <div class="signup-tagline">Find your next match. Level up your game.</div>
-        <div class="overlay"></div>
         <div class="signup-center-container">
             <div class="form-side">
                 <div class="form-container">
-                    <h2>Create Account</h2>
+                    <h2>Create Your Player Profile</h2>
                     <form class="auth-form">
                         <div class="form-group">
-                            <input type="text" id="fullname" placeholder="Full Name" required>
+                            <input type="text" id="fullname" placeholder="Your Name on the Court" required>
                         </div>
                         <div class="form-group">
-                            <input type="email" id="email" placeholder="Email Address" required>
+                            <input type="email" id="email" placeholder="your-ace@example.com" required>
                         </div>
                         <div class="form-group two-columns">
                             <div class="form-field">
@@ -73,18 +71,32 @@
                         </div>
                         <div class="form-group">
                             <label for="experience">Padel Level</label>
-                            <select id="experience" name="experience" required class="level-select">
-                            <option value="">Select Your Padel Level</option>
-                            <option value="1.0">🎾 1.0 – Absolute Beginner (Low D)</option>
-                            <option value="2.0">🎾 2.0 – Beginner (D)</option>
-                            <option value="3.0">🎾 3.0 – Low Intermediate (High D / Low C)</option>
-                            <option value="4.0">🥈 4.0 – Intermediate (C)</option>
-                            <option value="4.5">🥈 4.5 – Upper Intermediate (High C)</option>
-                            <option value="5.0">🥇 5.0 – Advanced (B)</option>
-                            <option value="5.5">🥇 5.5 – High Advanced (High B)</option>
-                            <option value="6.0">🏆 6.0 – Expert (A)</option>
-                            <option value="7.0">🏆 7.0 – Professional / Elite</option>
-                            </select>
+                            <div class="skill-selector">
+                                <label class="skill-card">
+                                    <input type="radio" name="skill" value="beginner" checked>
+                                    <span class="skill-card-content">
+                                        <span class="skill-icon">🎓</span>
+                                        <strong>Beginner</strong>
+                                        <small>Just getting started</small>
+                                    </span>
+                                </label>
+                                <label class="skill-card">
+                                    <input type="radio" name="skill" value="intermediate">
+                                    <span class="skill-card-content">
+                                        <span class="skill-icon">🎾</span>
+                                        <strong>Intermediate</strong>
+                                        <small>Play regularly</small>
+                                    </span>
+                                </label>
+                                <label class="skill-card">
+                                    <input type="radio" name="skill" value="advanced">
+                                    <span class="skill-card-content">
+                                        <span class="skill-icon">🏆</span>
+                                        <strong>Advanced</strong>
+                                        <small>Live for the game</small>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="location">Location</label>
@@ -96,7 +108,7 @@
                         <div class="form-group">
                             <input type="password" id="confirm-password" placeholder="Confirm Password" required>
                         </div>
-                        <button type="submit" class="btn-primary">Create Account</button>
+                        <button type="submit" class="btn-primary">Join The Game</button>
                         <p class="switch-form">
                             Already have an account? <a href="signin.html">Sign in</a>
                         </p>
