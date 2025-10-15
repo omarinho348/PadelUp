@@ -194,7 +194,7 @@ confirmBtn.addEventListener('click', ()=>{
     endLabel = `${((endDate.getHours()+11)%12)+1}:${endDate.getMinutes().toString().padStart(2,'0')} ${endDate.getHours()<12? 'AM' : 'PM'}`;
   }
 
-  modalText.innerText = `Court ${state.court} reserved from ${startLabel} to ${endLabel}. Cancellations must be made at least 4 hours before the booking.`;
+  modalText.innerText = `Court ${state.court} reserved from ${startLabel} to ${endLabel}`;
   modal.setAttribute('aria-hidden','false');
 });
 

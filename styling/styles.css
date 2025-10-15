@@ -95,7 +95,7 @@ body {
    ----------------------------------------------------- */
 .main-heading {
     text-align: center;
-    margin: 40px auto 60px;
+    margin: 10px auto 30px;
     max-width: 1200px;
 }
 
@@ -226,6 +226,11 @@ body {
     overflow: hidden;
 }
 
+/* Hero background image */
+.top-hero.home-hero {
+    background-image: url('../Assets/Photos/padel.jpg');
+}
+
 .top-hero::after {
     content: '';
     position: absolute;
@@ -337,11 +342,12 @@ body {
    6. FEATURES SECTION
    ----------------------------------------------------- */
 .content-section {
-    margin: 80px auto;
+    margin: 20px auto;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
     gap: 24px;
-    max-width: var(--max-width);
+    max-width: 1400px;
     padding: 0 20px;
 }
 
@@ -349,10 +355,109 @@ body {
     background-size: cover;
     background-position: center;
     border-radius: 24px;
-    height: 380px;
+    height: 100%;
     position: relative;
     overflow: hidden;
     transition: all 0.4s ease;
+    min-height: 320px;
+}
+
+/* Dynamic layout for feature cards */
+.feature-card-link:nth-child(1) {
+    grid-column: 1 / 3;
+    grid-row: 1;
+}
+
+.feature-card-link:nth-child(2) {
+    grid-column: 3 / 5;
+    grid-row: 1;
+}
+
+.feature-card-link:nth-child(3),
+.feature-card-link:nth-child(4),
+.feature-card-link:nth-child(5),
+.feature-card-link:nth-child(6) {
+    grid-column: span 1;
+    grid-row: 2;
+    min-height: 280px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .content-section {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto auto;
+        gap: 20px;
+    }
+    
+    .feature-card-link:nth-child(1),
+    .feature-card-link:nth-child(2) {
+        grid-column: span 2;
+    }
+    
+    .feature-card-link:nth-child(3),
+    .feature-card-link:nth-child(4),
+    .feature-card-link:nth-child(5),
+    .feature-card-link:nth-child(6) {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-card-link {
+        grid-column: 1 !important;
+    }
+    
+    .feature-card-link:nth-child(1) { grid-row: 1; }
+    .feature-card-link:nth-child(2) { grid-row: 2; }
+    .feature-card-link:nth-child(3) { grid-row: 3; }
+    .feature-card-link:nth-child(4) { grid-row: 4; }
+    .feature-card-link:nth-child(5) { grid-row: 5; }
+    .feature-card-link:nth-child(6) { grid-row: 6; }
+    
+    .feature-card {
+        min-height: 280px;
+    }
+}
+
+/* Feature card background images */
+.feature-card.matchmaking-card {
+    background-image: url('../Assets/Photos/community.jpg');
+    background-position: top center;
+}
+
+.feature-card.court-booking-card {
+    background-image: url('../Assets/Photos/CourtBooking.jfif');
+}
+
+.feature-card.padeliq-card {
+    background-image: url('../Assets/Photos/madrid.avif');
+}
+
+.feature-card.marketplace-card {
+    background-image: url('../Assets/Photos/marketplace.jpg');
+    background-position: right center;
+}
+
+.feature-card.tournaments-card {
+    background-image: url('../Assets/Photos/tournaments.webp');
+}
+
+.feature-card.coaches-card {
+    background-image: url('../Assets/Photos/coach.webp');
+}
+
+/* Feature card grid positions */
+.feature-card-link.second-row-start {
+    grid-column: 1;
+}
+
+.feature-card-link.second-row-end {
+    grid-column: 2;
 }
 
 .feature-card:first-child .feature-title {
@@ -363,17 +468,34 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, 
+    background: linear-gradient(145deg, 
         rgba(5, 52, 40, 0.2) 0%,
         rgba(5, 52, 40, 0.8) 100%);
     transition: all 0.4s ease;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.2);
 }
 
 .feature-card:hover::before {
-    background: linear-gradient(180deg, 
-        rgba(5, 52, 40, 0.85) 0%,
+    background: linear-gradient(145deg, 
+        rgba(5, 52, 40, 0.75) 0%,
         rgba(5, 52, 40, 0.95) 100%);
 }
+
+.feature-card-link {
+    transform: translateY(0);
+    transition: transform 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+.feature-card-link:hover {
+    transform: translateY(-8px);
+    z-index: 2;
+}
+
+/* Add depth with different hover heights */
+.feature-card-link:nth-child(1):hover { transform: translateY(-12px); }
+.feature-card-link:nth-child(2):hover { transform: translateY(-10px); }
+.feature-card-link:nth-child(3):hover { transform: translateY(-8px); }
+.feature-card-link:nth-child(4):hover { transform: translateY(-6px); }
 
 .card-content {
     position: absolute;
@@ -401,7 +523,13 @@ body {
     transition: transform 0.4s cubic-bezier(.77,0,.18,1);
 }
 
-.feature-card:hover .card-title-row {
+/* First row cards title animation */
+.feature-card-link:nth-child(-n+2) .feature-card:hover .card-title-row {
+    transform: translateY(-160px);
+}
+
+/* Second row cards title animation */
+.feature-card-link:nth-child(n+3) .feature-card:hover .card-title-row {
     transform: translateY(-210px);
 }
 
@@ -419,7 +547,7 @@ body {
 
 .feature-card:hover .feature-description {
     opacity: 1;
-    transform: translateY(-60px);
+    transform: translateY(-15px);
     z-index: 2;
 }
 
@@ -441,31 +569,6 @@ body {
     font-weight: 700;
     color: white;
     margin: 0;
-}
-
-.feature-stats {
-    display: flex;
-    gap: 20px;
-    margin-top: 28px;
-    padding-top: 24px;
-    border-top: 1px solid rgba(102, 217, 138, 0.1);
-}
-
-.stat {
-    flex: 1;
-}
-
-.stat-number {
-    font-size: 28px;
-    font-weight: 800;
-    color: var(--accent);
-    margin: 0 0 4px 0;
-}
-
-.stat-label {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.4;
 }
 
 /* -----------------------------------------------------

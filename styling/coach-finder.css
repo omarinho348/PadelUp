@@ -1,0 +1,84 @@
+/* -----------------------------------------------------
+   COACH FINDER PAGE STYLES
+   ----------------------------------------------------- */
+
+.coach-finder-header {
+    position: relative;
+    padding: 60px 0;
+    margin-bottom: 40px;
+    border-radius: 24px;
+    background: url('../Assets/Photos/coaches.jpeg') no-repeat top center;
+    background-size: cover;
+    color: white;
+    overflow: hidden;
+}
+
+.coach-finder-header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(5,52,40,0.8) 0%, rgba(5,52,40,0.4) 100%);
+}
+
+.coach-finder-header .main-heading h1,
+.coach-finder-header .main-heading p {
+    color: white;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.coaches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    padding: 20px 0;
+}
+
+.coach-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 24px rgba(5,52,40,0.05);
+    overflow: hidden;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.coach-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 32px rgba(5,52,40,0.1);
+}
+
+.coach-image {
+    height: 280px;
+    background-size: cover;
+    background-position: top center;
+}
+
+.coach-info {
+    padding: 24px;
+}
+
+.coach-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 0 0 4px;
+}
+
+.coach-location {
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+.coach-specialty {
+    display: inline-block;
+    background: var(--accent-2);
+    color: var(--text);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+}

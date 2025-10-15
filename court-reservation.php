@@ -20,7 +20,7 @@
         <h1 id="venueName">Select a court</h1>
         <p id="venueAddress" class="sub">Choose a date and time</p>
       </div>
-      <img id="venueImg" src="" alt="" style="width: 60px; height: 60px; border-radius: 8px; margin-left: auto; object-fit: cover;">
+      <img id="venueImg" src="" alt="" class="venue-image">
     </div>
 
     <div id="dateStrip" class="date-strip">
@@ -45,9 +45,13 @@
     <!-- Confirmation Modal -->
     <div id="confirmModal" class="modal" aria-hidden="true">
       <div class="modal-content">
-        <p id="modalText">Your booking is confirmed.</p>
+        <svg class="modal-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <p id="modalText">Your booking is confirmed!</p>
         <div class="modal-actions">
-          <button id="modalClose">OK</button>
+          <button id="modalClose">Done</button>
         </div>
       </div>
     </div>

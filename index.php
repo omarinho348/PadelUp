@@ -13,7 +13,7 @@
     <div class="container">      
 
         <!-- Top hero banner using the provided image -->
-        <section class="top-hero" style="background-image:url('Assets/Photos/padel.jpg')" aria-hidden="false">
+        <section class="top-hero home-hero" aria-hidden="false">
             <div class="inner">
                 <h1>PadelUp</h1>
                     <p>Play • Connect • Level Up</p>
@@ -42,8 +42,9 @@
         </div>
 
         <section class="content-section">
+            <!-- First Row: Matchmaking and Court Booking -->
             <a href="matchmaking.php" class="feature-card-link">
-                <div class="feature-card" style="background-image: url('Assets/Photos/community.jpg')">
+                <div class="feature-card matchmaking-card">
                     <div class="card-content">
                         <p class="feature-description">Find the perfect match based on your skill level, playing style, and schedule. Our AI-powered system ensures balanced and enjoyable games.</p>
                         <div class="card-title-row">
@@ -54,25 +55,66 @@
                 </div>
             </a>
 
-            <div class="feature-card" style="background-image: url('Assets/Photos/CourtBooking.jfif')">
-                <div class="card-content">
-                    <p class="feature-description">Browse and book courts instantly. Real-time availability, weather updates, and integrated payment system for seamless booking.</p>
-                    <div class="card-title-row">
-                        <div class="feature-icon">🏟️</div>
-                        <h3 class="feature-title">Court Booking</h3>
+  <a href="tournaments.php" class="feature-card-link">
+                <div class="feature-card tournaments-card">
+                    <div class="card-content">
+                        <p class="feature-description">Join exciting weekly tournaments, compete with players at your level, and climb the rankings. From beginners to pros, there's a tournament for everyone.</p>
+                        <div class="card-title-row">
+                            <div class="feature-icon">🏆</div>
+                            <h3 class="feature-title">Weekly Tournaments</h3>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
 
-            <div class="feature-card" style="background-image: url('Assets/Photos/madrid.avif')">
-                <div class="card-content">
-                    <p class="feature-description">Advanced AI-powered skill rating system that analyzes your gameplay, tracks progress, and provides personalized improvement insights.</p>
-                    <div class="card-title-row">
-                        <div class="feature-icon">🧠</div>
-                        <h3 class="feature-title">PadelIQ</h3>
+            <!-- Second Row: Four cards -->
+            <a href="padeliq.php" class="feature-card-link">
+                <div class="feature-card padeliq-card">
+                    <div class="card-content">
+                        <p class="feature-description">Advanced AI-powered skill rating system that analyzes your gameplay, tracks progress, and provides personalized improvement insights.</p>
+                        <div class="card-title-row">
+                            <div class="feature-icon">🧠</div>
+                            <h3 class="feature-title">PadelIQ</h3>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </a>
+
+            <a href="venues.php" class="feature-card-link">
+                <div class="feature-card court-booking-card">
+                    <div class="card-content">
+                        <p class="feature-description">Browse and book courts instantly. Real-time availability, weather updates, and integrated payment system for seamless booking.</p>
+                        <div class="card-title-row">
+                            <div class="feature-icon">🏟️</div>
+                            <h3 class="feature-title">Court Booking</h3>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="coach-finder.php" class="feature-card-link">
+                <div class="feature-card coaches-card">
+                    <div class="card-content">
+                        <p class="feature-description">Find certified padel coaches near you. Book private or group lessons, improve your technique, and take your game to the next level.</p>
+                        <div class="card-title-row">
+                            <div class="feature-icon">👨‍🏫</div>
+                            <h3 class="feature-title">Coach Finder</h3>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <a href="marketplace.php" class="feature-card-link">
+                <div class="feature-card marketplace-card">
+                    <div class="card-content">
+                        <p class="feature-description">Buy and sell premium padel gear, equipment, and accessories. Connect with trusted sellers and find the best deals in our dedicated marketplace.</p>
+                        <div class="card-title-row">
+                            <div class="feature-icon">🛍️</div>
+                            <h3 class="feature-title">Marketplace</h3>
+                        </div>
+                    </div>
+                </div>
+            </a>
 
         </section>
 
