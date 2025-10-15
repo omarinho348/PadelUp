@@ -12,8 +12,6 @@
 
 </head>
 
-
-
 <body>
   <header class="hero">
     <div class="hero-bg" role="img" aria-label="Padel courts">
