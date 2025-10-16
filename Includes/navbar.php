@@ -13,13 +13,13 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <body>
     
 <nav class="nav-bar">
+    
     <a href="index.php" class="nav-brand">PadelUp</a>
 
     <div class="nav-buttons">
   
-
-        <?php if (isset($_SESSION['user'])): ?>
-            <!-- ✅ If logged in: show profile + logout -->
+        <?php if (isset($_SESSION['ID']) && isset($_SESSION['FullName'])): ?>
+            <!-- ✅ If logged in: show welcome message, profile, and logout -->
             <!-- Home button (icon only) -->
             <a href="index.php" class="btn btn-primary btn-icon" title="Home" aria-label="Home">
                 <!-- Home SVG icon (inline) -->
@@ -27,8 +27,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"></path>
                 </svg>
             </a>
+            
+            <!-- Welcome message with username -->
+            <span class="welcome-message">Welcome, <?php echo htmlspecialchars($_SESSION['FullName']); ?></span>
+            
             <a href="profile.php" class="btn <?php if ($current_page == 'profile.php') echo 'nav-active'; ?>">My Profile</a>
-            <a href="logout.php" class="btn btn-primary">Logout</a>
         <?php else: ?>
             <!-- 🚪 If not logged in: show sign-in + sign-up -->
             <!-- Home button for guests (icon only) -->

@@ -18,8 +18,8 @@
                 <h1>PadelUp</h1>
                     <p>Play • Connect • Level Up</p>
                 <div class="cta">
-                    <button class="btn-primary">Start Playing</button>
-                    <a href="marketplace.html"><button class="btn">Shop Now</button></a>
+                    <a href="venues.php"><button class="btn">Start Playing</button></a>
+                    <a href="marketplace.php"><button class="btn">Shop Now</button></a>
                 </div>
             </div>
             <div class="feature-pills">

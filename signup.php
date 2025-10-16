@@ -1,5 +1,11 @@
-<?php include 'Includes/navbar.php'; ?>
+<?php
+// Start the session and include required files
+include_once "includes/dbh.inc.php";
+include 'Includes/navbar.php';
 
+// Define error variable
+$error = "";
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -11,24 +17,28 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body class="form-page">
- 
 
     <div class="main-content-flex" style="padding-top: 80px;">
         <div class="signup-center-container">
             <div class="form-side">
                 <div class="form-container">
                     <h2>Create Your Player Profile</h2>
-                    <form class="auth-form">
+                    <?php if (!empty($error)): ?>
+                        <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
+                            <?php echo $error; ?>
+                        </div>
+                    <?php endif; ?>
+                    <form class="auth-form" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                         <div class="form-group">
-                            <input type="text" id="fullname" placeholder="Your Name on the Court" required>
+                            <input type="text" name="fullname" id="fullname" placeholder="Your Name on the Court" required>
                         </div>
                         <div class="form-group">
-                            <input type="email" id="email" placeholder="your-ace@example.com" required>
+                            <input type="email" name="email" id="email" placeholder="your-ace@example.com" required>
                         </div>
                         <div class="form-group two-columns">
                             <div class="form-field">
                                 <label for="gender">Gender</label>
-                                <select id="gender" required>
+                                <select name="gender" id="gender" required>
                                     <option value="">Select Gender</option>
                                     <option value="male">Male</option>
                                     <option value="female">Female</option>
@@ -37,17 +47,17 @@
                             </div>
                             <div class="form-field">
                                 <label for="dob">Date of Birth</label>
-                                <input type="date" id="dob" required>
+                                <input type="date" name="dob" id="dob" required>
                             </div>
                         </div>
                         <div class="form-group two-columns">
                             <div class="form-field">
                                 <label for="height">Height (cm)</label>
-                                <input type="number" id="height" placeholder="Height in cm" min="100" max="250" required>
+                                <input type="number" name="height" id="height" placeholder="Height in cm" min="100" max="250" required>
                             </div>
                             <div class="form-field">
                                 <label for="hand">Dominant Hand</label>
-                                <select id="hand" required>
+                                <select name="hand" id="hand" required>
                                     <option value="">Select Hand</option>
                                     <option value="right">Right</option>
                                     <option value="left">Left</option>
@@ -56,7 +66,7 @@
                         </div>
                         <div class="form-group">
                             <label for="position">Preferred Position</label>
-                            <select id="position" required>
+                            <select name="position" id="position" required>
                                 <option value="">Select Position</option>
                                 <option value="rightside">Right Side</option>
                                 <option value="leftside">Left Side</option>
@@ -94,17 +104,17 @@
                         </div>
                         <div class="form-group">
                             <label for="location">Location</label>
-                            <input type="text" id="location" placeholder="City, Country" required>
+                            <input type="text" name="location" id="location" placeholder="City, Country" required>
                         </div>
                         <div class="form-group">
-                            <input type="password" id="password" placeholder="Password" required>
+                            <input type="password" name="password" id="password" placeholder="Password" required>
                         </div>
                         <div class="form-group">
-                            <input type="password" id="confirm-password" placeholder="Confirm Password" required>
+                            <input type="password" name="confirm-password" id="confirm-password" placeholder="Confirm Password" required>
                         </div>
                         <button type="submit" class="btn-primary">Join The Game</button>
                         <p class="switch-form">
-                            Already have an account? <a href="signin.html">Sign in</a>
+                            Already have an account? <a href="signin.php">Sign in</a>
                         </p>
                     </form>
                 </div>
@@ -120,5 +130,54 @@
             </div>
         </div>
     </footer>
+<?php
+// Process form submission - Move this to the top of the file before any HTML output
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Get form data
+    $fullName = htmlspecialchars($_POST["fullname"]);
+    $email = htmlspecialchars($_POST["email"]);
+    $gender = htmlspecialchars($_POST["gender"]);
+    $dob = htmlspecialchars($_POST["dob"]);
+    $height = htmlspecialchars($_POST["height"]);
+    $hand = htmlspecialchars($_POST["hand"]);
+    $position = htmlspecialchars($_POST["position"]);
+    $skill = htmlspecialchars($_POST["skill"]);
+    $location = htmlspecialchars($_POST["location"]);
+    $password = htmlspecialchars($_POST["password"]);
+    
+    try {
+        // Hash password for security
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        
+        // SQL to insert new user
+        $sql = "INSERT INTO users (FullName, Email, Gender, DateOfBirth, Height, DominantHand, 
+                PreferredPosition, SkillLevel, Location, Password)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("ssssssssss", $fullName, $email, $gender, $dob, $height, $hand, 
+                          $position, $skill, $location, $hashedPassword);
+        
+        if ($stmt->execute()) {
+            // Redirect to login page on success
+            $stmt->close();
+            $conn->close();
+            
+            // Make sure there is no output before this point
+            echo "<script>window.location.href = 'signin.php?signup=success';</script>";
+            header("Location: signin.php?signup=success");
+            exit();
+        } else {
+            $error = "Error: " . $stmt->error;
+        }
+        
+        $stmt->close();
+        $conn->close();
+    } catch (Exception $e) {
+        $error = "An error occurred: " . $e->getMessage();
+    }
+}
+?>
+
 </body>
 </html>

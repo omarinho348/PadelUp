@@ -90,6 +90,15 @@ body {
     align-items: center;
 }
 
+/* Welcome message styling */
+.welcome-message {
+    font-weight: 600;
+    color: var(--accent);
+    padding: 0 10px;
+    margin-right: 5px;
+    font-size: 14px;
+}
+
 /* -----------------------------------------------------
    3. MAIN HEADING SECTION
    ----------------------------------------------------- */
@@ -170,14 +179,6 @@ body {
 /* Remove extra margin for svg inside icon-only button */
 .btn-icon svg {
     margin-right: 0;
-}
-
-.btn-primary {
-    background: var(--accent);
-    color: white;
-    border: none;
-    box-shadow: 0 10px 28px rgba(17,122,77,0.10);
-    font-weight: 700;
 }
 
 /* Special primary style for the nav 'Sign Up' button to differentiate from active state */
@@ -278,13 +279,6 @@ body {
     color: white;
     font-weight: 600;
     padding: 12px 24px;
-    border-radius: 16px;
-}
-
-.top-hero .btn-primary {
-    background: var(--accent-2);
-    color: var(--text);
-    border: none;
     border-radius: 16px;
 }
 
@@ -612,19 +606,6 @@ body {
     letter-spacing: 2px;
 }
 
-.video-overlay .btn-primary {
-    font-size: 1.2rem;
-    padding: 16px 40px;
-    border-radius: 16px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: transform 0.3s ease;
-}
-
-.video-overlay .btn-primary:hover {
-    transform: scale(1.05);
-}
-
 /* -----------------------------------------------------
    8. FOOTER SECTION
    ----------------------------------------------------- */
@@ -665,11 +646,6 @@ body {
 @media (max-width: 768px) {
     .video-overlay h2 {
         font-size: 2.5rem;
-    }
-    
-    .video-overlay .btn-primary {
-        font-size: 1rem;
-        padding: 12px 30px;
     }
 }
 
