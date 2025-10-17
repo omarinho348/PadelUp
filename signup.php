@@ -30,10 +30,10 @@ $error = "";
                     <?php endif; ?>
                     <form class="auth-form" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                         <div class="form-group">
-                            <input type="text" name="fullname" id="fullname" placeholder="Your Name on the Court" required>
+                            <input type="text" name="fullname" id="fullname" placeholder="Username" required>
                         </div>
                         <div class="form-group">
-                            <input type="email" name="email" id="email" placeholder="your-ace@example.com" required>
+                            <input type="email" name="email" id="email" placeholder="Email@example.com" required>
                         </div>
                         <div class="form-group two-columns">
                             <div class="form-field">
@@ -53,7 +53,7 @@ $error = "";
                         <div class="form-group two-columns">
                             <div class="form-field">
                                 <label for="height">Height (cm)</label>
-                                <input type="number" name="height" id="height" placeholder="Height in cm" min="100" max="250" required>
+                                <input type="number" name="height" id="height" placeholder="Height" min="100" max="250" required>
                             </div>
                             <div class="form-field">
                                 <label for="hand">Dominant Hand</label>
@@ -121,15 +121,7 @@ $error = "";
             </div>
         </div>
     </div>
-    <footer class="minimal-footer">
-        <div class="footer-content">
-            <div class="footer-brand">PadelUp</div>
-            <div class="footer-links">
-                <a href="#">About-Us</a>
-                
-            </div>
-        </div>
-    </footer>
+
 <?php
 // Process form submission - Move this to the top of the file before any HTML output
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -181,3 +173,5 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </body>
 </html>
+
+<?php include 'Includes/footer.php'; ?>

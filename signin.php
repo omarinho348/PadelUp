@@ -74,10 +74,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <?php endif; ?>
                     <form class="auth-form signin-form" method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                         <div class="form-group">
-                            <input type="email" name="email" id="email" placeholder="Your Court Alias or Email" required>
+                            <input type="email" name="email" id="email" placeholder="Email" required>
                         </div>
                         <div class="form-group">
-                            <input type="password" name="password" id="password" placeholder="Your Winning Smash..." required>
+                            <input type="password" name="password" id="password" placeholder="Password" required>
                         </div>
                         <div class="form-links">
                             <div class="form-links-left">
@@ -99,15 +99,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
         </div>
     </div>
-    <footer class="minimal-footer">
-        <div class="footer-content">
-            <div class="footer-brand">PadelUp</div>
-            <div class="footer-links">
-                <a href="#">About-Us</a>
-                
-            </div>
-        </div>
-    </footer>
 
 </body>
 </html>
+
+<?php include 'Includes/footer.php'; ?>
