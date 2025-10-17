@@ -35,7 +35,7 @@ body {
     color: var(--text);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    padding: 64px 20px 40px;
+    padding: 64px 0 40px; /* Remove horizontal padding */
     min-height: 100vh;
 }
 
@@ -47,7 +47,7 @@ body {
 .container {
     max-width: var(--max-width);
     margin: 0 auto;
-    padding: 0 40px;
+    padding: 0 20px; /* Apply horizontal padding here */
 }
 
 /* -----------------------------------------------------
@@ -185,6 +185,12 @@ body {
 .btn-nav-primary {
     background: var(--accent-2); /* fresh green */
     color: var(--text); /* Use default font-weight from .btn */
+}
+
+.btn-primary {
+    background: var(--accent); /* deep green */
+    color: white;
+    border: none;
 }
 
 .btn-ghost {
@@ -610,8 +616,10 @@ body {
    8. FOOTER SECTION
    ----------------------------------------------------- */
 .minimal-footer {
+    background-color: var(--accent);
+    color: white;
     padding: 40px 0;
-    border-top: 1px solid rgba(5,52,40,0.1);
+    border-top: none; /* Remove top border as background provides separation */
     margin-top: 60px;
 }
 
@@ -626,7 +634,17 @@ body {
 
 .footer-brand {
     font-weight: 700;
-    color: var(--accent);
+    color: var(--text); /* Match the navbar brand color */
+    text-decoration: none;
+    padding: 6px 12px; /* Add some padding */
+    border-radius: 8px; /* Round the corners */
+    transition: background-color 0.2s ease;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
 }
 
 .footer-links {
@@ -635,11 +653,29 @@ body {
 }
 
 .footer-links a {
-    color: var(--muted);
+    color: rgba(255, 255, 255, 0.8);
     text-decoration: none;
     font-size: 14px;
+    transition: color 0.2s ease;
 }
 
+.footer-links a:hover {
+    color: white;
+}
+
+.footer-social {
+    display: flex;
+    gap: 16px;
+}
+
+.social-icon {
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.2s ease;
+}
+
+.social-icon:hover {
+    color: white;
+}
 /* -----------------------------------------------------
    9. RESPONSIVE STYLES
    ----------------------------------------------------- */

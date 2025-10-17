@@ -1,0 +1,112 @@
+/* -----------------------------------------------------
+   ABOUT US PAGE STYLES
+   ----------------------------------------------------- */
+
+/* --- Hero Section --- */
+.about-hero {
+    padding: 80px 20px;
+    text-align: center;
+    background: url('../Assets/Photos/image5.jpg') no-repeat center center;
+    background-size: cover;
+    border-radius: 24px;
+    margin: 0 20px 60px;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.about-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(5, 52, 40, 0.8) 0%, rgba(5, 52, 40, 0.4) 100%);
+}
+
+.about-hero .container {
+    position: relative;
+    z-index: 1;
+}
+
+.about-hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin: 0 0 12px;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+.about-hero .subtitle {
+    font-size: 1.25rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* --- Main Content --- */
+.about-content {
+    max-width: 800px;
+}
+
+.about-section {
+    margin-bottom: 60px;
+    padding-bottom: 60px;
+    border-bottom: 1px solid #eee;
+}
+
+.about-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.about-section h2 {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.about-section p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+}
+
+/* --- Values List (Bullet Points) --- */
+.values-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.values-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.values-list li::before {
+    content: '✓';
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--accent-2);
+    color: var(--text);
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* --- Call to Action Section --- */
+.cta-section {
+    text-align: center;
+}

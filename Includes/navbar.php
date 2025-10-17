@@ -21,7 +21,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <?php if (isset($_SESSION['ID']) && isset($_SESSION['FullName'])): ?>
             <!-- ✅ If logged in: show welcome message, profile, and logout -->
             <!-- Home button (icon only) -->
-            <a href="index.php" class="btn btn-primary btn-icon" title="Home" aria-label="Home">
+            <a href="index.php" class="btn btn-icon <?php if ($current_page == 'index.php') echo 'nav-active'; ?>" title="Home" aria-label="Home">
                 <!-- Home SVG icon (inline) -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"></path>
@@ -35,7 +35,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <?php else: ?>
             <!-- 🚪 If not logged in: show sign-in + sign-up -->
             <!-- Home button for guests (icon only) -->
-            <a href="index.php" class="btn btn-primary btn-icon" title="Home" aria-label="Home">
+            <a href="index.php" class="btn btn-icon <?php if ($current_page == 'index.php') echo 'nav-active'; ?>" title="Home" aria-label="Home">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M3 9.5L12 3l9 6.5V21a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z"></path>
                 </svg>

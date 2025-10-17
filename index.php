@@ -125,20 +125,14 @@
             </video>
             <div class="video-overlay">
                 <h2>JOIN US NOW</h2>
-                <button class="btn-primary">Get Started</button>
+                <?php
+                $redirect_link = (isset($_SESSION['ID']) && isset($_SESSION['FullName'])) ? 'profile.php' : 'signup.php';
+                ?>
+                <a href="<?php echo $redirect_link; ?>" class="btn btn-primary" style="border-radius: 999px; padding: 16px 48px; font-size: 1.1rem;">
+                    Get Started
+                </a>
             </div>
         </section>
 
-
-        <footer class="minimal-footer">
-            <div class="footer-content">
-                <div class="footer-brand">PadelConnect</div>
-                <div class="footer-links">
-                    <a href="#">About-Us</a>
-                    
-                </div>
-            </div>
-        </footer>
     </div>
-</body>
-</html>
+<?php include 'Includes/footer.php'; ?>

@@ -21,11 +21,5 @@
             <p>Our AI-powered skill rating system is currently under development.</p>
         </div>
 
-        <footer class="minimal-footer">
-            <div class="footer-content">
-                <div class="footer-brand">PadelUp</div>
-            </div>
-        </footer>
     </div>
-</body>
-</html>
+<?php include 'Includes/footer.php'; ?>

@@ -168,5 +168,4 @@ if (!isset($_SESSION['ID']) || !isset($_SESSION['FullName'])) {
         });
     </script>
 
-</body>
-</html>
+<?php include 'Includes/footer.php'; ?>

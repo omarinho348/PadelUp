@@ -1,16 +1,8 @@
 <?php include 'Includes/navbar.php'; ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PadelUp Marketplace</title>
-    <link rel="stylesheet" href="styling/styles.css">
-    <link rel="stylesheet" href="styling/marketplace.css">
-</head>
-<body>
-    <div class="container">
-    <main class="marketpage">
+<title>PadelUp Marketplace</title>
+<link rel="stylesheet" href="styling/marketplace.css">
+
+    <main class="marketpage"> <!-- Removed the wrapping container -->
         <section class="hero">
             <div class="container hero-inner">
                 <div class="hero-copy">
@@ -45,7 +37,7 @@
             </div>
         </section>
 
-        <section class="market-grid">
+        <section class="market-grid container"> <!-- Added container class here -->
             <section class="catalog">
                 <div class="catalog-header">
                     <button id="openFiltersBtn" class="btn btn-outline filter-toggle-btn">
@@ -296,16 +288,6 @@
         </div>
     </main>
 
-    <footer class="minimal-footer">
-        <div class="footer-content">
-            <div class="footer-brand">PadelUp</div>
-            <div class="footer-links">
-                <a href="#">About-Us</a>
-                
-            </div>
-        </div>
-    </footer>
-
     <script>
         // Quick View modal and simple interactions
         const quickBtns = document.querySelectorAll('.quick-view');
@@ -424,5 +406,4 @@
 
 
     </script>
-</body>
-</html>
+<?php include 'Includes/footer.php'; ?>

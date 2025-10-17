@@ -87,7 +87,7 @@
                     </select>
                 </div>
                 <div class="filter-actions">
-                    <button class="btn-primary search-btn">Search</button>
+                    <button class="btn btn-primary search-btn">Search</button>
                     <button class="btn create-match-header-btn">Create Match</button>
                 </div>
             </div>
@@ -132,7 +132,7 @@
                             <div class="rating">★ 4.9</div>
                         </div>
                     </div>
-                    <button class="btn-primary join-btn">Request to Join</button>
+                    <button class="btn btn-primary join-btn">Request to Join</button>
                 </div>
 
                 <!-- Sample Match Card 2 (with open slots) -->
@@ -171,7 +171,7 @@
                             <div class="rating">★ 4.7</div>
                         </div>
                     </div>
-                    <button class="btn-primary join-btn">Join Match</button>
+                    <button class="btn btn-primary join-btn">Join Match</button>
                 </div>
 
                 <!-- Sample Match Card 3 -->
@@ -210,7 +210,7 @@
                             <div class="rating">★ 5.0</div>
                         </div>
                     </div>
-                    <button class="btn-primary join-btn">Join Match</button>
+                    <button class="btn btn-primary join-btn">Join Match</button>
                 </div>
 
                 <!-- Sample Match Card 4 -->
@@ -249,7 +249,7 @@
                             <div class="rating">★ 4.8</div>
                         </div>
                     </div>
-                    <button class="btn-primary join-btn">Request to Join</button>
+                    <button class="btn btn-primary join-btn">Request to Join</button>
                 </div>
 
                 <!-- Sample Match Card 5 (Full) -->
@@ -288,7 +288,7 @@
                             <div class="rating">★ 4.8</div>
                         </div>
                     </div>
-                    <button class="btn-primary join-btn">Match Full</button>
+                    <button class="btn btn-primary join-btn">Match Full</button>
                 </div>
 
             </div>
@@ -354,16 +354,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Footer -->
-    <footer class="minimal-footer">
-        <div class="footer-content">
-            <div class="footer-brand">PadelUp</div>
-            <div class="footer-links">
-                <a href="#">About-Us</a>
-            </div>
-        </div>
-    </footer>
 
     <script>
         feather.replace(); // Initialize Feather Icons
@@ -482,5 +472,4 @@
             });
         });
     </script>
-</body>
-</html>
+<?php include 'Includes/footer.php'; ?>

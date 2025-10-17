@@ -261,6 +261,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 .filter-bar .search-btn {
     padding: 0.85rem 2rem;
+    border-radius: 999px;
 }
 
 .filter-bar .create-match-header-btn {
@@ -382,6 +383,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     padding: 0.8rem;
     font-size: 1rem;
     font-weight: 700;
+    border-radius: 999px; /* Create pill shape */
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
 .join-btn:hover { background-color: #159a63; }

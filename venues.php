@@ -1,19 +1,7 @@
 <?php include 'Includes/navbar.php'; ?>
 
-
-
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Choose a Venue</title>
-  <link rel="stylesheet" href="styling/styles.css">
-  <link rel="stylesheet" href="styling/venues.css">
-
-</head>
-
-<body>
+<title>Choose a Venue</title>
+<link rel="stylesheet" href="styling/venues.css">
   <header class="hero">
     <div class="hero-bg" role="img" aria-label="Padel courts">
       <!-- decorative background image set via CSS fallback to Assets/Photos/V1.png -->
@@ -33,5 +21,4 @@
   </main>
 
   <script src="Assets/scripts/venues.js"></script>
-</body>
-</html>
+<?php include 'Includes/footer.php'; ?>
