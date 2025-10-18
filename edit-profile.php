@@ -43,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $_SESSION['PreferredPosition'] = $position;
         $_SESSION['SkillLevel'] = $skill;
         $_SESSION['Location'] = $location;
+        // is_admin is not editable here, but we should keep it in the session if it exists.
         
         $message = '<div class="success-message">Profile updated successfully!</div>';
     } else {
@@ -53,12 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 // Fetch current user data
+$userId = $_SESSION['ID'];
 $sql = "SELECT * FROM users WHERE ID = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $_SESSION['ID']);
+$stmt->bind_param("i", $userId);
 $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
+$_SESSION['is_admin'] = $user['is_admin']; // Ensure session is up-to-date
 $stmt->close();
 ?>
 

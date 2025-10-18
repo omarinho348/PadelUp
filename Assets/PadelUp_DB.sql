@@ -39,6 +39,7 @@ CREATE TABLE `users` (
   `SkillLevel` enum('beginner','intermediate','advanced') NOT NULL,
   `Location` varchar(100) NOT NULL,
   `Password` varchar(255) NOT NULL,
+  `is_admin` TINYINT(1) NOT NULL DEFAULT 0, 
   `RegisterDate` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -46,11 +47,11 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`ID`, `FullName`, `Email`, `Gender`, `DateOfBirth`, `Height`, `DominantHand`, `PreferredPosition`, `SkillLevel`, `Location`, `Password`, `RegisterDate`) VALUES
-(2, 'Yaya', 'ye@gmail.com', 'male', '2025-10-02', 190, 'right', 'rightside', 'intermediate', 'Cairo, Egypt', '$2y$10$AiFYrsEhBieioAIqV6K2LOrxzglfbHKYvl94NjrAagVIjzbTQJiEi', '2025-10-16 21:42:52'),
-(4, 'z', 'z@gmail.com', 'male', '2025-10-02', 190, 'right', 'rightside', 'intermediate', 'Cairo, Egypt', '$2y$10$1u1f3P.FSxD95c0bbeKlLO42AAmi41hNRhp.xOwcS8e3YL6hgIC7u', '2025-10-16 21:45:28'),
-(5, 'OA', 'Omar@gmail.com', 'male', '2025-09-29', 100, 'right', 'leftside', 'beginner', 'Cairo, Egypt', '$2y$10$MhgCQjDPuOR0tXfcsqNVAuwdWvy5IpBmyE98fxOQLCZ8sa/VDqx/m', '2025-10-16 22:29:17'),
-(7, 'omar', 'OA@gmail.com', 'male', '2025-10-20', 180, 'right', 'both', 'intermediate', 'Cairo, Egypt', '$2y$10$8fGKXstPZecw5oSByfdQMen4x2t2tHlaj8rXtI.gSD3F0tw1MJSYG', '2025-10-16 22:47:09');
+INSERT INTO `users` (`ID`, `FullName`, `Email`, `Gender`, `DateOfBirth`, `Height`, `DominantHand`, `PreferredPosition`, `SkillLevel`, `Location`, `Password`, `is_admin`, `RegisterDate`) VALUES
+(2, 'Yaya', 'ye@gmail.com', 'male', '2025-10-02', 190, 'right', 'rightside', 'intermediate', 'Cairo, Egypt', '$2y$10$AiFYrsEhBieioAIqV6K2LOrxzglfbHKYvl94NjrAagVIjzbTQJiEi', 0, '2025-10-16 21:42:52'),
+(4, 'z', 'z@gmail.com', 'male', '2025-10-02', 190, 'right', 'rightside', 'intermediate', 'Cairo, Egypt', '$2y$10$1u1f3P.FSxD95c0bbeKlLO42AAmi41hNRhp.xOwcS8e3YL6hgIC7u', 0, '2025-10-16 21:45:28'),
+(5, 'OA', 'Omar@gmail.com', 'male', '2025-09-29', 100, 'right', 'leftside', 'beginner', 'Cairo, Egypt', '$2y$10$MhgCQjDPuOR0tXfcsqNVAuwdWvy5IpBmyE98fxOQLCZ8sa/VDqx/m', 1, '2025-10-16 22:29:17'),
+(7, 'omar', 'OA@gmail.com', 'male', '2025-10-20', 180, 'right', 'both', 'intermediate', 'Cairo, Egypt', '$2y$10$8fGKXstPZecw5oSByfdQMen4x2t2tHlaj8rXtI.gSD3F0tw1MJSYG', 0, '2025-10-16 22:47:09');
 
 --
 -- Indexes for dumped tables

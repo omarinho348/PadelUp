@@ -30,9 +30,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['Gender'] = $row['Gender'];
             $_SESSION['SkillLevel'] = $row['SkillLevel'];
             $_SESSION['Location'] = $row['Location'];
-            
-            // Redirect to homepage
-            header("Location: index.php");
+            $_SESSION['is_admin'] = $row['is_admin']; // Store admin status
+
+            // Redirect based on admin status
+            if ($_SESSION['is_admin'] == 1) {
+                header("Location: admin.php"); // Redirect admins to the admin page
+            } else {
+                header("Location: index.php"); // Redirect regular users to the homepage
+            }
             exit;
         } else {
             $loginError = "Invalid email or password.";

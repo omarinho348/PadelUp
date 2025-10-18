@@ -32,6 +32,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <span class="welcome-message">Welcome, <?php echo htmlspecialchars($_SESSION['FullName']); ?></span>
             
             <a href="profile.php" class="btn <?php if ($current_page == 'profile.php') echo 'nav-active'; ?>">My Profile</a>
+
+            <?php if (isset($_SESSION['is_admin']) && $_SESSION['is_admin'] == 1): ?>
+                <!-- ✨ If user is an admin, show Admin Panel link (updated path) -->
+                <a href="admin.php" class="btn btn-nav-primary <?php if ($current_page == 'admin.php') echo 'nav-active'; ?>">Admin Panel</a>
+            <?php endif; ?>
         <?php else: ?>
             <!-- 🚪 If not logged in: show sign-in + sign-up -->
             <!-- Home button for guests (icon only) -->

@@ -1,0 +1,161 @@
+/* -----------------------------------------------------
+   ADMIN DASHBOARD STYLES
+   ----------------------------------------------------- */
+
+.admin-container {
+    padding-top: 40px;
+    padding-bottom: 60px;
+}
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.admin-header h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+}
+
+.admin-header p {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Grid for dashboard cards */
+.admin-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.admin-card {
+    display: block;
+    background-color: var(--card);
+    border: 1px solid rgba(5,52,40,0.08);
+    border-radius: 16px;
+    padding: 24px;
+    text-decoration: none;
+    color: var(--text);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(5,52,40,0.07);
+}
+
+.admin-card .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+}
+
+.admin-card h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.admin-card p {
+    font-size: 1rem;
+    color: var(--muted);
+    line-height: 1.6;
+}
+
+/* -----------------------------------------------------
+   ADMIN TOOLBAR & TABLE STYLES
+   ----------------------------------------------------- */
+
+.admin-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 16px;
+    background-color: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.admin-search {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    width: 300px;
+    background-color: var(--bg);
+}
+
+.admin-table-container {
+    background-color: var(--card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow-x: auto; /* For responsive tables */
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.admin-table th, .admin-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.admin-table th {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+}
+
+.admin-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.admin-table tbody tr:hover {
+    background-color: var(--bg);
+}
+
+/* Action buttons in table */
+.admin-table .actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-action {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+.btn-action.edit { background-color: #e0f7fa; color: #00796b; }
+.btn-action.delete { background-color: #ffebee; color: #c62828; }
+.btn-action.view { background-color: #e3f2fd; color: #1565c0; }
+
+/* Status pills for roles, etc. */
+.status-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-pill.admin { background-color: #ede7f6; color: #5e35b1; }
+.status-pill.user { background-color: #e3f2fd; color: #1e88e5; }
+.status-pill.active, .status-pill.confirmed { background-color: #e8f5e9; color: #2e7d32; }
+.status-pill.pending { background-color: #fffde7; color: #f9a825; }

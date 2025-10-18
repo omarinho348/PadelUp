@@ -142,8 +142,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         
         // SQL to insert new user
-        $sql = "INSERT INTO users (FullName, Email, Gender, DateOfBirth, Height, DominantHand, 
-                PreferredPosition, SkillLevel, Location, Password)
+        // Explicitly list columns to ensure is_admin gets its default value (0)
+        $sql = "INSERT INTO users (FullName, Email, Gender, DateOfBirth, Height, DominantHand, PreferredPosition, SkillLevel, Location, Password) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                 
         $stmt = $conn->prepare($sql);
