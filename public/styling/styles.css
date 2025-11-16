@@ -1,0 +1,1002 @@
+/* -----------------------------------------------------
+   1. GLOBAL STYLES AND VARIABLES
+   ----------------------------------------------------- */
+:root {
+    --bg: #f3fbf6; /* very light mint */
+    --accent: #117a4d; /* deep green */
+    --accent-2: #66d98a; /* fresh green */
+    --muted: #2f4a3f; /* dark muted text (greenish) */
+    --card: #ffffff; /* clean white cards */
+    --glass: rgba(102,217,138,0.10);
+    --radius: 12px;
+    --max-width: 1400px;
+    --ff: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --text: #053428;
+}
+
+/* Base styles */
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+html {
+    background: #fff;
+    min-height: 100vh;
+}
+
+body {
+    margin: 0;
+    font-family: var(--ff);
+    background: #fff;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding: 64px 0 40px; /* Remove horizontal padding */
+    min-height: 100vh;
+}
+
+/* Add padding to body to account for fixed nav */
+body {
+    padding-top: 85px;
+}
+
+.container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 20px; /* Apply horizontal padding here */
+}
+
+/* -----------------------------------------------------
+   2. NAVIGATION BAR
+   ----------------------------------------------------- */
+.nav-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(4px);
+    box-shadow: 0 1px 0 rgba(5,52,40,0.04);
+        margin-bottom: 22px;
+
+}
+
+/* Active state for navigation buttons */
+.btn.nav-active {
+    background-color: var(--accent); /* deep green */
+    color: white;
+    font-weight: 700; /* Make active button bold */
+}
+
+.nav-brand {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Welcome message styling */
+.welcome-message {
+    font-weight: 600;
+    color: var(--accent);
+    padding: 0 10px;
+    margin-right: 5px;
+    font-size: 14px;
+}
+
+/* -----------------------------------------------------
+   3. MAIN HEADING SECTION
+   ----------------------------------------------------- */
+.main-heading {
+    text-align: center;
+    margin: 10px auto 30px;
+    max-width: 1200px;
+}
+
+.main-heading h1 {
+    font-size: 48px;
+    line-height: 1.1;
+    font-weight: 800;
+    margin: 0 0 16px;
+    white-space: nowrap;
+}
+
+.main-heading .accent {
+    color: var(--accent);
+    position: relative;
+}
+
+.main-heading p {
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--muted);
+    margin: 0 auto;
+    max-width: 600px;
+}
+
+@media (max-width: 768px) {
+    .main-heading h1 {
+        font-size: 36px;
+        white-space: normal;
+    }
+    .main-heading p {
+        font-size: 16px;
+        padding: 0 20px;
+    }
+    .main-heading {
+        margin: 30px auto 50px;
+    }
+}
+
+/* -----------------------------------------------------
+   4. COMMON BUTTON STYLES
+   ----------------------------------------------------- */
+.btn {
+    background: var(--accent-2);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(5,52,40,0.03);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* Icons inside buttons: align and space consistently */
+.btn svg {
+    vertical-align: middle;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+/* Icon-only button variant (used for home icon) */
+.btn-icon {
+    padding: 10px;
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+/* Remove extra margin for svg inside icon-only button */
+.btn-icon svg {
+    margin-right: 0;
+}
+
+/* Special primary style for the nav 'Sign Up' button to differentiate from active state */
+.btn-nav-primary {
+    background: var(--accent-2); /* fresh green */
+    color: var(--text); /* Use default font-weight from .btn */
+}
+
+.btn-primary {
+    background: var(--accent); /* deep green */
+    color: white;
+    border: none;
+}
+
+.btn-ghost {
+    background: var(--accent-2);
+    border: none;
+    opacity: 0.8;
+}
+
+/* -----------------------------------------------------
+   5. HERO SECTION
+   ----------------------------------------------------- */
+.hero {
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 28px;
+    align-items: center;
+}
+
+.hero-left {
+    padding: 28px;
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(5,52,40,0.06);
+}
+
+/* Top hero banner */
+.top-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 160px 40px 60px;
+    border-radius: 14px;
+    margin-bottom: 22px;
+    color: white;
+    background-size: cover;
+    background-position: top center;
+    background-repeat: no-repeat;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Hero background image */
+.top-hero.home-hero {
+    background-image: url('../Photos/padel.jpg');
+}
+
+.top-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(0deg, rgba(5,52,40,0.75) 0%, rgba(5,52,40,0.2) 50%, rgba(5,52,40,0.1) 100%);
+    mix-blend-mode: multiply;
+}
+
+.top-hero .inner {
+    position: relative;
+    z-index: 2;
+    max-width: 920px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.top-hero h1 {
+    margin: 0;
+    font-size: 56px;
+    line-height: 1.1;
+    font-weight: 800;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+.top-hero p {
+    margin: 12px 0 24px;
+    color: rgba(255,255,255,0.95);
+    font-size: 20px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.top-hero .cta {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.top-hero .btn {
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-weight: 600;
+    padding: 12px 24px;
+    border-radius: 16px;
+}
+
+/* Feature indicators */
+.feature-pills {
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    z-index: 3;
+    transform: scale(0.9);
+    transform-origin: bottom right;
+}
+
+.feature-row {
+    display: flex;
+    gap: 6px;
+}
+
+.feature-row:last-child {
+    align-self: center;
+}
+
+.feature-pill {
+    background: rgba(255,255,255,0.12);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.16);
+    padding: 6px 10px;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: none;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    transform: translateX(10px);
+    animation: slideIn 0.5s ease forwards;
+    opacity: 0;
+    white-space: nowrap;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+/* -----------------------------------------------------
+   6. FEATURES SECTION
+   ----------------------------------------------------- */
+.content-section {
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto auto;
+    gap: 24px;
+    max-width: 1400px;
+    padding: 0 20px;
+}
+
+.feature-card {
+    background-size: cover;
+    background-position: center;
+    border-radius: 24px;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s ease;
+    min-height: 320px;
+}
+
+/* Dynamic layout for feature cards */
+.feature-card-link:nth-child(1) {
+    grid-column: 1 / 3;
+    grid-row: 1;
+}
+
+.feature-card-link:nth-child(2) {
+    grid-column: 3 / 5;
+    grid-row: 1;
+}
+
+.feature-card-link:nth-child(3),
+.feature-card-link:nth-child(4),
+.feature-card-link:nth-child(5),
+.feature-card-link:nth-child(6) {
+    grid-column: span 1;
+    grid-row: 2;
+    min-height: 280px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .content-section {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: auto auto auto;
+        gap: 20px;
+    }
+    
+    .feature-card-link:nth-child(1),
+    .feature-card-link:nth-child(2) {
+        grid-column: span 2;
+    }
+    
+    .feature-card-link:nth-child(3),
+    .feature-card-link:nth-child(4),
+    .feature-card-link:nth-child(5),
+    .feature-card-link:nth-child(6) {
+        grid-column: span 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .content-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .feature-card-link {
+        grid-column: 1 !important;
+    }
+    
+    .feature-card-link:nth-child(1) { grid-row: 1; }
+    .feature-card-link:nth-child(2) { grid-row: 2; }
+    .feature-card-link:nth-child(3) { grid-row: 3; }
+    .feature-card-link:nth-child(4) { grid-row: 4; }
+    .feature-card-link:nth-child(5) { grid-row: 5; }
+    .feature-card-link:nth-child(6) { grid-row: 6; }
+    
+    .feature-card {
+        min-height: 280px;
+    }
+}
+
+/* Feature card background images */
+.feature-card.matchmaking-card {
+    background-image: url('../Photos/community.jpg');
+    background-position: top center;
+}
+
+.feature-card.court-booking-card {
+    background-image: url('../Photos/CourtBooking.jfif');
+}
+
+.feature-card.padeliq-card {
+    background-image: url('../Photos/madrid.avif');
+}
+
+.feature-card.marketplace-card {
+    background-image: url('../Photos/marketplace.jpg');
+    background-position: right center;
+}
+
+.feature-card.tournaments-card {
+    background-image: url('../Photos/tournaments.webp');
+}
+
+.feature-card.coaches-card {
+    background-image: url('../Photos/coach.webp');
+}
+
+/* Feature card grid positions */
+.feature-card-link.second-row-start {
+    grid-column: 1;
+}
+
+.feature-card-link.second-row-end {
+    grid-column: 2;
+}
+
+.feature-card:first-child .feature-title {
+    white-space: nowrap;
+}
+
+.feature-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(145deg, 
+        rgba(5, 52, 40, 0.2) 0%,
+        rgba(5, 52, 40, 0.8) 100%);
+    transition: all 0.4s ease;
+    box-shadow: inset 0 0 100px rgba(0,0,0,0.2);
+}
+
+.feature-card:hover::before {
+    background: linear-gradient(145deg, 
+        rgba(5, 52, 40, 0.75) 0%,
+        rgba(5, 52, 40, 0.95) 100%);
+}
+
+.feature-card-link {
+    transform: translateY(0);
+    transition: transform 0.4s cubic-bezier(.4,0,.2,1);
+}
+
+.feature-card-link:hover {
+    transform: translateY(-8px);
+    z-index: 2;
+}
+
+/* Add depth with different hover heights */
+.feature-card-link:nth-child(1):hover { transform: translateY(-12px); }
+.feature-card-link:nth-child(2):hover { transform: translateY(-10px); }
+.feature-card-link:nth-child(3):hover { transform: translateY(-8px); }
+.feature-card-link:nth-child(4):hover { transform: translateY(-6px); }
+
+.card-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0;
+    height: 100%;
+    transform: translateY(0);
+    transition: all 0.4s cubic-bezier(.77,0,.18,1);
+}
+
+.card-title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 0;
+    transition: transform 0.4s cubic-bezier(.77,0,.18,1);
+}
+
+/* First row cards title animation */
+.feature-card-link:nth-child(-n+2) .feature-card:hover .card-title-row {
+    transform: translateY(-160px);
+}
+
+/* Second row cards title animation */
+.feature-card-link:nth-child(n+3) .feature-card:hover .card-title-row {
+    transform: translateY(-210px);
+}
+
+.feature-description {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    font-size: 15px;
+    margin: 16px 0 0 0;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.4s cubic-bezier(.77,0,.18,1);
+    text-align: center;
+    max-width: 90%;
+}
+
+.feature-card:hover .feature-description {
+    opacity: 1;
+    transform: translateY(-15px);
+    z-index: 2;
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-2);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+    backdrop-filter: blur(4px);
+}
+
+.feature-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+/* -----------------------------------------------------
+   7. VIDEO STRIP SECTION
+   ----------------------------------------------------- */
+.video-strip {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin: 40px 0;
+    overflow: hidden;
+    border-radius: 24px;
+}
+
+.video-strip video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to right, 
+        rgba(5, 52, 40, 0.85) 0%,
+        rgba(5, 52, 40, 0.6) 100%);
+    border-radius: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+}
+
+.video-overlay h2 {
+    color: white;
+    font-size: 4rem;
+    font-weight: 800;
+    margin: 0;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+    letter-spacing: 2px;
+}
+
+/* -----------------------------------------------------
+   8. FOOTER SECTION
+   ----------------------------------------------------- */
+.minimal-footer {
+    background-color: var(--accent);
+    color: white;
+    padding: 40px 0;
+    border-top: none; /* Remove top border as background provides separation */
+    margin-top: 60px;
+}
+
+.footer-content {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.footer-brand {
+    font-weight: 700;
+    color: var(--text); /* Match the navbar brand color */
+    text-decoration: none;
+    padding: 6px 12px; /* Add some padding */
+    border-radius: 8px; /* Round the corners */
+    transition: background-color 0.2s ease;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.footer-links {
+    display: flex;
+    gap: 24px;
+}
+
+.footer-links a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: white;
+}
+
+.footer-social {
+    display: flex;
+    gap: 16px;
+}
+
+.social-icon {
+    color: rgba(255, 255, 255, 0.8);
+    transition: color 0.2s ease;
+}
+
+.social-icon:hover {
+    color: white;
+}
+/* -----------------------------------------------------
+   9. RESPONSIVE STYLES
+   ----------------------------------------------------- */
+@media (max-width: 768px) {
+    .video-overlay h2 {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 1024px) {
+    .content-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .content-section {
+        grid-template-columns: 1fr;
+        margin: 60px auto;
+    }
+    
+    .feature-card {
+        padding: 24px;
+    }
+    
+    .feature-stats {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    body {
+        padding: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .feature-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    
+    .feature-title {
+        font-size: 20px;
+    }
+}
+
+/* -----------------------------------------------------
+   10. ACCESSIBILITY
+   ----------------------------------------------------- */
+button:focus, a:focus {
+    outline: 3px solid rgba(17,122,77,0.18);
+    outline-offset: 3px;
+}
+
+/* On form pages, make the body background transparent */
+body.form-page {
+    background: transparent;
+}
+
+/* Blurred background for form pages */
+body.form-page::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: url('../Photos/image4.jpg') no-repeat center center fixed;
+    background-size: cover;
+    filter: blur(8px);
+    -webkit-filter: blur(8px);
+    z-index: -1;
+}
+
+/* Layout for form pages */
+.main-content-flex {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    min-height: calc(100vh - 100px);
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.signup-center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    z-index: 1;
+}
+
+/* Form container */
+.form-container {
+    text-align: left;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 48px;
+    border-radius: var(--radius);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px var(--glass), 0 0 0 1px rgba(255,255,255,0.15);
+}
+
+/* Form heading */
+.form-container h2 {
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 1.5rem;
+    width: 100%;
+    display: block;
+}
+
+/* Form structure */
+.auth-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background-color: rgba(234, 247, 239, 0.8); /* --gray-light with transparency */
+    color: var(--text);
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    font-family: var(--ff);
+    box-sizing: border-box;
+}
+
+.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+}
+
+.form-group select {
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23117a4d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 40px;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: #1976d2;
+    box-shadow: 0 2px 0 0 #1976d2, 0 0 0 4px var(--glass);
+    outline: none;
+    transition: box-shadow 0.25s cubic-bezier(.4,2,.6,1);
+}
+
+.form-group input:hover,
+.form-group select:hover {
+    background-color: rgba(200, 240, 210, 0.9);
+}
+
+/* --- Visual Skill Selector --- */
+.skill-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.skill-card {
+    cursor: pointer;
+}
+
+.skill-card input[type="radio"] {
+    display: none; /* Hide the actual radio button */
+}
+
+.skill-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1rem;
+    border-radius: var(--radius);
+    border: 2px solid transparent;
+    background-color: rgba(234, 247, 239, 0.8);
+    transition: all 0.2s ease;
+    height: 100%;
+}
+
+.skill-card:hover .skill-card-content {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(47, 74, 63, 0.07);
+}
+
+.skill-card input[type="radio"]:checked + .skill-card-content {
+    border-color: var(--accent);
+    background-color: #e6fffa;
+    box-shadow: 0 0 0 3px rgba(17, 122, 77, 0.2);
+}
+
+.skill-icon {
+    font-size: 1.75rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Sign-in page specific form container width */
+.signin-form .form-container {
+    max-width: 550px;
+}
+
+/* Sign-in specific form styles */
+.signin-form {
+    max-width: 100% !important;
+    width: 500px;
+}
+
+.signin-form .form-group input {
+    width: 100%;
+    padding: 16px 20px;
+    font-size: 1.05rem;
+}
+
+.form-links {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.remember-me input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+}
+
+.forgot-password, .switch-form a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.forgot-password:hover, .switch-form a:hover {
+    color: var(--accent-2);
+    text-decoration: underline;
+}
+
+.switch-form {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 1rem;
+}
+
+/* Style for the main action button in forms */
+.auth-form button[type="submit"] {
+    width: auto; /* Let button size to content */
+    justify-self: center; /* Center the button in the form grid */
+    padding: 16px 48px; /* Adjust horizontal padding for a good shape */
+    font-size: 1.1rem;
+    margin-top: 1rem; /* Add some space above the button */
+    border-radius: 999px; /* Create pill shape */
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-form button[type="submit"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(17,122,77,0.15);
+}
