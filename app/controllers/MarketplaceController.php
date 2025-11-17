@@ -29,7 +29,8 @@ class MarketplaceController
      */
     public static function createListing(): string
     {
-        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        // Only handle POST requests that are NOT for updating a listing
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || (isset($_POST['action']) && $_POST['action'] === 'update_listing')) {
             return "";
         }
 
@@ -39,7 +40,7 @@ class MarketplaceController
             }
 
             // --- 1. Validate form data ---
-            $required = ['title', 'price', 'category', 'product_condition'];
+            $required = ['title', 'description', 'price', 'category', 'product_condition'];
             foreach ($required as $field) {
                 if (empty($_POST[$field])) {
                     throw new Exception("Please fill in all required fields.");
@@ -47,8 +48,9 @@ class MarketplaceController
             }
 
             // --- 2. Handle Image Upload ---
-            $imageUrl = null;
-            if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
+            if (!isset($_FILES['image']) || $_FILES['image']['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception("An image is required to list a product.");
+            } else {
                 $uploadDir = __DIR__ . '/../../public/uploads/products/';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
@@ -135,21 +137,24 @@ class MarketplaceController
             $imageUrl = $product['image_url']; // Keep old image by default
             if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
                 // Same upload logic as createListing, but we could also delete the old image
-                $uploadDir = __DIR__ . '/../../public/uploads/products/';
-                $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!in_array($_FILES['image']['type'], $allowedTypes)) throw new Exception("Invalid file type.");
-                if ($_FILES['image']['size'] > 5 * 1024 * 1024) throw new Exception("File is too large (max 5MB).");
-                
-                $fileName = uniqid('product_', true) . '.' . pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
-                $uploadPath = $uploadDir . $fileName;
-
-                if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) throw new Exception("Failed to upload new image.");
-                
-                // TODO: Optionally delete the old image file if it exists and is not a default image.
-                // if ($product['image_url'] && file_exists(__DIR__ . '/../..' . str_replace('../..', '', $product['image_url']))) {
-                //     unlink(__DIR__ . '/../..' . str_replace('../..', '', $product['image_url']));
-                // }
-                $imageUrl = '../../public/uploads/products/' . $fileName;
+                 $uploadDir = __DIR__ . '/../../public/uploads/products/';
+                 $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                 if (!in_array($_FILES['image']['type'], $allowedTypes)) {
+                     throw new Exception("Invalid file type. Please upload a JPG, PNG, GIF, or WEBP.");
+                 }
+                 if ($_FILES['image']['size'] > 5 * 1024 * 1024) { // 5MB limit
+                     throw new Exception("File is too large. Maximum size is 5MB.");
+                 }
+ 
+                 $fileName = uniqid('product_', true) . '.' . pathinfo($_FILES['image']['name'], PATHINFO_EXTENSION);
+                 $uploadPath = $uploadDir . $fileName;
+ 
+                 if (!move_uploaded_file($_FILES['image']['tmp_name'], $uploadPath)) {
+                     throw new Exception("Failed to upload new image.");
+                 }
+ 
+                 // TODO: Optionally delete the old image file.
+                 $imageUrl = '../../public/uploads/products/' . $fileName;
             }
 
             $data = [

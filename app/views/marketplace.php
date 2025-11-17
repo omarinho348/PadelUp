@@ -8,6 +8,22 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_listing') {
 }
 
 $products = MarketplaceController::listProducts();
+
+// Separate user's listings from others
+$my_listings = [];
+$other_listings = [];
+if (isset($_SESSION['user_id'])) {
+    $current_user_id = $_SESSION['user_id'];
+    foreach ($products as $product) {
+        if ($product['seller_id'] == $current_user_id) {
+            $my_listings[] = $product;
+        } else {
+            $other_listings[] = $product;
+        }
+    }
+} else {
+    $other_listings = $products;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -96,76 +112,109 @@ $products = MarketplaceController::listProducts();
                             </label>
                         </div>
                     </div>
-                    <div id="productGrid" class="product-grid">
-                        <?php if (empty($products)): ?>
-                            <p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">
-                                No products listed yet. Be the first to sell something!
-                            </p>
+                    <div id="productGrid">
+                        <?php if (empty($my_listings) && empty($other_listings)): ?>
+                            <div class="product-grid">
+                                <p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">
+                                    No products listed yet. Be the first to sell something!
+                                </p>
+                            </div>
                         <?php else: ?>
-                            <?php foreach ($products as $product): ?>
-                                <article class="product-card <?php if ($product['status'] === 'sold') echo 'is-sold'; ?>" 
-                                         data-title="<?php echo htmlspecialchars($product['title']); ?>" 
-                                         data-brand="<?php echo htmlspecialchars($product['category']); ?>" 
-                                         data-price="<?php echo htmlspecialchars($product['price']); ?>" 
-                                         data-condition="<?php echo htmlspecialchars($product['product_condition']); ?>" 
-                                         data-location="N/A" 
-                                         data-rating="0"
-                                         data-seller="<?php 
-                                            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $product['seller_id']) { echo 'You'; } 
-                                            else { echo htmlspecialchars($product['seller_name']); } 
-                                         ?>">
-                                    <figure class="img-wrap">
-                                        <img src="<?php echo htmlspecialchars($product['image_url'] ?? '../../public/Photos/racket_hack02.jpg'); ?>" alt="<?php echo htmlspecialchars($product['title']); ?>" class="product-img" />
-                                    </figure>
-                                    <div class="card-body">
-                                        <div class="card-top">
-                                            <h3 class="product-title"><?php echo htmlspecialchars($product['title']); ?></h3>
-                                            <span class="brand"><?php echo htmlspecialchars(ucfirst($product['category'])); ?></span>
-                                        </div>
-                                        <div class="price">EGP <?php echo htmlspecialchars(number_format($product['price'], 2)); ?></div>
-                                        <div class="meta">
-                                            <span class="badge status-badge status-<?php echo htmlspecialchars($product['status']); ?>"><?php echo htmlspecialchars(ucfirst($product['status'])); ?></span>
-                                            <span class="badge condition"><?php echo htmlspecialchars(str_replace('_', ' ', $product['product_condition'])); ?></span>
-                                        </div>
-                                        <div class="seller">Seller: <strong><?php 
-                                            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $product['seller_id']) {
-                                                echo 'You';
-                                            } else {
-                                                echo htmlspecialchars($product['seller_name']);
-                                            }
-                                        ?></strong></div>
+                            <?php if (!empty($my_listings)): ?>
+                                <section class="product-section">
+                                    <h2 class="grid-section-title">Your Listings</h2>
+                                    <div class="product-grid">
+                                        <?php foreach ($my_listings as $product): ?>
+                                            <article class="product-card <?php if ($product['status'] === 'sold') echo 'is-sold'; ?>" 
+                                                     data-title="<?php echo htmlspecialchars($product['title']); ?>" 
+                                                     data-brand="<?php echo htmlspecialchars($product['category']); ?>" 
+                                                     data-price="<?php echo htmlspecialchars($product['price']); ?>" 
+                                                     data-condition="<?php echo htmlspecialchars($product['product_condition']); ?>" 
+                                                     data-location="N/A" 
+                                                     data-rating="0"
+                                                     data-seller="You">
+                                                <figure class="img-wrap">
+                                                    <img src="<?php echo htmlspecialchars($product['image_url'] ?? '../../public/Photos/racket_hack02.jpg'); ?>" alt="<?php echo htmlspecialchars($product['title']); ?>" class="product-img" />
+                                                </figure>
+                                                <div class="card-body">
+                                                    <div class="card-top">
+                                                        <h3 class="product-title"><?php echo htmlspecialchars($product['title']); ?></h3>
+                                                        <span class="brand"><?php echo htmlspecialchars(ucfirst($product['category'])); ?></span>
+                                                    </div>
+                                                    <div class="price">EGP <?php echo htmlspecialchars(number_format($product['price'], 2)); ?></div>
+                                                    <div class="meta">
+                                                        <span class="badge status-badge status-<?php echo htmlspecialchars($product['status']); ?>"><?php echo htmlspecialchars(ucfirst($product['status'])); ?></span>
+                                                        <span class="badge condition"><?php echo htmlspecialchars(str_replace('_', ' ', $product['product_condition'])); ?></span>
+                                                    </div>
+                                                    <div class="seller">Seller: <strong>You</strong></div>
+                                                </div>
+                                                <div class="card-actions seller-actions">
+                                                    <button type="button" class="btn btn-sm btn-outline edit-listing-btn"
+                                                            data-product-id="<?php echo (int)$product['product_id']; ?>"
+                                                            data-title="<?php echo htmlspecialchars($product['title']); ?>"
+                                                            data-description="<?php echo htmlspecialchars($product['description']); ?>"
+                                                            data-price="<?php echo htmlspecialchars($product['price']); ?>"
+                                                            data-category="<?php echo htmlspecialchars($product['category']); ?>"
+                                                            data-condition="<?php echo htmlspecialchars($product['product_condition']); ?>"
+                                                            data-status="<?php echo htmlspecialchars($product['status']); ?>">
+                                                        Edit Listing
+                                                    </button>
+                                                    <div class="view-count">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                        <span><?php echo rand(1, 20); ?></span>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        <?php endforeach; ?>
                                     </div>
-                                    <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $product['seller_id']): ?>
-                                        <div class="card-actions seller-actions">
-                                            <button type="button" class="btn btn-sm btn-outline edit-listing-btn"
-                                                    data-product-id="<?php echo (int)$product['product_id']; ?>"
-                                                    data-title="<?php echo htmlspecialchars($product['title']); ?>"
-                                                    data-description="<?php echo htmlspecialchars($product['description']); ?>"
-                                                    data-price="<?php echo htmlspecialchars($product['price']); ?>"
-                                                    data-category="<?php echo htmlspecialchars($product['category']); ?>"
-                                                    data-condition="<?php echo htmlspecialchars($product['product_condition']); ?>"
-                                                    data-status="<?php echo htmlspecialchars($product['status']); ?>">
-                                                Edit Listing
-                                            </button>
-                                            <div class="view-count">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                                                <span><?php echo rand(1, 20); ?></span>
-                                            </div>
-                                        </div>
-                                    <?php else: ?>
-                                        <div class="card-actions" style="justify-content: center;">
-                                            <button type="button" class="btn btn-sm btn-primary contact-seller-btn" <?php if ($product['status'] === 'sold') echo 'disabled'; ?>
-                                                    data-seller-name="<?php echo htmlspecialchars($product['seller_name']); ?>"
-                                                    data-seller-email="<?php echo htmlspecialchars($product['seller_email']); ?>"
-                                                    data-seller-phone="<?php echo htmlspecialchars($product['seller_phone'] ?? 'Not provided'); ?>">
-                                                <?php if ($product['status'] === 'sold'): ?>Sold
-                                                <?php else: ?>Contact <?php echo htmlspecialchars(strtok($product['seller_name'], ' ')); ?>
-                                                <?php endif; ?>
-                                            </button>
-                                        </div>
+                                </section>
+                            <?php endif; ?>
+
+                            <?php if (!empty($other_listings)): ?>
+                                <section class="product-section">
+                                    <?php if (!empty($my_listings)): // Add a title for other listings only if user has listings ?>
+                                        <h2 class="grid-section-title">Other Listings</h2>
                                     <?php endif; ?>
-                                </article>
-                            <?php endforeach; ?>
+                                    <div class="product-grid">
+                                        <?php foreach ($other_listings as $product): ?>
+                                        <article class="product-card <?php if ($product['status'] === 'sold') echo 'is-sold'; ?>" 
+                                                 data-title="<?php echo htmlspecialchars($product['title']); ?>" 
+                                                 data-brand="<?php echo htmlspecialchars($product['category']); ?>" 
+                                                 data-price="<?php echo htmlspecialchars($product['price']); ?>" 
+                                                 data-condition="<?php echo htmlspecialchars($product['product_condition']); ?>" 
+                                                 data-location="N/A" 
+                                                 data-rating="0"
+                                                 data-seller="<?php echo htmlspecialchars($product['seller_name']); ?>">
+                                            <figure class="img-wrap">
+                                                <img src="<?php echo htmlspecialchars($product['image_url'] ?? '../../public/Photos/racket_hack02.jpg'); ?>" alt="<?php echo htmlspecialchars($product['title']); ?>" class="product-img" />
+                                            </figure>
+                                            <div class="card-body">
+                                                <div class="card-top">
+                                                    <h3 class="product-title"><?php echo htmlspecialchars($product['title']); ?></h3>
+                                                    <span class="brand"><?php echo htmlspecialchars(ucfirst($product['category'])); ?></span>
+                                                </div>
+                                                <div class="price">EGP <?php echo htmlspecialchars(number_format($product['price'], 2)); ?></div>
+                                                <div class="meta">
+                                                    <span class="badge status-badge status-<?php echo htmlspecialchars($product['status']); ?>"><?php echo htmlspecialchars(ucfirst($product['status'])); ?></span>
+                                                    <span class="badge condition"><?php echo htmlspecialchars(str_replace('_', ' ', $product['product_condition'])); ?></span>
+                                                </div>
+                                                <div class="seller">Seller: <strong><?php echo htmlspecialchars($product['seller_name']); ?></strong></div>
+                                            </div>
+                                            <div class="card-actions" style="justify-content: center;">
+                                                <button type="button" class="btn btn-sm btn-primary contact-seller-btn" <?php if ($product['status'] === 'sold') echo 'disabled'; ?>
+                                                        data-seller-name="<?php echo htmlspecialchars($product['seller_name']); ?>"
+                                                        data-seller-email="<?php echo htmlspecialchars($product['seller_email']); ?>"
+                                                        data-seller-phone="<?php echo htmlspecialchars($product['seller_phone'] ?? 'Not provided'); ?>">
+                                                    <?php if ($product['status'] === 'sold'): ?>Sold
+                                                    <?php else: ?>Contact <?php echo htmlspecialchars(strtok($product['seller_name'], ' ')); ?>
+                                                    <?php endif; ?>
+                                                </button>
+                                            </div>
+                                        </article>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </section>
+                            <?php endif; ?>
                         <?php endif; ?>
                     </div>
                 </section>
@@ -332,6 +381,12 @@ $products = MarketplaceController::listProducts();
                             <option value="available">Available</option>
                             <option value="sold">Sold</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_itemImage" class="file-upload-label">
+                            Change Product Image (Optional)
+                        </label>
+                        <input type="file" id="edit_itemImage" name="image" accept="image/*">
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px;">Save Changes</button>
                 </form>
