@@ -30,11 +30,6 @@
     }
 }
 
-@keyframes heartbeat {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.3); }
-    100% { transform: scale(1); }
-}
 /* --- Base & Body --- */
 /* Removing the old blurred background for a cleaner look */
 body::before {
@@ -202,9 +197,6 @@ body {
     transform: scale(1.05);
 }
 
-.product-card .fav { position: absolute; top: 12px; right: 12px; font-size: 1.2rem; color: #ccc; background: rgba(255,255,255,0.5); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: color 0.2s; }
-.product-card .fav:hover { color: #e53e3e; }
-.product-card.favorited .fav .heart { color: #e53e3e; animation: heartbeat 0.4s ease; }
 .product-card .img-wrap {
     height: 180px;
     display: flex;
@@ -224,9 +216,28 @@ body {
 .meta { display: flex; gap: 8px; align-items: center; font-size: 0.85rem; color: #5a706a; }
 .badge.condition { background: var(--border-color); color: var(--muted); padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 500; }
 .seller { font-size: 0.85rem; color: #5a706a; margin-top: auto; padding-top: 8px; }
+.badge.status-badge { padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+.status-available { background-color: #e6fffa; color: #2c7a7b; }
+.status-sold { background-color: #fde8e8; color: #c53030; }
+.product-card.is-sold { opacity: 0.6; background-color: #f9fafb; }
+.product-card.is-sold:hover { transform: none; box-shadow: var(--shadow-md); }
 .rating { color: #ffb400; }
 .card-actions { display: flex; gap: 8px; margin-top: 8px; }
+.card-actions .btn { flex-grow: 1; text-align: center; }
 
+/* Seller-specific actions */
+.seller-actions {
+    justify-content: space-between;
+    align-items: center;
+}
+.seller-actions .view-count {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 500;
+}
 /* --- Product Badges --- */
 .product-badge {
     position: absolute;
@@ -251,12 +262,25 @@ body {
 .product-badge.verified { background: #1976d2; }
 
 /* --- Modal --- */
-.modal { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(10, 20, 15, 0.6); backdrop-filter: blur(4px); z-index: 80; opacity: 0; pointer-events: none; transition: opacity .2s ease; }
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 20, 15, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 80;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+    display: flex; /* Use flexbox for centering */
+    align-items: center;
+    justify-content: center;
+    padding: 20px; /* Add padding around the panel */
+}
 .modal[aria-hidden="false"] { opacity: 1; pointer-events: auto; }
 .modal[aria-hidden="false"] .modal-panel {
     animation: fadeInUp 0.3s ease-out;
 }
-.modal-panel { background: var(--card); border-radius: var(--radius); padding: 24px; max-width: 900px; width: 92%; box-shadow: var(--shadow-lg); position: relative; transition: transform 0.3s ease; }
+.modal-panel { background: var(--card); border-radius: var(--radius); padding: 24px; max-width: 900px; width: 92%; box-shadow: var(--shadow-lg); position: relative; transition: transform 0.3s ease; max-height: 90vh; /* Set a max height */ overflow-y: auto; /* Allow the panel itself to scroll */ }
 .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 .modal-image { background: #f9fafb; border-radius: 8px; min-height: 220px; display: flex; align-items: center; justify-content: center; }
 .modal-content h3 { margin-top: 0; font-size: 1.5rem; color: var(--muted); }
@@ -265,6 +289,10 @@ body {
 
 /* Constrain the width of the sell item modal for a cleaner form */
 #sellItemModal .modal-panel {
+    max-width: 550px;
+}
+/* Also apply to the edit modal for consistency */
+#editItemModal .modal-panel {
     max-width: 550px;
 }
 
@@ -336,6 +364,29 @@ body {
     outline: none;
 }
 
+/* Contact Seller Modal Styles */
+.seller-contact-info {
+    margin-top: 24px;
+    display: grid;
+    gap: 16px;
+}
+
+.seller-contact-info .info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background-color: #f8fcf9;
+    padding: 12px 16px;
+    border-radius: 8px;
+}
+
+.seller-contact-info .info-label {
+    font-weight: 600;
+    color: var(--muted);
+}
+.seller-contact-info .info-value {
+    color: var(--accent);
+}
 
 /* --- Dynamic Filter Panel --- */
 .filter-overlay {
@@ -353,14 +404,16 @@ body {
 .filter-panel {
     position: fixed;
     top: 0;
-    left: 0;
     bottom: 0;
+    left: 0;
     width: 320px;
     max-width: 90vw;
     background: var(--card);
     z-index: 75;
     display: flex;
     flex-direction: column;
+    height: 100vh; /* Explicitly set height */
+    max-height: 100vh; /* Ensure it doesn't exceed viewport */
     transform: translateX(-100%);
     transition: transform 0.3s ease;
     box-shadow: var(--shadow-lg);
@@ -368,11 +421,23 @@ body {
 .filter-panel[aria-hidden="false"] { transform: translateX(0); }
 .filter-panel-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-bottom: 1.5px solid var(--border-color); }
 .filter-panel-header h3 { margin: 0; font-size: 1.2rem; color: var(--muted); }
-.filter-panel-body { flex-grow: 1; padding: 24px; overflow-y: auto; }
+.filter-form-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0; /* Critical for flexbox scrolling */
+}
+.filter-form {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Allow form to fill space and shrink */
+    min-height: 0; /* Prevent flexbox overflow issues */
+}
+.filter-panel-body { flex: 1; padding: 24px; overflow-y: auto; }
 .filter-panel-body .filter-block { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1.5px solid var(--border-color); }
 .filter-panel-body .filter-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-.filter-panel-footer { padding: 16px 24px; border-top: 1.5px solid var(--border-color); }
-.filter-panel-footer .btn { width: 100%; }
+.filter-panel-footer { display: flex; gap: 12px; padding: 16px 24px; border-top: 1.5px solid var(--border-color); }
+.filter-panel-footer .btn { width: auto; flex-grow: 1; text-align: center; }
 
 /* --- Responsive Design --- */
 @media (max-width: 1024px) {

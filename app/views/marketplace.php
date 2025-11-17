@@ -1,28 +1,42 @@
+<?php
+require_once __DIR__ . '/../controllers/MarketplaceController.php';
+
+if (isset($_POST['action']) && $_POST['action'] === 'update_listing') {
+    $message = MarketplaceController::updateListing();
+} else {
+    $message = MarketplaceController::createListing();
+}
+
+$products = MarketplaceController::listProducts();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PadelUp Marketplace</title>
+    <title>Marketplace - PadelUp</title>
     <link rel="stylesheet" href="../../public/styling/styles.css">
     <link rel="stylesheet" href="../../public/styling/marketplace.css">
 </head>
 <body>
 <?php include __DIR__ . '/partials/navbar.php'; ?>
 
-    <main class="marketpage"> <!-- Removed the wrapping container -->
+    <main class="marketpage">
         <section class="hero">
             <div class="container hero-inner">
                 <div class="hero-copy">
                     <h1>Find Your Perfect Padel Gear</h1>
                     <p class="subtitle">Buy and sell pre-loved padel rackets, balls, and accessories</p>
-                    <div class="search-row">
-                        <label class="search">
-                            <input id="searchInput" type="search" placeholder="Search for rackets, balls, etc." />
-                            <button class="icon-btn search-btn" aria-label="Search">
-                            </button>
-                        </label>
-
+                    <div class="search-row"> 
+                        <form method="GET" action="marketplace.php" class="search">
+                            <input id="searchInput" name="search" type="search" placeholder="Search for rackets, balls, etc." value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>" />
+                            <!-- Hidden fields to preserve other filters when searching -->
+                            <?php foreach ($_GET as $key => $value) {
+                                if ($key !== 'search' && is_scalar($value)) {
+                                    echo '<input type="hidden" name="' . htmlspecialchars($key) . '" value="' . htmlspecialchars($value) . '">';
+                                }
+                            } ?>
+                        </form>
                         <button id="openSellModalBtn" class="btn btn-primary sell-btn-plus" aria-label="Sell Your Gear">+</button>
                     </div>
                 </div>
@@ -46,141 +60,116 @@
         </section>
 
         <section class="market-grid container"> <!-- Added container class here -->
-            <section class="catalog">
-                <div class="catalog-header">
-                    <button id="openFiltersBtn" class="btn btn-outline filter-toggle-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
-                        <span>Filters</span>
-                    </button>
-                    <div class="sort-controls">
-                        <label>Sort:
-                            <select id="sortSelect">
-                                <option value="relevance">Most relevant</option>
-                                <option value="price-asc">Price: Low to high</option>
-                                <option value="price-desc">Price: High to low</option>
-                            </select>
-                        </label>
+            <?php if ($message) echo $message; ?>
+            <?php if (isset($_GET['status']) && $_GET['status'] === 'listed'): ?>
+                <div class="success-message" style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; text-align: center;">
+                    Your item has been listed successfully!
+                </div>
+                <script>
+                    // Clean up the URL
+                    if (window.history.replaceState) {
+                        window.history.replaceState(null, null, window.location.pathname);
+                    }
+                </script>
+            <?php elseif (isset($_GET['status']) && $_GET['status'] === 'updated'): ?>
+                <div class="success-message" style="background-color: #d4edda; color: #155724; padding: 15px; border-radius: var(--radius); margin-bottom: 20px; text-align: center;">
+                    Your listing has been updated successfully!
+                </div>
+                <script>
+                    if (window.history.replaceState) { window.history.replaceState(null, null, window.location.pathname); }
+                </script>
+            <?php endif; ?>
+            <form method="GET" action="marketplace.php" class="filter-form">
+                <section class="catalog">
+                    <div class="catalog-header">
+                        <button id="openFiltersBtn" type="button" class="btn btn-outline filter-toggle-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            <span>Filters</span>
+                        </button>
+                        <div class="sort-controls">
+                            <label>Sort:
+                                <select id="sortSelect" name="sort">
+                                    <option value="relevance" <?php if (($_GET['sort'] ?? 'relevance') == 'relevance') echo 'selected'; ?>>Most relevant</option>
+                                    <option value="price-asc" <?php if (($_GET['sort'] ?? '') == 'price-asc') echo 'selected'; ?>>Price: Low to high</option>
+                                    <option value="price-desc" <?php if (($_GET['sort'] ?? '') == 'price-desc') echo 'selected'; ?>>Price: High to low</option>
+                                </select>
+                            </label>
+                        </div>
                     </div>
-                </div>
-
-                <div id="productGrid" class="product-grid">
-                    <!-- Product cards (12 sample cards) -->
-                    <!-- We'll use data attributes for quick view -->
-                    
-                    <article class="product-card" data-title="Bullpadel Hack 02" data-brand="Bullpadel" data-price="279" data-condition="Like New" data-location="Madrid, ES" data-rating="4.5" data-seller="PadelPro">
-                        <div class="product-badge featured">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-                            <span>Featured</span>
-                        </div>
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/racket_hack02.jpg" alt="Padel Racket" class="product-img" /></figure>
-                        <div class="card-body">
-                            <div class="card-top">
-                                <h3 class="product-title">Bullpadel Hack 02</h3>
-                                <span class="brand">Bullpadel</span>
-                            </div>
-                            <div class="price">€279</div>
-                            <div class="meta">
-                                <span class="badge condition">Like New</span>
-                                <span class="location">Madrid</span>
-                            </div>
-                            <div class="rating">★★★★★</div>
-                            <div class="seller">Seller: <strong>PadelPro</strong></div>
-                        </div>
-                        <div class="card-actions">
-                            <button class="btn btn-sm btn-outline view-details">View Details</button>
-                            <button class="btn btn-sm btn-primary quick-view">Quick View</button>
-                        </div>
-                    </article>
-
-                    <!-- Duplicate similar cards with variations -->
-                    <article class="product-card" data-title="Adidas Carbon Comp" data-brand="Adidas" data-price="149" data-condition="Used" data-location="Barcelona, ES" data-rating="4.0" data-seller="RacketWorld">
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/adidas metal.png" alt="Padel Racket" class="product-img" /></figure>
-                        <div class="card-body">
-                            <div class="card-top"><h3 class="product-title">Adidas Carbon Comp</h3><span class="brand">Adidas</span></div>
-                            <div class="price">€149</div>
-                            <div class="meta"><span class="badge condition">Used</span><span class="location">Barcelona</span></div>
-                            <div class="rating">★★★★☆</div>
-                            <div class="seller">Seller: <strong>RacketWorld</strong></div>
-                        </div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                    <article class="product-card" data-title="Head Graphene 360" data-brand="Head" data-price="199" data-condition="New" data-location="Valencia, ES" data-rating="4.8" data-seller="PlayerOne">
-                        <div class="product-badge verified">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            <span>Verified</span>
-                        </div>
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/head.jpg" alt="Padel Racket" class="product-img" /></figure>
-                        <div class="card-body"><div class="card-top"><h3 class="product-title">Head Graphene 360</h3><span class="brand">Head</span></div><div class="price">€199</div><div class="meta"><span class="badge condition">New</span><span class="location">Valencia</span></div><div class="rating">★★★★★</div><div class="seller">Seller: <strong>PlayerOne</strong></div></div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                    <article class="product-card" data-title="Nox ML10 Pro" data-brand="Nox" data-price="239" data-condition="Like New" data-location="Seville, ES" data-rating="4.6" data-seller="NoxShop">
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/nox_ml.jpg" alt="Padel Racket" class="product-img" /></figure>
-                        <div class="card-body"><div class="card-top"><h3 class="product-title">Nox ML10 Pro</h3><span class="brand">Nox</span></div><div class="price">€239</div><div class="meta"><span class="badge condition">Like New</span><span class="location">Seville</span></div><div class="rating">★★★★☆</div><div class="seller">Seller: <strong>NoxShop</strong></div></div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                    <article class="product-card" data-title="Wilson Pro Staff" data-brand="Wilson" data-price="129" data-condition="Used" data-location="Bilbao, ES" data-rating="3.9" data-seller="SecondServe">
-                        <div class="product-badge verified">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            <span>Verified</span>
-                        </div>
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/wilson.jpg" alt="Padel Racket" class="product-img" /></figure>
-                        <div class="card-body"><div class="card-top"><h3 class="product-title">Wilson Pro Staff</h3><span class="brand">Wilson</span></div><div class="price">€129</div><div class="meta"><span class="badge condition">Used</span><span class="location">Bilbao</span></div><div class="rating">★★★☆☆</div><div class="seller">Seller: <strong>SecondServe</strong></div></div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                    <article class="product-card" data-title="Hybrid Padel Pack" data-brand="Multi" data-price="59" data-condition="New" data-location="Madrid, ES" data-rating="4.2" data-seller="PadelOutlet">
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/padel_pack.jpg" alt="Padel Pack" class="product-img" /></figure>
-                        <div class="card-body"><div class="card-top"><h3 class="product-title">Hybrid Padel Pack</h3><span class="brand">Multi</span></div><div class="price">€59</div><div class="meta"><span class="badge condition">New</span><span class="location">Madrid</span></div><div class="rating">★★★★☆</div><div class="seller">Seller: <strong>PadelOutlet</strong></div></div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                    <article class="product-card" data-title="Pro Player Shoes" data-brand="Adidas" data-price="89" data-condition="Like New" data-location="Granada, ES" data-rating="4.1" data-seller="Shoes4Padel">
-                        <div class="product-badge verified">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            <span>Verified</span>
-                        </div>
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/shoes.jpg" alt="Padel Shoes" class="product-img" /></figure>
-                        <div class="card-body"><div class="card-top"><h3 class="product-title">Pro Player Shoes</h3><span class="brand">Adidas</span></div><div class="price">€89</div><div class="meta"><span class="badge condition">Like New</span><span class="location">Granada</span></div><div class="rating">★★★★☆</div><div class="seller">Seller: <strong>Shoes4Padel</strong></div></div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                    <article class="product-card" data-title="Padel Travel Bag" data-brand="Head" data-price="69" data-condition="New" data-location="Alicante, ES" data-rating="4.4" data-seller="BagHouse">
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/padel_bag.jpg" alt="Padel Bag" class="product-img" /></figure>
-                        <div class="card-body"><div class="card-top"><h3 class="product-title">Padel Travel Bag</h3><span class="brand">Head</span></div><div class="price">€69</div><div class="meta"><span class="badge condition">New</span><span class="location">Alicante</span></div><div class="rating">★★★★☆</div><div class="seller">Seller: <strong>BagHouse</strong></div></div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                    <article class="product-card" data-title="Grip Tape Bundle" data-brand="Wilson" data-price="9" data-condition="New" data-location="Malaga, ES" data-rating="4.7" data-seller="GripPro">
-                        <div class="product-badge verified">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                            <span>Verified</span>
-                        </div>
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/tape.jpg" alt="Grip Tape" class="product-img" /></figure>
-                        <div class="card-body"><div class="card-top"><h3 class="product-title">Grip Tape Bundle</h3><span class="brand">Wilson</span></div><div class="price">€9</div><div class="meta"><span class="badge condition">New</span><span class="location">Malaga</span></div><div class="rating">★★★★★</div><div class="seller">Seller: <strong>GripPro</strong></div></div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                    <article class="product-card" data-title="Wilson Balls Pack" data-brand="Wilson" data-price="16" data-condition="New" data-location="Cordoba, ES" data-rating="3.8" data-seller="BundleDeals">
-                        <button class="fav icon-btn" aria-label="Favorite"><span class="heart">♡</span></button>
-                        <figure class="img-wrap"><img src="../../public/Photos/balls.jpg" alt="Padel Balls" class="product-img" /></figure>
-                        <div class="card-body"><div class="card-top"><h3 class="product-title">Wilson Padel Balls</h3><span class="brand">Wilson</span></div><div class="price">€39</div><div class="meta"><span class="badge condition">New</span><span class="location">Cordoba</span></div><div class="rating">★★★☆☆</div><div class="seller">Seller: <strong>BundleDeals</strong></div></div>
-                        <div class="card-actions"><button class="btn btn-sm btn-outline view-details">View Details</button><button class="btn btn-sm btn-primary quick-view">Quick View</button></div>
-                    </article>
-
-                </div>
-            </section>
+                    <div id="productGrid" class="product-grid">
+                        <?php if (empty($products)): ?>
+                            <p style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--muted);">
+                                No products listed yet. Be the first to sell something!
+                            </p>
+                        <?php else: ?>
+                            <?php foreach ($products as $product): ?>
+                                <article class="product-card <?php if ($product['status'] === 'sold') echo 'is-sold'; ?>" 
+                                         data-title="<?php echo htmlspecialchars($product['title']); ?>" 
+                                         data-brand="<?php echo htmlspecialchars($product['category']); ?>" 
+                                         data-price="<?php echo htmlspecialchars($product['price']); ?>" 
+                                         data-condition="<?php echo htmlspecialchars($product['product_condition']); ?>" 
+                                         data-location="N/A" 
+                                         data-rating="0"
+                                         data-seller="<?php 
+                                            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $product['seller_id']) { echo 'You'; } 
+                                            else { echo htmlspecialchars($product['seller_name']); } 
+                                         ?>">
+                                    <figure class="img-wrap">
+                                        <img src="<?php echo htmlspecialchars($product['image_url'] ?? '../../public/Photos/racket_hack02.jpg'); ?>" alt="<?php echo htmlspecialchars($product['title']); ?>" class="product-img" />
+                                    </figure>
+                                    <div class="card-body">
+                                        <div class="card-top">
+                                            <h3 class="product-title"><?php echo htmlspecialchars($product['title']); ?></h3>
+                                            <span class="brand"><?php echo htmlspecialchars(ucfirst($product['category'])); ?></span>
+                                        </div>
+                                        <div class="price">EGP <?php echo htmlspecialchars(number_format($product['price'], 2)); ?></div>
+                                        <div class="meta">
+                                            <span class="badge status-badge status-<?php echo htmlspecialchars($product['status']); ?>"><?php echo htmlspecialchars(ucfirst($product['status'])); ?></span>
+                                            <span class="badge condition"><?php echo htmlspecialchars(str_replace('_', ' ', $product['product_condition'])); ?></span>
+                                        </div>
+                                        <div class="seller">Seller: <strong><?php 
+                                            if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $product['seller_id']) {
+                                                echo 'You';
+                                            } else {
+                                                echo htmlspecialchars($product['seller_name']);
+                                            }
+                                        ?></strong></div>
+                                    </div>
+                                    <?php if (isset($_SESSION['user_id']) && $_SESSION['user_id'] == $product['seller_id']): ?>
+                                        <div class="card-actions seller-actions">
+                                            <button type="button" class="btn btn-sm btn-outline edit-listing-btn"
+                                                    data-product-id="<?php echo (int)$product['product_id']; ?>"
+                                                    data-title="<?php echo htmlspecialchars($product['title']); ?>"
+                                                    data-description="<?php echo htmlspecialchars($product['description']); ?>"
+                                                    data-price="<?php echo htmlspecialchars($product['price']); ?>"
+                                                    data-category="<?php echo htmlspecialchars($product['category']); ?>"
+                                                    data-condition="<?php echo htmlspecialchars($product['product_condition']); ?>"
+                                                    data-status="<?php echo htmlspecialchars($product['status']); ?>">
+                                                Edit Listing
+                                            </button>
+                                            <div class="view-count">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                                <span><?php echo rand(1, 20); ?></span>
+                                            </div>
+                                        </div>
+                                    <?php else: ?>
+                                        <div class="card-actions" style="justify-content: center;">
+                                            <button type="button" class="btn btn-sm btn-primary contact-seller-btn" <?php if ($product['status'] === 'sold') echo 'disabled'; ?>
+                                                    data-seller-name="<?php echo htmlspecialchars($product['seller_name']); ?>"
+                                                    data-seller-email="<?php echo htmlspecialchars($product['seller_email']); ?>"
+                                                    data-seller-phone="<?php echo htmlspecialchars($product['seller_phone'] ?? 'Not provided'); ?>">
+                                                <?php if ($product['status'] === 'sold'): ?>Sold
+                                                <?php else: ?>Contact <?php echo htmlspecialchars(strtok($product['seller_name'], ' ')); ?>
+                                                <?php endif; ?>
+                                            </button>
+                                        </div>
+                                    <?php endif; ?>
+                                </article>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </section>
+            </form>
         </section>
 
         <!-- Dynamic Filter Panel -->
@@ -190,69 +179,61 @@
                 <h3>Filters</h3>
                 <button id="closeFiltersBtn" class="icon-btn modal-close" aria-label="Close Filters">×</button>
             </div>
-            <div class="filter-panel-body">
-                <div class="filter-block">
-                    <h4>Categories</h4>
-                    <ul class="categories">
-                        <li><label><input type="checkbox" checked> Rackets</label></li>
-                        <li><label><input type="checkbox" checked> Balls</label></li>
-                        <li><label><input type="checkbox"> Bags</label></li>
-                        <li><label><input type="checkbox"> Shoes</label></li>
-                        <li><label><input type="checkbox"> Apparel</label></li>
-                        <li><label><input type="checkbox"> Accessories</label></li>
-                    </ul>
-                </div>
-
-                <div class="filter-block">
-                    <h4>Price</h4>
-                    <div class="price-range">
-                        <input id="priceRange" type="range" min="0" max="500" value="150">
-                        <div class="range-labels"><span>0€</span><span id="priceVal">150€</span><span>500€</span></div>
+            <form method="GET" action="marketplace.php" class="filter-form-wrapper">
+                <div class="filter-panel-body">
+                    <div class="filter-block">
+                        <h4>Categories</h4>
+                        <label><input type="checkbox" name="categories[]" value="rackets" <?php if (in_array('rackets', $_GET['categories'] ?? [])) echo 'checked'; ?>> Rackets</label>
+                        <label><input type="checkbox" name="categories[]" value="shoes" <?php if (in_array('shoes', $_GET['categories'] ?? [])) echo 'checked'; ?>> Shoes</label>
+                        <label><input type="checkbox" name="categories[]" value="apparel" <?php if (in_array('apparel', $_GET['categories'] ?? [])) echo 'checked'; ?>> Apparel</label>
+                        <label><input type="checkbox" name="categories[]" value="accessories" <?php if (in_array('accessories', $_GET['categories'] ?? [])) echo 'checked'; ?>> Accessories</label>
                     </div>
-                </div>
 
-                <div class="filter-block">
-                    <h4>Condition</h4>
-                    <label><input type="checkbox" checked> New</label>
-                    <label><input type="checkbox" checked> Like New</label>
-                    <label><input type="checkbox"> Used</label>
-                </div>
-
-                <div class="filter-block">
-                    <h4>Brand</h4>
-                    <label><input type="checkbox"> Bullpadel</label>
-                    <label><input type="checkbox"> Adidas</label>
-                    <label><input type="checkbox"> Head</label>
-                    <label><input type="checkbox"> Nox</label>
-                    <label><input type="checkbox"> Wilson</label>
-                </div>
-            </div>
-            <div class="filter-panel-footer">
-                <button class="btn btn-primary">Apply Filters</button>
-            </div>
-        </aside>
-
-        <!-- Quick View Modal -->
-        <div id="quickView" class="modal" aria-hidden="true">
-            <div class="modal-panel">
-                <button class="modal-close" aria-label="Close">×</button>
-                <div class="modal-grid">
-                    <div class="modal-image">
-                        <svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" rx="8" fill="#eef6ff"/></svg>
-                    </div>
-                    <div class="modal-content">
-                        <h3 id="mv-title">Product Title</h3>
-                        <p class="mv-brand">Brand: <span id="mv-brand">Brand</span></p>
-                        <p class="mv-price">€<span id="mv-price">0</span></p>
-                        <p class="mv-condition">Condition: <span id="mv-condition">-</span></p>
-                        <p class="mv-location">Location: <span id="mv-location">-</span></p>
-                        <p class="mv-seller">Seller: <strong id="mv-seller">-</strong></p>
-                        <div class="mv-actions">
-                            <button class="btn btn-primary">Contact Seller</button>
-                            <button class="btn btn-outline" id="mv-add-fav">Add to favorites</button>
+                    <div class="filter-block">
+                        <h4>Max Price</h4>
+                        <div class="price-range">
+                            <?php $maxPrice = $_GET['max_price'] ?? 30000; ?>
+                            <input id="priceRange" name="max_price" type="range" min="0" max="30000" step="500" value="<?php echo htmlspecialchars($maxPrice); ?>">
+                            <div class="range-labels"><span>EGP 0</span><span id="priceVal">EGP <?php echo htmlspecialchars($maxPrice); ?></span></div>
                         </div>
                     </div>
+
+                    <div class="filter-block">
+                        <h4>Condition</h4>
+                        <label><input type="checkbox" name="conditions[]" value="new" <?php if (in_array('new', $_GET['conditions'] ?? [])) echo 'checked'; ?>> New</label>
+                        <label><input type="checkbox" name="conditions[]" value="used_like_new" <?php if (in_array('used_like_new', $_GET['conditions'] ?? [])) echo 'checked'; ?>> Used - Like New</label>
+                        <label><input type="checkbox" name="conditions[]" value="used_good" <?php if (in_array('used_good', $_GET['conditions'] ?? [])) echo 'checked'; ?>> Used - Good</label>
+                        <label><input type="checkbox" name="conditions[]" value="used_fair" <?php if (in_array('used_fair', $_GET['conditions'] ?? [])) echo 'checked'; ?>> Used - Fair</label>
+                    </div>
                 </div>
+                <div class="filter-panel-footer">
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <a href="marketplace.php" class="btn btn-outline">Clear All</a>
+                </div>
+                <!-- Pass along search and sort parameters -->
+                <input type="hidden" name="search" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+                <input type="hidden" name="sort" value="<?php echo htmlspecialchars($_GET['sort'] ?? 'relevance'); ?>">
+            </form>
+        </aside>
+
+        <!-- Contact Seller Modal -->
+        <div id="contactSellerModal" class="modal" aria-hidden="true">
+            <div class="modal-panel" style="max-width: 450px;">
+                <button class="modal-close" aria-label="Close">×</button>
+                <h3 id="contact-seller-title">Contact Seller</h3>
+                <div class="seller-contact-info">
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <a href="#" id="contact-seller-email" class="info-value"></a>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone:</span>
+                        <span id="contact-seller-phone" class="info-value"></span>
+                    </div>
+                </div>
+                <p style="font-size: 0.9rem; color: var(--muted); text-align: center; margin-top: 20px;">
+                    Please be respectful when contacting sellers.
+                </p>
             </div>
         </div>
 
@@ -261,113 +242,109 @@
             <div class="modal-panel">
                 <button class="modal-close" aria-label="Close">×</button>
                 <h3>List Your Padel Gear</h3>
-                <form id="sellItemForm" class="sell-form">
+                <form id="sellItemForm" class="sell-form" method="POST" action="marketplace.php" enctype="multipart/form-data">
                     <div class="form-group">
-                        <label for="itemTitle">Product Title</label>
-                        <input type="text" id="itemTitle" placeholder="e.g., Bullpadel Hack 03" required>
+                        <label for="title">Product Title</label>
+                        <input type="text" id="title" name="title" placeholder="e.g., Bullpadel Hack 03" required>
                     </div>
                     <div class="form-group">
-                        <label for="itemBrand">Brand</label>
-                        <input type="text" id="itemBrand" placeholder="e.g., Bullpadel" required>
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" rows="3" placeholder="Describe the item, its usage, and any marks or defects."></textarea>
                     </div>
                     <div class="two-col">
                         <div class="form-group">
-                            <label for="itemPrice">Price (€)</label>
-                            <input type="number" id="itemPrice" placeholder="199" required>
+                            <label for="price">Price (EGP)</label>
+                            <input type="number" id="price" name="price" min="0" step="0.01" placeholder="1500.00" required>
                         </div>
                         <div class="form-group">
-                            <label for="itemCondition">Condition</label>
-                            <select id="itemCondition" required>
-                                <option value="New">New</option>
-                                <option value="Like New">Like New</option>
-                                <option value="Used">Used</option>
+                            <label for="category">Category</label>
+                            <select id="category" name="category" required>
+                                <option value="rackets">Rackets</option>
+                                <option value="shoes">Shoes</option>
+                                <option value="apparel">Apparel</option>
+                                <option value="accessories">Accessories</option>
                             </select>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="product_condition">Condition</label>
+                        <select id="product_condition" name="product_condition" required>
+                            <option value="new">New</option>
+                            <option value="used_like_new">Used - Like New</option>
+                            <option value="used_good">Used - Good</option>
+                            <option value="used_fair">Used - Fair</option>
+                            </select>
                     </div>
                     <div class="form-group">
                         <label for="itemImage" class="file-upload-label">
                             Click to Upload Image
                         </label>
-                        <input type="file" id="itemImage" accept="image/*">
+                        <input type="file" id="itemImage" name="image" accept="image/*">
                     </div>
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px;">List Item</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Item Modal -->
+        <div id="editItemModal" class="modal" aria-hidden="true">
+            <div class="modal-panel">
+                <button class="modal-close" aria-label="Close">×</button>
+                <h3>Edit Your Listing</h3>
+                <form id="editItemForm" class="sell-form" method="POST" action="marketplace.php" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="update_listing">
+                    <input type="hidden" id="edit_product_id" name="product_id">
+                    <div class="form-group">
+                        <label for="edit_title">Product Title</label>
+                        <input type="text" id="edit_title" name="title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_description">Description</label>
+                        <textarea id="edit_description" name="description" rows="3"></textarea>
+                    </div>
+                    <div class="two-col">
+                        <div class="form-group">
+                            <label for="edit_price">Price (EGP)</label>
+                            <input type="number" id="edit_price" name="price" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_category">Category</label>
+                            <select id="edit_category" name="category" required>
+                                <option value="rackets">Rackets</option>
+                                <option value="shoes">Shoes</option>
+                                <option value="apparel">Apparel</option>
+                                <option value="accessories">Accessories</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_product_condition">Condition</label>
+                        <select id="edit_product_condition" name="product_condition" required>
+                            <option value="new">New</option>
+                            <option value="used_like_new">Used - Like New</option>
+                            <option value="used_good">Used - Good</option>
+                            <option value="used_fair">Used - Fair</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit_status">Availability</label>
+                        <select id="edit_status" name="status" required>
+                            <option value="available">Available</option>
+                            <option value="sold">Sold</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 16px;">Save Changes</button>
                 </form>
             </div>
         </div>
     </main>
 
     <script>
-        // Quick View modal and simple interactions
-        const quickBtns = document.querySelectorAll('.quick-view');
-        const modal = document.getElementById('quickView');
-        const mv = {
-            title: document.getElementById('mv-title'),
-            brand: document.getElementById('mv-brand'),
-            price: document.getElementById('mv-price'),
-            condition: document.getElementById('mv-condition'),
-            location: document.getElementById('mv-location'),
-            seller: document.getElementById('mv-seller')
-        };
-
-        quickBtns.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const card = e.target.closest('.product-card');
-                if (!card) return;
-                modal.setAttribute('aria-hidden', 'false');
-                mv.title.textContent = card.dataset.title;
-                mv.brand.textContent = card.dataset.brand;
-                mv.price.textContent = card.dataset.price;
-                mv.condition.textContent = card.dataset.condition;
-                mv.location.textContent = card.dataset.location;
-                mv.seller.textContent = card.dataset.seller;
-                document.body.style.overflow = 'hidden';
-            });
-        });
-
-        document.querySelectorAll('.modal-close, #quickView').forEach(el => {
-            el.addEventListener('click', (e) => {
-                if (e.target === el || e.target.classList.contains('modal-close')) {
-                    modal.setAttribute('aria-hidden', 'true');
-                    document.body.style.overflow = '';
-                }
-            });
-        });
-
         // Prevent modal clicks from closing when clicking inside any modal panel
         document.querySelectorAll('.modal-panel').forEach(panel => {
             panel.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
-        });
-
-        // Favorite toggle
-        document.querySelectorAll('.product-card .fav').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const heart = btn.querySelector('.heart');
-                btn.parentElement.classList.toggle('favorited');
-                if (btn.parentElement.classList.contains('favorited')) heart.textContent = '♥'; else heart.textContent = '♡';
-            });
-        });
-
-        // Simple search filter
-        const searchInput = document.getElementById('searchInput');
-        const productGrid = document.getElementById('productGrid');
-        searchInput.addEventListener('input', () => {
-            const q = searchInput.value.trim().toLowerCase();
-            document.querySelectorAll('.product-card').forEach(card => {
-                const title = card.dataset.title.toLowerCase();
-                const brand = card.dataset.brand.toLowerCase();
-                const match = title.includes(q) || brand.includes(q);
-                card.style.display = match || q === '' ? '' : 'none';
-            });
-        });
-
-        // Price range display
-        const priceRange = document.getElementById('priceRange');
-        const priceVal = document.getElementById('priceVal');
-        priceRange.addEventListener('input', () => {
-            priceVal.textContent = priceRange.value + '€';
         });
 
         // Dynamic Filter Panel Logic
@@ -412,6 +389,92 @@
             }
         });
 
+        // Contact Seller Modal Logic
+        const contactSellerModal = document.getElementById('contactSellerModal');
+        const contactSellerCloseBtn = contactSellerModal.querySelector('.modal-close');
 
+        document.querySelectorAll('.contact-seller-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const sellerName = this.dataset.sellerName;
+                const sellerEmail = this.dataset.sellerEmail;
+                const sellerPhone = this.dataset.sellerPhone;
+
+                document.getElementById('contact-seller-title').textContent = `Contact ${sellerName}`;
+                const emailLink = document.getElementById('contact-seller-email');
+                emailLink.textContent = sellerEmail;
+                emailLink.href = `mailto:${sellerEmail}`;
+                document.getElementById('contact-seller-phone').textContent = sellerPhone;
+
+                contactSellerModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        const closeContactSellerModal = () => {
+            contactSellerModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        };
+        contactSellerCloseBtn.addEventListener('click', closeContactSellerModal);
+        contactSellerModal.addEventListener('click', (e) => { if (e.target === contactSellerModal) closeContactSellerModal(); });
+
+        // Edit Listing Modal Logic
+        const editItemModal = document.getElementById('editItemModal');
+        const editModalCloseBtns = editItemModal.querySelectorAll('.modal-close');
+
+        document.querySelectorAll('.edit-listing-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Populate the form
+                document.getElementById('edit_product_id').value = this.dataset.productId;
+                document.getElementById('edit_title').value = this.dataset.title;
+                document.getElementById('edit_description').value = this.dataset.description;
+                document.getElementById('edit_price').value = this.dataset.price;
+                document.getElementById('edit_category').value = this.dataset.category;
+                document.getElementById('edit_product_condition').value = this.dataset.condition;
+                document.getElementById('edit_status').value = this.dataset.status;
+
+                // Show the modal
+                editItemModal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        const closeEditModal = () => {
+            editItemModal.setAttribute('aria-hidden', 'true');
+            document.body.style.overflow = '';
+        };
+
+        editModalCloseBtns.forEach(btn => btn.addEventListener('click', closeEditModal));
+        editItemModal.addEventListener('click', (e) => { if (e.target === editItemModal) closeEditModal(); });
+
+        // Price range display update
+        const priceRange = document.getElementById('priceRange');
+        const priceVal = document.getElementById('priceVal');
+        if (priceRange) {
+            priceRange.addEventListener('input', () => {
+                priceVal.textContent = 'EGP ' + priceRange.value;
+            });
+        }
+        // Link sort dropdown to the main filter form and submit on change
+        const sortSelect = document.getElementById('sortSelect');
+        const filterForm = document.querySelector('.filter-form');
+        if (sortSelect && filterForm) {
+            sortSelect.addEventListener('change', () => {
+                filterForm.submit();
+            });
+        }
+
+        // Live search filtering
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.trim().toLowerCase();
+                document.querySelectorAll('.product-card').forEach(card => {
+                    const title = (card.dataset.title || '').toLowerCase();
+                    const seller = (card.dataset.seller || '').toLowerCase();
+                    const isVisible = title.includes(query) || seller.includes(query);
+                    card.style.display = isVisible ? '' : 'none';
+                });
+            });
+        }
     </script>
 <?php include __DIR__ . '/partials/footer.php'; ?>
