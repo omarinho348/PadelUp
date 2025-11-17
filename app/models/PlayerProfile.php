@@ -13,19 +13,19 @@ class PlayerProfile
         return $row ?: null;
     }
 
-    public static function update(mysqli $conn, int $userId, array $fields): bool|string
+    public static function update(mysqli $conn, int $userId, array $data): bool|string
     {
-        $sql = "UPDATE player_profiles SET skill_level = ?, gender = ?, birth_date = ?, padel_iq_rating = ?, preferred_hand = ? WHERE player_id = ?";
+        $sql = "UPDATE player_profiles SET skill_level = ?, gender = ?, birth_date = ?, preferred_hand = ? WHERE player_id = ?";
         $stmt = $conn->prepare($sql);
         if(!$stmt){
-            return "Prepare failed";
+            return "Prepare failed: " . $conn->error;
         }
-        $skill = $fields['skill_level'];
-        $gender = $fields['gender'];
-        $birth = $fields['birth_date'];
-        $iq = (int)$fields['padel_iq_rating'];
-        $hand = $fields['preferred_hand'];
-        $stmt->bind_param("sssisi", $skill, $gender, $birth, $iq, $hand, $userId);
+        $stmt->bind_param("ssssi", 
+            $data['skill_level'], 
+            $data['gender'], 
+            $data['birth_date'], 
+            $data['preferred_hand'], 
+            $userId);
         $ok = $stmt->execute();
         if(!$ok){
             $err = $stmt->error;

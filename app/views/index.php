@@ -127,7 +127,10 @@
             <div class="video-overlay">
                 <h2>JOIN US NOW</h2>
                 <?php
-                $redirect_link = (isset($_SESSION['ID']) && isset($_SESSION['FullName'])) ? 'profile.php' : 'signup.php';
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                $redirect_link = (isset($_SESSION['user_id']) && isset($_SESSION['name'])) ? 'profile.php' : 'signup.php';
                 ?>
                 <a href="<?php echo $redirect_link; ?>" class="btn btn-primary" style="border-radius: 999px; padding: 16px 48px; font-size: 1.1rem;">
                     Get Started

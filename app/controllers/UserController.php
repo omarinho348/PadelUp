@@ -29,7 +29,7 @@ class UserController
             'email' => htmlspecialchars($_POST['email']),
             'password_hash' => password_hash($_POST['password'], PASSWORD_DEFAULT),
             'role' => 'player',
-            'phone' => null
+            'phone' => htmlspecialchars($_POST['phone'] ?? null)
         ];
         $profileData = [
             'skill_level' => htmlspecialchars($_POST['skill']),
@@ -101,26 +101,38 @@ class UserController
         }
         $message = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // For now allow updating only player profile basics if role player
+            $userId = (int)$_SESSION['user_id'];
+            $conn = $GLOBALS['conn'];
+            
+            // Data for 'users' table
+            $userData = [
+                'name' => htmlspecialchars($_POST['fullname'] ?? ''),
+                'phone' => htmlspecialchars($_POST['phone'] ?? '')
+            ];
+
+            // Data for 'player_profiles' table (if user is a player)
+            $profileData = null;
             if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
-                $fields = [
-                    'skill_level' => htmlspecialchars($_POST['skill_level'] ?? ''),
+                $profileData = [
+                    'skill_level' => htmlspecialchars($_POST['skill'] ?? 'beginner'),
                     'gender' => htmlspecialchars($_POST['gender'] ?? ''),
-                    'birth_date' => htmlspecialchars($_POST['birth_date'] ?? ''),
-                    'padel_iq_rating' => (int)($_POST['padel_iq_rating'] ?? 0),
-                    'preferred_hand' => htmlspecialchars($_POST['preferred_hand'] ?? '')
+                    'birth_date' => htmlspecialchars($_POST['dob'] ?? ''),
+                    'preferred_hand' => htmlspecialchars($_POST['hand'] ?? 'right')
                 ];
-                // Basic validation: ensure skill_level present
-                if (empty($fields['skill_level'])) {
-                    $message = '<div class="error-message">Skill level required.</div>';
-                } else {
-                    $result = PlayerProfile::update($GLOBALS['conn'], (int)$_SESSION['user_id'], $fields);
-                    if ($result === true) {
-                        $message = '<div class="success-message">Profile updated successfully!</div>';
-                    } else {
-                        $message = '<div class="error-message">Error updating profile: ' . htmlspecialchars((string)$result) . '</div>';
-                    }
+            }
+
+            $conn->begin_transaction();
+            try {
+                User::updateUser($conn, $userId, $userData);
+                if ($profileData) {
+                    PlayerProfile::update($conn, $userId, $profileData);
                 }
+                $conn->commit();
+                $message = '<div class="success-message">Profile updated successfully!</div>';
+                $_SESSION['name'] = $userData['name']; // Update session name immediately
+            } catch (Exception $e) {
+                $conn->rollback();
+                $message = '<div class="error-message">Error updating profile: ' . $e->getMessage() . '</div>';
             }
         }
         $user = self::getCurrentUser();
@@ -192,7 +204,8 @@ class UserController
     public static function getVenueAdmins(): array
     {
         self::requireSuperAdmin();
-        return User::listVenueAdmins($GLOBALS['conn']);
+        $searchTerm = trim($_GET['search'] ?? '');
+        return User::listVenueAdmins($GLOBALS['conn'], $searchTerm);
     }
 
     // Handle venue admin creation
@@ -237,6 +250,7 @@ class UserController
             }
             $venueAdminId = $res;
             $venueData = [
+                'venue_id' => $venueAdminId, // Use the new user's ID as the venue's ID
                 'venue_admin_id' => $venueAdminId,
                 'name' => htmlspecialchars($_POST['venue_name']),
                 'address' => htmlspecialchars($_POST['venue_address']),
@@ -269,6 +283,155 @@ class UserController
             return 'VENUE_ADMIN_DELETED';
         }
         return is_string($res) ? $res : 'Failed to delete venue admin.';
+    }
+
+    // Fetch coaches list (super admin only)
+    public static function getCoaches(): array
+    {
+        self::requireSuperAdmin();
+        $searchTerm = trim($_GET['search'] ?? '');
+        return User::listCoaches($GLOBALS['conn'], $searchTerm);
+    }
+
+    // Handle coach creation
+    public static function createCoach(): string
+    {
+        self::requireSuperAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['bio'])) { // Check for a coach-specific field
+            return '';
+        }
+        
+        $required = ['name','email','password','confirm_password','bio','hourly_rate','experience_years','location'];
+        foreach($required as $f){
+            if(empty($_POST[$f])){
+                return 'All required fields must be filled for coach creation.';
+            }
+        }
+
+        if($_POST['password'] !== $_POST['confirm_password']){
+            return 'Passwords do not match.';
+        }
+
+        $email = htmlspecialchars($_POST['email']);
+        if(User::findByEmail($GLOBALS['conn'], $email)){
+            return 'Email already in use.';
+        }
+
+        $userData = [
+            'name' => htmlspecialchars($_POST['name']),
+            'email' => $email,
+            'password_hash' => password_hash($_POST['password'], PASSWORD_DEFAULT),
+            'role' => 'coach',
+            'phone' => htmlspecialchars($_POST['phone'] ?? '')
+        ];
+
+        $conn = $GLOBALS['conn'];
+        $conn->begin_transaction();
+        try {
+            $newCoachId = User::createUser($conn, $userData);
+            if(!is_int($newCoachId)){
+                throw new Exception(is_string($newCoachId) ? $newCoachId : 'Failed to create coach user.');
+            }
+
+            $profileData = [
+                'coach_id' => $newCoachId,
+                'bio' => htmlspecialchars($_POST['bio']),
+                'hourly_rate' => (float)$_POST['hourly_rate'],
+                'experience_years' => (int)$_POST['experience_years'],
+                'location' => htmlspecialchars($_POST['location'])
+            ];
+
+            $profileRes = User::createCoachProfile($conn, $profileData);
+            if($profileRes !== true){
+                 throw new Exception(is_string($profileRes) ? $profileRes : 'Failed to create coach profile.');
+            }
+
+            $conn->commit();
+            return 'COACH_CREATED';
+        } catch (Throwable $e) {
+            $conn->rollback();
+            return $e->getMessage();
+        }
+    }
+
+    public static function deleteCoach(): string
+    {
+        self::requireSuperAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['delete_coach_id'])) {
+            return '';
+        }
+        $id = (int)$_POST['delete_coach_id'];
+        $res = User::deleteById($GLOBALS['conn'], $id);
+        return $res === true ? 'COACH_DELETED' : 'Failed to delete coach.';
+    }
+
+    // Fetch all players for the admin user management page
+    public static function getPlayers(): array
+    {
+        self::requireSuperAdmin();
+        $searchTerm = trim($_GET['search'] ?? '');
+        return User::listPlayers($GLOBALS['conn'], $searchTerm);
+    }
+
+    // Handle player deletion from the admin user management page
+    public static function deletePlayer(): string
+    {
+        self::requireSuperAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['delete_player_id'])) {
+            return '';
+        }
+
+        $id = (int)$_POST['delete_player_id'];
+        $res = User::deleteById($GLOBALS['conn'], $id);
+        return $res === true ? 'PLAYER_DELETED' : 'Failed to delete player.';
+    }
+
+    // Handle contacting a player from the admin user management page
+    public static function contactPlayer(): string
+    {
+        self::requireSuperAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !(isset($_POST['contact_player_id']) || isset($_POST['contact_coach_id']))) {
+            return '';
+        }
+
+        $recipientEmail = filter_var($_POST['recipient_email'] ?? '', FILTER_VALIDATE_EMAIL);
+        $subject = htmlspecialchars($_POST['subject']);
+        $message = htmlspecialchars($_POST['message']);
+
+        if (!$recipientEmail || empty($subject) || empty($message)) {
+            return 'Recipient, subject, and message are required.';
+        }
+
+        // --- EMAIL SENDING LOGIC WOULD GO HERE ---
+        // Example:
+        // $headers = 'From: no-reply@padelup.com' . "\r\n" . 'Reply-To: no-reply@padelup.com';
+        // mail($recipientEmail, $subject, $message, $headers);
+
+        return 'MESSAGE_SENT';
+    }
+
+    // Handle contacting a venue admin
+    public static function contactVenueAdmin(): string
+    {
+        self::requireSuperAdmin();
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['contact_admin_id'])) {
+            return '';
+        }
+
+        $recipientEmail = filter_var($_POST['recipient_email'] ?? '', FILTER_VALIDATE_EMAIL);
+        $subject = htmlspecialchars($_POST['subject']);
+        $message = htmlspecialchars($_POST['message']);
+
+        if (!$recipientEmail || empty($subject) || empty($message)) {
+            return 'Recipient, subject, and message are required.';
+        }
+
+        // --- EMAIL SENDING LOGIC WOULD GO HERE ---
+        // Example:
+        // $headers = 'From: no-reply@padelup.com' . "\r\n" . 'Reply-To: no-reply@padelup.com';
+        // mail($recipientEmail, $subject, $message, $headers);
+
+        return 'MESSAGE_SENT';
     }
 }
 ?>

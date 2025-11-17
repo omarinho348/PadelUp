@@ -1,6 +1,6 @@
 <?php 
 require_once __DIR__ . '/../controllers/UserController.php';
-[$message, $user] = UserController::editProfile();
+[$message, $user, $profile] = UserController::editProfile();
 ?>
 
 <!DOCTYPE html>
@@ -30,37 +30,44 @@ require_once __DIR__ . '/../controllers/UserController.php';
                     
                     <div class="form-group">
                         <label for="fullname">Full Name</label>
-                        <input type="text" id="fullname" name="fullname" value="<?php echo htmlspecialchars($user['FullName']); ?>" required>
+                        <input type="text" id="fullname" name="fullname" value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>" required>
                     </div>
                     
                     <div class="form-group">
                         <label for="email">Email (cannot be changed)</label>
-                        <input type="email" id="email" value="<?php echo htmlspecialchars($user['Email']); ?>" disabled>
+                        <input type="email" id="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>">
                     </div>
                 </div>
                 
+                <?php if ($profile): // Only show player details if the user is a player ?>
                 <div class="form-section">
                     <h3>Player Details</h3>
-                    
-                    <div class="form-group">
-                        <label for="height">Height (cm)</label>
-                        <input type="number" id="height" name="height" min="100" max="250" value="<?php echo htmlspecialchars($user['Height']); ?>" required>
+
+                    <div class="form-group two-columns">
+                        <div class="form-field">
+                            <label for="gender">Gender</label>
+                            <select name="gender" id="gender" required>
+                                <option value="male" <?php if($profile['gender'] == 'male') echo 'selected'; ?>>Male</option>
+                                <option value="female" <?php if($profile['gender'] == 'female') echo 'selected'; ?>>Female</option>
+                                <option value="other" <?php if($profile['gender'] == 'other') echo 'selected'; ?>>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="dob">Date of Birth</label>
+                            <input type="date" name="dob" id="dob" value="<?php echo htmlspecialchars($profile['birth_date'] ?? ''); ?>" required>
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="hand">Dominant Hand</label>
+                        <label for="hand">Preferred Hand</label>
                         <select id="hand" name="hand" required>
-                            <option value="right" <?php if($user['DominantHand'] == 'right') echo 'selected'; ?>>Right</option>
-                            <option value="left" <?php if($user['DominantHand'] == 'left') echo 'selected'; ?>>Left</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="position">Preferred Position</label>
-                        <select id="position" name="position" required>
-                            <option value="rightside" <?php if($user['PreferredPosition'] == 'rightside') echo 'selected'; ?>>Right Side</option>
-                            <option value="leftside" <?php if($user['PreferredPosition'] == 'leftside') echo 'selected'; ?>>Left Side</option>
-                            <option value="both" <?php if($user['PreferredPosition'] == 'both') echo 'selected'; ?>>Both</option>
+                            <option value="right" <?php if($profile['preferred_hand'] == 'right') echo 'selected'; ?>>Right</option>
+                            <option value="left" <?php if($profile['preferred_hand'] == 'left') echo 'selected'; ?>>Left</option>
                         </select>
                     </div>
                     
@@ -68,7 +75,7 @@ require_once __DIR__ . '/../controllers/UserController.php';
                         <label>Padel Level</label>
                         <div class="skill-selector">
                             <label class="skill-card">
-                                <input type="radio" name="skill" value="beginner" <?php if($user['SkillLevel'] == 'beginner') echo 'checked'; ?>>
+                                <input type="radio" name="skill" value="beginner" <?php if($profile['skill_level'] == 'beginner') echo 'checked'; ?>>
                                 <span class="skill-card-content">
                                     <span class="skill-icon">🎓</span>
                                     <strong>Beginner</strong>
@@ -76,7 +83,7 @@ require_once __DIR__ . '/../controllers/UserController.php';
                                 </span>
                             </label>
                             <label class="skill-card">
-                                <input type="radio" name="skill" value="intermediate" <?php if($user['SkillLevel'] == 'intermediate') echo 'checked'; ?>>
+                                <input type="radio" name="skill" value="intermediate" <?php if($profile['skill_level'] == 'intermediate') echo 'checked'; ?>>
                                 <span class="skill-card-content">
                                     <span class="skill-icon">🎾</span>
                                     <strong>Intermediate</strong>
@@ -84,7 +91,7 @@ require_once __DIR__ . '/../controllers/UserController.php';
                                 </span>
                             </label>
                             <label class="skill-card">
-                                <input type="radio" name="skill" value="advanced" <?php if($user['SkillLevel'] == 'advanced') echo 'checked'; ?>>
+                                <input type="radio" name="skill" value="advanced" <?php if($profile['skill_level'] == 'advanced') echo 'checked'; ?>>
                                 <span class="skill-card-content">
                                     <span class="skill-icon">🏆</span>
                                     <strong>Advanced</strong>
@@ -93,13 +100,8 @@ require_once __DIR__ . '/../controllers/UserController.php';
                             </label>
                         </div>
                     </div>
-                    
-                    <div class="form-group">
-                        <label for="location">Location</label>
-                        <input type="text" id="location" name="location" value="<?php echo htmlspecialchars($user['Location']); ?>" required>
-                    </div>
                 </div>
-                
+                <?php endif; ?>
                 <div class="form-buttons">
                     <button type="submit" class="btn profile-btn-accent">Save Changes</button>
                     <a href="profile.php" class="btn">Cancel</a>

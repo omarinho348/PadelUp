@@ -1,7 +1,12 @@
 <?php
-if (!isset($venueAdmins)) { $venueAdmins = []; }
-if (!isset($creationMessage)) { $creationMessage = ''; }
-if (!isset($deleteMessage)) { $deleteMessage = ''; }
+require_once __DIR__ . '/../controllers/UserController.php';
+UserController::requireSuperAdmin();
+
+// Process messages passed from admin.php and fetch fresh data
+$creationMessage = $_POST['creationMessage'] ?? '';
+$deleteMessage = $_POST['deleteMessage'] ?? '';
+$contactMessage = $_POST['contactMessage'] ?? '';
+$venueAdmins = UserController::getVenueAdmins(); // Now handles search
 ?>
 
 
@@ -15,7 +20,7 @@ if (!isset($deleteMessage)) { $deleteMessage = ''; }
   <link rel="stylesheet" href="../../public/styling/admin.css" />
 </head>
 <body>
-<?php include __DIR__ . '/partials/navbar.php'; ?>
+<?php include __DIR__ . '/partials/admin_navbar.php'; ?>
 <div class="container admin-container">
   <div class="admin-header">
     <h1>Venue Admins</h1>
@@ -41,6 +46,19 @@ if (!isset($deleteMessage)) { $deleteMessage = ''; }
       Venue admin created successfully.
     </div>
   <?php endif; ?>
+
+  <?php if($contactMessage && $contactMessage !== 'MESSAGE_SENT'): ?>
+    <div style="background:#f8d7da;color:#721c24;padding:10px;border-radius:8px;margin-bottom:16px;"><?php echo htmlspecialchars($contactMessage); ?></div>
+  <?php elseif($contactMessage === 'MESSAGE_SENT'): ?>
+    <div style="background:#d4edda;color:#155724;padding:10px;border-radius:8px;margin-bottom:16px;">Message sent successfully.</div>
+  <?php endif; ?>
+
+  <div class="admin-toolbar">
+      <form method="GET" action="VenueAdmins.php" class="admin-search-form">
+          <input type="search" name="search" placeholder="Search admins by name..." class="admin-search" value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+          <button type="submit" class="btn btn-primary" style="padding: 10px 16px; border-radius: 8px;">Search</button>
+      </form>
+  </div>
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
     <h2 style="margin:0;">Existing Venue Admins</h2>
@@ -71,7 +89,13 @@ if (!isset($deleteMessage)) { $deleteMessage = ''; }
               <td><?php echo htmlspecialchars($admin['phone'] ?? ''); ?></td>
               <td><?php echo htmlspecialchars($admin['created_at']); ?></td>
               <td>
-                <form method="POST" onsubmit="return confirm('Delete this venue admin and all their venues?');" style="display:inline;">
+                <button class="btn-action contact contact-admin-btn"
+                        data-admin-id="<?php echo (int)$admin['user_id']; ?>"
+                        data-admin-email="<?php echo htmlspecialchars($admin['email']); ?>"
+                        data-admin-name="<?php echo htmlspecialchars($admin['name']); ?>">
+                    Contact
+                </button>
+                <form method="POST" action="admin.php" onsubmit="return confirm('Delete this venue admin and all their venues?');" style="display:inline;">
                   <input type="hidden" name="delete_admin_id" value="<?php echo (int)$admin['user_id']; ?>" />
                   <button type="submit" style="background:#dc3545;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-size:12px;">Delete</button>
                 </form>
@@ -86,13 +110,42 @@ if (!isset($deleteMessage)) { $deleteMessage = ''; }
   </div>
 </div>
 
+<!-- Modal for Contacting an Admin -->
+<div id="contactModal" class="modal-overlay" style="display:none;">
+  <div class="modal-content" style="max-width: 550px;">
+    <button id="closeContactModal" class="modal-close-btn">✕</button>
+    <h2 style="margin:0 0 4px;font-size:26px;">Contact Venue Admin</h2>
+    <p id="contactModalSub" style="margin:0 0 18px;font-size:14px;color:#555;">Your message will be sent to the admin's email.</p>    
+    <form method="POST" action="admin.php" id="contactForm" class="auth-form" style="display:grid;gap:14px; max-width: 100%;">
+      <input type="hidden" name="contact_admin_id" id="contact_admin_id_input">
+      
+      <div class="form-group">
+        <label for="recipient_email">Recipient</label>
+        <input type="email" id="recipient_email_input" name="recipient_email" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+      </div>
+
+      <div class="form-group">
+        <label for="message_subject">Subject</label>
+        <input type="text" id="message_subject_input" name="subject" value="A message from PadelUp Admin" required>
+      </div>
+
+      <div class="form-group">
+        <label for="message_body">Message</label>
+        <textarea id="message_body_input" name="message" rows="6" required placeholder="Write your message here..."></textarea>
+      </div>
+
+      <button type="submit" class="btn-primary" style="margin-top:4px; justify-self: flex-end;">Send Message</button>
+    </form>
+  </div>
+</div>
+
 <!-- Modal Overlay -->
 <div id="adminModal" style="position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;z-index:2000;">
   <div style="width:480px;max-width:92%;background:#fff;border-radius:18px;padding:28px;box-shadow:0 20px 40px rgba(0,0,0,0.25);position:relative;">
     <button id="closeAdminModal" style="position:absolute;top:12px;right:12px;background:transparent;border:none;font-size:20px;cursor:pointer;color:#444;">✕</button>
     <h2 style="margin:0 0 4px;font-size:26px;">New Venue Admin</h2>
-    <p style="margin:0 0 18px;font-size:14px;color:#555;">Create a venue admin and their initial venue.</p>
-    <form method="POST" id="venueAdminForm" class="auth-form" style="display:grid;gap:14px;">
+    <p style="margin:0 0 18px;font-size:14px;color:#555;">Create a venue admin and their initial venue.</p>    
+    <form method="POST" action="admin.php" id="venueAdminForm" class="auth-form" style="display:grid;gap:14px;">
       <div>
         <h3 style="margin:0 0 8px;font-size:16px;">Admin Info</h3>
         <input type="text" name="name" placeholder="Full Name" required />
@@ -138,6 +191,23 @@ if (!isset($deleteMessage)) { $deleteMessage = ''; }
    closeBtn.addEventListener('click', close);
    modal.addEventListener('click', e=>{ if(e.target===modal) close(); });
    document.addEventListener('keydown', e=>{ if(e.key==='Escape' && modal.style.display==='flex') close(); });
+
+   // Contact Modal JS
+   const contactModal = document.getElementById('contactModal');
+   const closeContactBtn = document.getElementById('closeContactModal');
+   document.querySelectorAll('.contact-admin-btn').forEach(btn => {
+     btn.addEventListener('click', function() {
+       document.getElementById('contact_admin_id_input').value = this.dataset.adminId;
+       document.getElementById('recipient_email_input').value = this.dataset.adminEmail;
+       document.getElementById('contactModalSub').innerText = `Your message will be sent to ${this.dataset.adminName}.`;
+       contactModal.style.display = 'flex';
+     });
+   });
+   function closeContact(){ contactModal.style.display='none'; }
+   closeContactBtn.addEventListener('click', closeContact);
+   contactModal.addEventListener('click', e => { if(e.target === contactModal) closeContact(); });
+   document.addEventListener('keydown', e => { if(e.key === 'Escape' && contactModal.style.display === 'flex') closeContact(); });
+
  })();
 </script>
 <?php include __DIR__ . '/partials/footer.php'; ?>

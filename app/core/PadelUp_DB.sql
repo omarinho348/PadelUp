@@ -65,7 +65,7 @@ CREATE TABLE `coach_profiles` (
 
 -- Venues (owned/managed by venue_admin) 
 CREATE TABLE `venues` (
-  `venue_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `venue_id` INT PRIMARY KEY,
   `venue_admin_id` INT NOT NULL,
   `name` VARCHAR(150) NOT NULL,
   `address` VARCHAR(200) NOT NULL,

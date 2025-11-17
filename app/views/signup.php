@@ -32,6 +32,9 @@ $error = UserController::register();
                         <div class="form-group">
                             <input type="email" name="email" id="email" placeholder="Email@example.com" required>
                         </div>
+                        <div class="form-group">
+                            <input type="tel" name="phone" id="phone" placeholder="Phone Number (Optional)">
+                        </div>
                         <div class="form-group two-columns">
                             <div class="form-field">
                                 <label for="gender">Gender</label>
@@ -84,7 +87,6 @@ $error = UserController::register();
                                 </label>
                             </div>
                         </div>
-                        <!-- Removed legacy location/position/height fields per new schema -->
                         <div class="form-group">
                             <input type="password" name="password" id="password" placeholder="Password" required>
                         </div>
@@ -100,8 +102,6 @@ $error = UserController::register();
             </div>
         </div>
     </div>
-
-<?php // Logic handled by UserController::register() ?>
 
 </body>
 </html>

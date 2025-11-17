@@ -76,19 +76,37 @@ class User
         }
     }
 
-    // List all venue admins (minimal columns)
-    public static function listVenueAdmins(mysqli $conn): array
+    // Update base user info
+    public static function updateUser(mysqli $conn, int $userId, array $data): bool
     {
-        $sql = "SELECT user_id,name,email,phone,created_at FROM users WHERE role='venue_admin' ORDER BY created_at DESC";
-        $res = $conn->query($sql);
-        if(!$res){
-            return [];
+        $sql = "UPDATE users SET name = ?, phone = ? WHERE user_id = ?";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            throw new Exception("Prepare updateUser failed: " . $conn->error);
         }
-        $rows = [];
-        while($r = $res->fetch_assoc()){
-            $rows[] = $r;
+        $stmt->bind_param("ssi", $data['name'], $data['phone'], $userId);
+        return $stmt->execute();
+    }
+
+    // List all venue admins (minimal columns)
+    public static function listVenueAdmins(mysqli $conn, string $searchTerm = ''): array
+    {
+        $sql = "SELECT user_id,name,email,phone,created_at FROM users WHERE role='venue_admin'";
+        
+        if (!empty($searchTerm)) {
+            $sql .= " AND name LIKE ?";
         }
-        return $rows;
+        
+        $sql .= " ORDER BY created_at DESC";
+        $stmt = $conn->prepare($sql);
+        if (!empty($searchTerm)) {
+            $likeTerm = "%" . $searchTerm . "%";
+            $stmt->bind_param('s', $likeTerm);
+        }
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 
     // Create a venue admin user (no related profile)
@@ -175,5 +193,88 @@ class User
         $del->close();
         return true;
     }
+
+    public static function listCoaches($conn, string $searchTerm = '') {
+        $sql = "SELECT u.*, cp.* FROM users u JOIN coach_profiles cp ON u.user_id = cp.coach_id WHERE u.role = 'coach'";
+
+        if (!empty($searchTerm)) {
+            $sql .= " AND u.name LIKE ?";
+        }
+
+        $sql .= " ORDER BY u.created_at DESC";
+        $stmt = $conn->prepare($sql);
+        if (!empty($searchTerm)) {
+            $likeTerm = "%" . $searchTerm . "%";
+            $stmt->bind_param('s', $likeTerm);
+        }
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
+    public static function createUser($conn, $data) {
+        $sql = "INSERT INTO users (name, email, password_hash, role, phone) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            return "DB Prepare Error: " . $conn->error;
+        }
+        $stmt->bind_param("sssss", $data['name'], $data['email'], $data['password_hash'], $data['role'], $data['phone']);
+        if ($stmt->execute()) {
+            return $conn->insert_id;
+        }
+        return "DB Execute Error: " . $stmt->error;
+    }
+
+    public static function createCoachProfile($conn, $data) {
+        $sql = "INSERT INTO coach_profiles (coach_id, bio, hourly_rate, experience_years, location) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            return "DB Prepare Error: " . $conn->error;
+        }
+        $stmt->bind_param("isdis", $data['coach_id'], $data['bio'], $data['hourly_rate'], $data['experience_years'], $data['location']);
+        if ($stmt->execute()) {
+            return true;
+        }
+        return "DB Execute Error: " . $stmt->error;
+    }
+
+    public static function deleteById($conn, $id) {
+        $sql = "DELETE FROM users WHERE user_id = ?";
+        $stmt = $conn->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+        $stmt->bind_param("i", $id);
+        return $stmt->execute();
+    }
+
+    public static function listPlayers(mysqli $conn, string $searchTerm = ''): array
+    {
+        $sql = "SELECT u.user_id, u.name, u.email, u.created_at, pp.skill_level, pp.gender, pp.birth_date, pp.preferred_hand 
+                FROM users u 
+                LEFT JOIN player_profiles pp ON u.user_id = pp.player_id 
+                WHERE u.role = 'player'";
+        
+        if (!empty($searchTerm)) {
+            $sql .= " AND u.name LIKE ?";
+        }
+
+        $sql .= " ORDER BY u.created_at DESC";
+
+        $stmt = $conn->prepare($sql);
+
+        if (!empty($searchTerm)) {
+            $likeTerm = "%" . $searchTerm . "%";
+            $stmt->bind_param('s', $likeTerm);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+
+        return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    }
+
 }
 ?>

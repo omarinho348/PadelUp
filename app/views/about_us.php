@@ -43,7 +43,10 @@
         <h2>Ready to Join Us?</h2>
         <p>Whether you're looking for your next match, a new racket, or a court to play on, we've got you covered. Become a part of the PadelUp community today.</p>
         <?php
-        $redirect_link = (isset($_SESSION['ID']) && isset($_SESSION['FullName'])) ? 'profile.php' : 'signup.php';
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        $redirect_link = (isset($_SESSION['user_id']) && isset($_SESSION['name'])) ? 'profile.php' : 'signup.php';
         ?>
         <a href="<?php echo $redirect_link; ?>" class="btn btn-primary">Get Started</a>
     </section>
