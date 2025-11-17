@@ -1,0 +1,360 @@
+/* -----------------------------------------------------
+   VENUE ADMIN DASHBOARD STYLES
+   Match project's clean green theme
+   ----------------------------------------------------- */
+
+.venue-admin {
+    padding: 20px 0 60px;
+}
+
+.venue-admin .va-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(5,52,40,0.08);
+}
+
+.venue-admin .va-header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.venue-admin .va-header p {
+    margin: 8px 0 0;
+    font-size: 1.1rem;
+    color: var(--muted);
+}
+
+.venue-admin .venue-switcher {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.venue-admin .venue-switcher label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.venue-admin .venue-switcher select {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid rgba(5,52,40,0.12);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    cursor: pointer;
+}
+
+/* Grid layout */
+.venue-admin .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    align-items: start;
+}
+
+.venue-admin .card {
+    background: var(--card);
+    border: 1px solid rgba(5,52,40,0.08);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(5,52,40,0.04);
+}
+
+.venue-admin .card h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 20px;
+}
+
+.venue-admin .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.venue-admin .card-head h2 {
+    margin: 0;
+}
+
+/* Form styling */
+.venue-admin .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.venue-admin .form-grid .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.venue-admin .form-grid .field label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.venue-admin .form-grid .actions {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.venue-admin input,
+.venue-admin select {
+    background: var(--bg);
+    color: var(--text);
+    border: 2px solid rgba(5,52,40,0.12);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 0.95rem;
+    font-family: var(--ff);
+    transition: border-color 0.2s ease;
+}
+
+.venue-admin input:focus,
+.venue-admin select:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.venue-admin input[disabled] {
+    background: rgba(5,52,40,0.03);
+    color: var(--muted);
+    cursor: not-allowed;
+}
+
+.venue-admin .btn {
+    background: var(--bg);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 8px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.venue-admin .btn:hover {
+    background: var(--accent);
+    color: white;
+}
+
+.venue-admin .btn-primary {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 18px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.venue-admin .btn-primary:hover {
+    background: #0e6039;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(17,122,77,0.2);
+}
+
+/* Table styling */
+.venue-admin .table-wrap {
+    overflow: auto;
+    border: 1px solid rgba(5,52,40,0.08);
+    border-radius: 12px;
+}
+
+.venue-admin .table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.venue-admin .table th,
+.venue-admin .table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(5,52,40,0.08);
+    text-align: left;
+}
+
+.venue-admin .table th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--bg);
+}
+
+.venue-admin .table tbody tr:hover {
+    background: var(--bg);
+}
+
+.venue-admin .table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.venue-admin .row-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.venue-admin .row-actions .action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border: 1px solid var(--accent);
+    background: var(--bg);
+    color: var(--accent);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    margin: 0;
+    text-align: center;
+}
+
+.venue-admin .row-actions .action-btn:hover {
+    background: var(--accent);
+    color: #fff;
+}
+
+.venue-admin .row-actions .action-btn.danger {
+    border-color: #c62828;
+    color: #c62828;
+}
+
+.venue-admin .row-actions .action-btn.danger:hover {
+    background: #c62828;
+    color: #fff;
+}
+
+.venue-admin .row-actions .action-btn.edit {
+    border-color: #e65100;
+    color: #e65100;
+}
+
+.venue-admin .row-actions .action-btn.edit:hover {
+    background: #e65100;
+    color: #fff;
+}
+
+.venue-admin .link {
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+}
+
+.venue-admin .link:hover {
+    opacity: 0.7;
+}
+
+.venue-admin .link.danger {
+    color: #c62828;
+}
+
+.venue-admin .link.edit {
+    color: #e65100;
+}
+
+.venue-admin .muted {
+    color: var(--muted);
+    text-align: center;
+    padding: 20px;
+}
+
+/* Alert messages */
+.venue-admin .alert {
+    padding: 14px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+.venue-admin .alert-error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef9a9a;
+}
+
+.venue-admin .alert-success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #a5d6a7;
+}
+
+/* Modal styling (not scoped so modals work globally) */
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5,52,40,0.3);
+    backdrop-filter: blur(4px);
+    z-index: 3000;
+}
+
+.modal-dialog {
+    width: 500px;
+    max-width: 92%;
+    background: var(--card);
+    border: 1px solid rgba(5,52,40,0.08);
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 12px 32px rgba(5,52,40,0.15);
+}
+
+.modal-dialog h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0 0 20px;
+}
+
+.modal-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+    color: var(--text);
+}
+
+/* Span full width */
+.venue-admin .span-2 {
+    grid-column: 1 / -1;
+}

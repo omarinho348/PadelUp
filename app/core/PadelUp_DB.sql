@@ -65,17 +65,46 @@ CREATE TABLE `coach_profiles` (
 
 -- Venues (owned/managed by venue_admin) 
 CREATE TABLE `venues` (
-  `venue_id` INT PRIMARY KEY,
+  `venue_id` INT AUTO_INCREMENT PRIMARY KEY,
   `venue_admin_id` INT NOT NULL,
   `name` VARCHAR(150) NOT NULL,
   `address` VARCHAR(200) NOT NULL,
   `city` VARCHAR(100) NOT NULL,
   `opening_time` TIME NULL,
   `closing_time` TIME NULL,
-  `hourly_rate` INT NOT NULL DEFAULT 0, -- NEW hourly rate (integer) for court booking pricing
+  `hourly_rate` INT NOT NULL DEFAULT 0,
+  `logo_path` VARCHAR(255) NULL,
   CONSTRAINT `fk_venue_admin` FOREIGN KEY (`venue_admin_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   KEY `idx_city` (`city`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `courts` (
+  `court_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `venue_id` INT NOT NULL,
+  `court_name` VARCHAR(100) NOT NULL,
+  `court_type` ENUM('indoor','outdoor','covered') DEFAULT 'outdoor',
+  `is_active` BOOLEAN NOT NULL DEFAULT 1,
+  CONSTRAINT `fk_courts_venue` FOREIGN KEY (`venue_id`)
+      REFERENCES `venues`(`venue_id`)
+      ON DELETE CASCADE
+      ON UPDATE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+
+CREATE TABLE `bookings` (
+  `booking_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `court_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `booking_date` DATE NOT NULL,
+  `start_time` TIME NOT NULL,
+  `end_time` TIME NOT NULL,
+  `total_price` DECIMAL(10,2) NOT NULL,
+  `status` ENUM('pending','confirmed','cancelled') DEFAULT 'confirmed',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_booking_court` FOREIGN KEY (`court_id`) REFERENCES `courts`(`court_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_booking_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
+ ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 -- Migration (run separately if table already exists):
 -- ALTER TABLE venues ADD COLUMN `hourly_rate` INT NOT NULL DEFAULT 0 AFTER `closing_time`;

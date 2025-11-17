@@ -71,6 +71,8 @@ class UserController
         // Redirect based on role
         if ($row['role'] === 'super_admin') {
             header('Location: admin.php');
+        } elseif ($row['role'] === 'venue_admin') {
+            header('Location: ../controllers/VenueAdminDashboardController.php');
         } else {
             header('Location: index.php');
         }
@@ -200,6 +202,18 @@ class UserController
         }
     }
 
+    public static function requireVenueAdmin(): void
+    {
+        if (!isset($_SESSION['user_id'])) {
+            header('Location: ../views/signin.php');
+            exit();
+        }
+        if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'venue_admin') {
+            header('Location: ../views/index.php');
+            exit();
+        }
+    }
+
     // Fetch venue admins list (super admin only)
     public static function getVenueAdmins(): array
     {
@@ -249,16 +263,17 @@ class UserController
                 throw new Exception(is_string($res) ? $res : 'Failed to create venue admin.');
             }
             $venueAdminId = $res;
-            $venueData = [
-                'venue_id' => $venueAdminId, // Use the new user's ID as the venue's ID
-                'venue_admin_id' => $venueAdminId,
-                'name' => htmlspecialchars($_POST['venue_name']),
-                'address' => htmlspecialchars($_POST['venue_address']),
-                'city' => htmlspecialchars($_POST['venue_city']),
-                'opening_time' => htmlspecialchars($_POST['opening_time']),
-                'closing_time' => htmlspecialchars($_POST['closing_time']),
-                'hourly_rate' => $hourlyRate
-            ];
+                $venueData = [
+                    'venue_id' => $venueAdminId, // Use the new user's ID as the venue's ID
+                    'venue_admin_id' => $venueAdminId,
+                    'name' => htmlspecialchars($_POST['venue_name']),
+                    'address' => htmlspecialchars($_POST['venue_address']),
+                    'city' => htmlspecialchars($_POST['venue_city']),
+                    'opening_time' => htmlspecialchars($_POST['opening_time']),
+                    'closing_time' => htmlspecialchars($_POST['closing_time']),
+                    'hourly_rate' => $hourlyRate,
+                    'logo_path' => 'public/Photos/VenueLogos/default.jpg'
+                ];
             $vRes = Venue::create($conn, $venueData);
             if($vRes !== true){
                 throw new Exception(is_string($vRes) ? $vRes : 'Failed to create venue.');
