@@ -1,68 +1,97 @@
 // reservation.js
-// Creates time slots for two courts and implements selection logic.
+// Creates time slots and implements selection logic.
 
 const slotsGrid = document.getElementById('slotsGrid');
+const courtsHeader = document.getElementById('courtsHeader');
 const summary = document.getElementById('selectionInfo');
 const confirmBtn = document.getElementById('confirm');
 const dateStrip = document.getElementById('dateStrip');
 
-// venue header elements (may not be present if user didn't add params)
+// venue header elements
 const venueImgEl = document.getElementById('venueImg');
 const venueNameEl = document.getElementById('venueName');
 const venueAddressEl = document.getElementById('venueAddress');
 const backBtn = document.getElementById('back');
 
 // date state
-let dates = []; // array of Date objects shown in the strip
-let selectedDate = null; // Date object
+// Removed debug logs and unused header parameter code
+let dates = [];
+let selectedDate = null;
 
-// configuration
-const startHour = 10; // 10:00 AM
-const endHour = 18; // 6:00 PM
-const intervalMinutes = 30;
-const courts = ['A','B'];
+// slot configuration - interval (minutes)
+const intervalMinutes = 60; // 1-hour slots as requested
+let openMinutes = 9 * 60;  // default 09:00
+let closeMinutes = 22 * 60; // default 22:00
+let courts = [];
+let booked = {}; // { '<court_id>': ['HH:MM', ...] }
 
-// Booked slots (will be replaced per-date). Shape: { 'A': ['10:00', ...], 'B': [...] }
-let booked = { 'A': [], 'B': [] };
-
-// State for selections: { court: 'A', start: '13:00', end: '13:30' }
-let state = { court: null, startIndex: null, endIndex: null };
+// Selection state: { courtId, startIndex, endIndex }
+let state = { courtId: null, startIndex: null, endIndex: null };
 
 function timeToLabel(h,m){
   const am = h < 12;
   const displayHour = ((h+11)%12)+1;
   const mm = m.toString().padStart(2,'0');
-  return `${displayHour}:${mm} ${am? 'AM' : 'PM'}`;
+  return `${displayHour}:${mm} ${am? 'AM' : 'PM'}`; // 12-hour format with AM/PM
 }
 
 function buildSlots(){
-  // clear existing
   slotsGrid.innerHTML = '';
-
-  const times = [];
-  for(let h=startHour; h<endHour; h++){
-    times.push([h,0]);
-    times.push([h,30]);
+  if(courts.length === 0) {
+    return;
   }
+  // Generate full day (24h) time slots
+  const times = [];
+  for(let t = 0; t < 24*60; t += intervalMinutes){
+    const h = Math.floor(t/60);
+    const m = t % 60;
+    times.push([h, m]);
+  }
+  
+  // Set grid columns
+  const cols = courts.length;
+  if(courtsHeader) courtsHeader.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  if(slotsGrid) slotsGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
-  // create columns for each court, but interleave so grid shows two columns
-  times.forEach((t,idx)=>{
-    courts.forEach((court)=>{
+  // helper to check if a minute-of-day is within open range (supports overnight)
+  const isWithinOpenRange = (tMin) => {
+    if (Number.isFinite(openMinutes) && Number.isFinite(closeMinutes)){
+      if (closeMinutes > openMinutes) {
+        // normal same-day close
+        return tMin >= openMinutes && tMin < closeMinutes;
+      } else if (closeMinutes < openMinutes) {
+        // crosses midnight: open from openMinutes..1440 and 0..closeMinutes
+        return (tMin >= openMinutes) || (tMin < closeMinutes);
+      } else {
+        // equal times: treat as closed (or 24h open if needed)
+        return false;
+      }
+    }
+    return false;
+  };
+
+  // Create slot buttons
+  times.forEach((t, idx) => {
+    courts.forEach((court) => {
       const key = `${t[0].toString().padStart(2,'0')}:${t[1].toString().padStart(2,'0')}`;
       const el = document.createElement('button');
       el.className = 'slot';
-      el.dataset.court = court;
+      el.dataset.courtId = String(court.court_id);
       el.dataset.index = idx;
       el.dataset.time = key;
-      el.innerText = timeToLabel(t[0],t[1]);
+      el.innerText = timeToLabel(t[0], t[1]);
 
-      // mark booked
-      if(booked[court] && booked[court].includes(key)){
+      const bookedForCourt = booked[String(court.court_id)] || [];
+      const tMinutes = t[0]*60 + t[1];
+      const isClosed = !isWithinOpenRange(tMinutes);
+      if(isClosed){
+        el.classList.add('closed');
+        el.setAttribute('aria-disabled','true');
+      } else if(bookedForCourt.includes(key)){
         el.classList.add('booked');
         el.setAttribute('aria-disabled','true');
       } else {
         el.classList.add('available');
-        // If selectedDate is in the past, disable click
         if(selectedDate && isDateInPast(selectedDate)){
           el.classList.add('disabled');
           el.setAttribute('aria-disabled','true');
@@ -74,6 +103,7 @@ function buildSlots(){
       slotsGrid.appendChild(el);
     });
   });
+
 }
 
 function isDateInPast(d){
@@ -86,13 +116,13 @@ function isDateInPast(d){
 
 function slotClicked(e){
   const el = e.currentTarget;
-  const court = el.dataset.court;
+  const courtId = el.dataset.courtId;
   const idx = Number(el.dataset.index);
 
   // if no court selected yet, start new selection
-  if(state.court === null || state.court !== court){
+  if(state.courtId === null || state.courtId !== courtId){
     // start new selection in this court
-    state.court = court;
+    state.courtId = courtId;
     state.startIndex = idx;
     state.endIndex = idx+1; // end is exclusive index: start->start+1 means 30min
   } else {
@@ -109,27 +139,27 @@ function slotClicked(e){
   }
 
   // check for booked conflict between startIndex..endIndex-1 for this court
-  const conflict = hasBookedBetween(state.court, state.startIndex, state.endIndex);
+  const conflict = hasBookedBetween(state.courtId, state.startIndex, state.endIndex);
   if(conflict){
     // if conflict, reset selection to only clicked slot (if it's not booked)
     state.startIndex = idx;
     state.endIndex = idx+1;
-    if(hasBookedBetween(state.court, state.startIndex, state.endIndex)){
+    if(hasBookedBetween(state.courtId, state.startIndex, state.endIndex)){
       // can't select
-      state = { court: null, startIndex: null, endIndex: null };
+      state = { courtId: null, startIndex: null, endIndex: null };
     }
   }
 
   renderSelection();
 }
 
-function hasBookedBetween(court, startIdx, endIdx){
+function hasBookedBetween(courtId, startIdx, endIdx){
   // iterate elements with matching dataset.court and index in range
-  const nodes = Array.from(slotsGrid.children).filter(n=>n.dataset.court===court);
+  const nodes = Array.from(slotsGrid.children).filter(n=>n.dataset.courtId===String(courtId));
   for(let i=startIdx;i<endIdx;i++){
     const node = nodes[i];
     if(!node) continue;
-    if(node.classList.contains('booked')) return true;
+    if(node.classList.contains('booked') || node.classList.contains('closed')) return true;
   }
   return false;
 }
@@ -140,13 +170,13 @@ function renderSelection(){
     n.classList.remove('selected','in-range');
   });
 
-  if(!state.court){
+  if(!state.courtId){
     summary.innerText = 'No selection';
     confirmBtn.disabled = true;
     return;
   }
 
-  const nodes = Array.from(slotsGrid.children).filter(n=>n.dataset.court===state.court);
+  const nodes = Array.from(slotsGrid.children).filter(n=>n.dataset.courtId===String(state.courtId));
   for(let i=0;i<nodes.length;i++){
     if(i>=state.startIndex && i<state.endIndex){
       // mark first slot as selected, rest as in-range
@@ -169,33 +199,70 @@ function renderSelection(){
   const [h,m] = endNode.dataset.time.split(':').map(Number);
   const endDate = new Date(0,0,0,h,m);
   endDate.setMinutes(endDate.getMinutes()+intervalMinutes);
-  const endLabel = `${((endDate.getHours()+11)%12)+1}:${endDate.getMinutes().toString().padStart(2,'0')} ${endDate.getHours()<12? 'AM' : 'PM'}`;
+  const endLabel = timeToLabel(endDate.getHours(), endDate.getMinutes()); // 12-hour format with AM/PM
 
-  summary.innerText = `Court ${state.court} — ${startLabel} to ${endLabel}`;
+  const cName = getCourtNameById(state.courtId);
+  summary.innerText = `${cName} — ${startLabel} to ${endLabel}`;
   confirmBtn.disabled = false;
 }
 
-confirmBtn.addEventListener('click', ()=>{
-  if(!state.court) return;
-  // Show modal with confirmation text
-  const modal = document.getElementById('confirmModal');
-  const modalText = document.getElementById('modalText');
-
-  // compute booking start and end times for message
-  const nodes = Array.from(slotsGrid.children).filter(n=>n.dataset.court===state.court);
-  const startNode = nodes[state.startIndex];
-  const endNode = nodes[state.endIndex-1];
-  let startLabel = startNode ? startNode.innerText : '';
-  let endLabel = '';
-  if(endNode){
-    const [h,m] = endNode.dataset.time.split(':').map(Number);
-    const endDate = new Date(0,0,0,h,m);
+confirmBtn.addEventListener('click', async ()=>{
+  if(!state.courtId || !selectedDate) return;
+  confirmBtn.disabled = true;
+  try{
+    const nodes = Array.from(slotsGrid.children).filter(n=>n.dataset.courtId===String(state.courtId));
+    const startNode = nodes[state.startIndex];
+    const endNode = nodes[state.endIndex-1];
+    if(!startNode || !endNode) return;
+    const startTime = startNode.dataset.time; // HH:MM
+    const [eh,em] = endNode.dataset.time.split(':').map(Number);
+    const endDate = new Date(0,0,0,eh,em);
     endDate.setMinutes(endDate.getMinutes()+intervalMinutes);
-    endLabel = `${((endDate.getHours()+11)%12)+1}:${endDate.getMinutes().toString().padStart(2,'0')} ${endDate.getHours()<12? 'AM' : 'PM'}`;
-  }
+    const endTime = `${endDate.getHours().toString().padStart(2,'0')}:${endDate.getMinutes().toString().padStart(2,'0')}`;
 
-  modalText.innerText = `Court ${state.court} reserved from ${startLabel} to ${endLabel}`;
-  modal.setAttribute('aria-hidden','false');
+    const iso = selectedDate.toISOString().slice(0,10);
+    const res = await fetch('/PadelUp/public/api/bookings.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        venue_id: (window.venueConfig && window.venueConfig.id) ? Number(window.venueConfig.id) : 0,
+        court_id: Number(state.courtId),
+        date: iso,
+        start_time: startTime,
+        end_time: endTime
+      })
+    });
+    if(!res.ok){
+      const err = await res.json().catch(()=>({error:'Unknown error'}));
+      alert(err.error || 'Failed to create booking');
+      confirmBtn.disabled = false;
+      return;
+    }
+
+    // Read result to get total_price
+    const result = await res.json().catch(()=>({}));
+    const price = typeof result.total_price !== 'undefined' ? Number(result.total_price) : null;
+
+    // Show modal with confirmation text (include price if available)
+    const modal = document.getElementById('confirmModal');
+    const modalText = document.getElementById('modalText');
+    const rangeText = `${getCourtNameById(state.courtId)} reserved from ${startNode.innerText} to ${timeToLabel(endDate.getHours(), endDate.getMinutes())}`;
+    modalText.innerText = price != null && !Number.isNaN(price)
+      ? `${rangeText}. Total: ${price.toFixed(2)}`
+      : rangeText;
+    modal.setAttribute('aria-hidden','false');
+
+    // After booking, reload booked slots for this date
+    await loadBookingsForDate(selectedDate);
+    // Reset selection and refresh grid so booked slots go red
+    state = { courtId: null, startIndex: null, endIndex: null };
+    renderSelection();
+    buildSlots();
+  }catch(e){
+    alert('Failed to create booking');
+  } finally {
+    confirmBtn.disabled = false;
+  }
 });
 
 // modal close handler: mark slots as booked
@@ -204,33 +271,25 @@ document.getElementById('modalClose').addEventListener('click', ()=>{
   modal.setAttribute('aria-hidden','true');
 
   // Mark the selected slots in `booked` so they become red and disabled
-  if(state.court && state.startIndex!=null && state.endIndex!=null){
+  if(state.courtId && state.startIndex!=null && state.endIndex!=null){
     // ensure array exists
-    if(!booked[state.court]) booked[state.court]=[];
-    const nodes = Array.from(slotsGrid.children).filter(n=>n.dataset.court===state.court);
+    if(!booked[String(state.courtId)]) booked[String(state.courtId)]=[];
+    const nodes = Array.from(slotsGrid.children).filter(n=>n.dataset.courtId===String(state.courtId));
     for(let i=state.startIndex;i<state.endIndex;i++){
       const node = nodes[i];
       if(!node) continue;
       const t = node.dataset.time;
-      if(!booked[state.court].includes(t)) booked[state.court].push(t);
+      if(!booked[String(state.courtId)].includes(t)) booked[String(state.courtId)].push(t);
     }
 
     // rebuild slots and clear selection
-    state = { court: null, startIndex: null, endIndex: null };
+    state = { courtId: null, startIndex: null, endIndex: null };
     renderSelection();
     buildSlots();
   }
 });
 // Date helper: generate dates centered around today
-function generateDates(center, range){
-  const res = [];
-  for(let offset=-range; offset<=range; offset++){
-    const d = new Date(center);
-    d.setDate(center.getDate() + offset);
-    res.push(d);
-  }
-  return res;
-}
+// removed unused generateDates helper
 
 function renderDateStrip(){
   dateStrip.innerHTML = '';
@@ -260,43 +319,69 @@ async function onDateClick(d){
   // update visuals
   renderDateStrip();
 
-  // fetch bookings for date (try real API, else fallback to mock)
+  // Load real bookings for this date
   await loadBookingsForDate(d);
   // reset selection state when date changes
-  state = { court: null, startIndex: null, endIndex: null };
+  state = { courtId: null, startIndex: null, endIndex: null };
   renderSelection();
-  buildSlots();
 }
 
-// Mocked booking data for demo per ISO date
-const mockBookings = {
-  // today example will use the original booked pattern
-};
+function getCourtNameById(id){
+  const c = courts.find(c=>String(c.court_id)===String(id));
+  return c ? c.court_name : `Court ${id}`;
+}
+
+function renderCourtsHeader(){
+  if(!courtsHeader) return;
+  courtsHeader.innerHTML = '';
+  courts.forEach(c=>{
+    const el = document.createElement('div');
+    el.className = 'court-title';
+    el.innerText = c.court_name;
+    courtsHeader.appendChild(el);
+  });
+}
 
 async function loadBookingsForDate(d){
   const iso = d.toISOString().slice(0,10);
-  // Try fetching from a real endpoint (if exists). If fetch fails, fall back to mock.
   try{
-    const res = await fetch(`/api/bookings?date=${iso}`);
-    if(!res.ok) throw new Error('no api');
+    const params = new URLSearchParams(window.location.search);
+    const venueId = (window.venueConfig && window.venueConfig.id)
+      ? Number(window.venueConfig.id)
+      : Number(params.get('venue_id') || 0);
+    if(!venueId || Number.isNaN(venueId)){
+      return;
+    }
+    const res = await fetch(`/PadelUp/public/api/bookings.php?venue_id=${venueId}&date=${iso}`);
+    if(!res.ok) throw new Error('Failed to load bookings');
     const json = await res.json();
-    booked = json;
-  }catch(err){
-    // fallback: simple mocked rules
-    // - if date is today, mark morning slots booked (demo)
-    // - if date is weekend, mark afternoon booked on court B
-    const today = new Date();
-    const isoToday = today.toISOString().slice(0,10);
-    if(iso === isoToday){
-      booked = { 'A': ['10:00','10:30','11:00','11:30','12:00','12:30'], 'B': ['10:00','10:30','11:00','11:30','12:00','12:30'] };
-    } else {
-      const dow = d.getDay();
-      if(dow === 0 || dow === 6){
-        booked = { 'A': [], 'B': ['13:00','13:30','14:00'] };
-      } else {
-        booked = { 'A': [], 'B': [] };
+    
+    courts = Array.isArray(json.courts) ? json.courts : [];
+    booked = (json.bookings && typeof json.bookings === 'object') ? json.bookings : {};
+    
+    // Extract venue hours (including minutes) and compute minute offsets
+    // reset hours before applying new values to avoid carryover across venues
+    openMinutes = NaN; closeMinutes = NaN;
+    if (json.hours) {
+      if (json.hours.opening_time) {
+        const parts = String(json.hours.opening_time).split(':').map(Number);
+        openMinutes = (parts[0]*60) + (parts[1] || 0);
+      }
+      if (json.hours.closing_time) {
+        const parts = String(json.hours.closing_time).split(':').map(Number);
+        closeMinutes = (parts[0]*60) + (parts[1] || 0);
       }
     }
+    // Defaults and validation
+    if(!(Number.isFinite(openMinutes) && Number.isFinite(closeMinutes) && (closeMinutes !== openMinutes))) {
+      openMinutes = 9*60;
+      closeMinutes = 22*60;
+    }
+    renderCourtsHeader();
+    buildSlots();
+  }catch(err){
+    courts = [];
+    booked = {};
   }
 }
 
@@ -311,9 +396,7 @@ for(let i=0;i<=7;i++){
 }
 selectedDate = new Date(today);
 renderDateStrip();
-loadBookingsForDate(selectedDate).then(()=>{
-  buildSlots();
-});
+loadBookingsForDate(selectedDate);
 
 // Read venue query params and populate header
 (function applyVenueFromQuery(){
@@ -336,4 +419,3 @@ if(backBtn){
     window.location.href = 'venues.php';
   });
 }
-

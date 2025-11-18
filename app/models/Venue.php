@@ -43,6 +43,18 @@ class Venue
         return $rows ?? [];
     }
 
+    public static function listAll(mysqli $conn): array
+    {
+        if(!$conn){ return []; }
+        $stmt = $conn->prepare('SELECT * FROM venues ORDER BY name');
+        if(!$stmt){ return []; }
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $rows = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];
+        $stmt->close();
+        return $rows ?: [];
+    }
+
     public static function update(mysqli $conn, int $venueId, array $fields): bool|string
     {
         $sets = [];

@@ -124,17 +124,8 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                 
                 <!-- Bookings Tab -->
                 <div id="bookings" class="tab-pane">
-                    <div class="empty-state">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="16" y1="2" x2="16" y2="6"></line>
-                            <line x1="8" y1="2" x2="8" y2="6"></line>
-                            <line x1="3" y1="10" x2="21" y2="10"></line>
-                        </svg>
-                        <h3>No Court Bookings</h3>
-                        <p>Your court reservations will appear here</p>
-                        <a href="court-reservation.php" class="btn profile-btn-accent">Book a Court</a>
-                    </div>
+                    <h3>My Bookings</h3>
+                    <div id="bookingsList">Loading...</div>
                 </div>
                 
                 <!-- Settings Tab -->
@@ -171,6 +162,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
         </div>
     </div>
 
+    
     <script>
         // Simple tab switching functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -192,6 +184,59 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                 });
             });
         });
+
+        // Load bookings when bookings tab is activated
+        document.querySelector('button[data-tab="bookings"]').addEventListener('click', loadBookings);
+
+        async function loadBookings(){
+            const list = document.getElementById('bookingsList');
+            list.innerHTML = 'Loading...';
+            try{
+                const res = await fetch('/PadelUp/public/api/user_bookings.php');
+                if(!res.ok) throw new Error('Failed to load bookings');
+                const bookings = await res.json();
+                if(!Array.isArray(bookings) || bookings.length === 0){
+                    list.innerHTML = '<p>No bookings found.</p>';
+                    return;
+                }
+                list.innerHTML = '';
+                bookings.forEach(b => {
+                    const div = document.createElement('div');
+                    div.className = 'booking-row';
+                    div.innerHTML = `<div><strong>${b.venue_name}</strong> — ${b.court_name}<br>
+                        <span>${b.booking_date} ${b.start_time} - ${b.end_time}</span>
+                        <span>Status: <b>${b.status}</b></span>
+                        <span>Total: $${b.total_price}</span></div>`;
+                    if(b.status !== 'cancelled' && b.status !== 'paid'){
+                        const btn = document.createElement('button');
+                        btn.className = 'cancel-btn';
+                        btn.innerText = 'Cancel';
+                        btn.onclick = async function(){
+                            if(!confirm('Cancel this booking?')) return;
+                            btn.disabled = true;
+                            const resp = await fetch('/PadelUp/public/api/user_bookings.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ booking_id: b.booking_id })
+                            });
+                            if(resp.ok){
+                                div.querySelector('span b').innerText = 'cancelled';
+                                btn.remove();
+                            }else{
+                                let msg = 'Could not cancel booking';
+                                try{ const er = await resp.json(); if(er && er.error) msg = er.error; }catch(_e){}
+                                alert(msg);
+                                btn.disabled = false;
+                            }
+                        };
+                        div.appendChild(btn);
+                    }
+                    list.appendChild(div);
+                });
+            }catch(e){
+                list.innerHTML = '<p>Error loading bookings.</p>';
+            }
+        }
     </script>
 
 <?php include __DIR__ . '/partials/footer.php'; ?>

@@ -143,22 +143,53 @@ if (!isset($success)) { $success = ''; }
               <th>#</th>
               <th>Court</th>
               <th>User</th>
+              <th>Contact</th>
               <th>Date</th>
               <th>Time</th>
               <th>Status</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
           <?php if(empty($bookings)): ?>
-            <tr><td colspan="6" class="muted">No bookings found.</td></tr>
+            <tr><td colspan="8" class="muted">No bookings found.</td></tr>
           <?php else: foreach($bookings as $b): ?>
             <tr>
               <td><?php echo (int)$b['booking_id']; ?></td>
               <td><?php echo htmlspecialchars($b['court_name']); ?></td>
               <td><?php echo htmlspecialchars($b['user_name']); ?></td>
+              <td class="row-actions">
+                <button type="button"
+                        class="action-btn view-user-info"
+                        data-user-name="<?php echo htmlspecialchars($b['user_name']); ?>"
+                        data-user-email="<?php echo htmlspecialchars($b['user_email'] ?? ''); ?>"
+                        data-user-phone="<?php echo htmlspecialchars($b['user_phone'] ?? ''); ?>">
+                  View info
+                </button>
+              </td>
               <td><?php echo htmlspecialchars($b['booking_date']); ?></td>
               <td><?php echo htmlspecialchars(substr($b['start_time'],0,5).' - '.substr($b['end_time'],0,5)); ?></td>
               <td><?php echo htmlspecialchars($b['status']); ?></td>
+              <td class="row-actions">
+                <?php 
+                  $isPaid = ($b['status'] === 'paid');
+                  $isCancelled = ($b['status'] === 'cancelled');
+                ?>
+                <form method="POST" style="display:inline" onsubmit="return confirm('Mark this booking as Paid?');">
+                  <input type="hidden" name="action" value="update_booking_status" />
+                  <input type="hidden" name="booking_id" value="<?php echo (int)$b['booking_id']; ?>" />
+                  <input type="hidden" name="new_status" value="paid" />
+                  <button type="submit" class="action-btn" <?php echo ($isPaid || $isCancelled) ? 'disabled' : ''; ?>>Mark Paid</button>
+                </form>
+                <?php if(!$isPaid): ?>
+                  <form method="POST" style="display:inline" onsubmit="return confirm('Cancel this booking?');">
+                    <input type="hidden" name="action" value="update_booking_status" />
+                    <input type="hidden" name="booking_id" value="<?php echo (int)$b['booking_id']; ?>" />
+                    <input type="hidden" name="new_status" value="cancelled" />
+                    <button type="submit" class="action-btn danger" <?php echo $isCancelled ? 'disabled' : ''; ?>>Cancel</button>
+                  </form>
+                <?php endif; ?>
+              </td>
             </tr>
           <?php endforeach; endif; ?>
           </tbody>
@@ -220,6 +251,31 @@ if (!isset($success)) { $success = ''; }
     </div>
   </div>
 
+  <!-- User Info Modal -->
+  <div id="userInfoModal" class="modal" style="display:none;">
+    <div class="modal-dialog">
+      <button class="modal-close" id="closeUserInfo">✕</button>
+      <h3>User Info</h3>
+      <div class="form-grid">
+        <div class="field">
+          <label>Name</label>
+          <div id="uimName" class="muted"></div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <div id="uimEmail" class="muted"></div>
+        </div>
+        <div class="field">
+          <label>Phone</label>
+          <div id="uimPhone" class="muted"></div>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:12px;">
+        <button class="btn" id="closeUserInfoBottom">Close</button>
+      </div>
+    </div>
+  </div>
+
   <?php endif; ?>
 </div>
 </div>
@@ -246,6 +302,30 @@ if (!isset($success)) { $success = ''; }
   [addModal, editModal].forEach(m=>{
     if(!m) return; m.addEventListener('click', e=>{ if(e.target===m) m.style.display='none'; });
   })
+
+  // User Info Modal logic
+  const userInfoModal = document.getElementById('userInfoModal');
+  const closeUserInfo = document.getElementById('closeUserInfo');
+  const closeUserInfoBottom = document.getElementById('closeUserInfoBottom');
+  function hideUserInfo(){ if(userInfoModal) userInfoModal.style.display = 'none'; }
+  if(closeUserInfo){ closeUserInfo.addEventListener('click', hideUserInfo); }
+  if(closeUserInfoBottom){ closeUserInfoBottom.addEventListener('click', hideUserInfo); }
+  if(userInfoModal){ userInfoModal.addEventListener('click', e=>{ if(e.target===userInfoModal) hideUserInfo(); }); }
+
+  document.querySelectorAll('button.view-user-info').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const name = btn.dataset.userName || 'Not provided';
+      const email = btn.dataset.userEmail || 'Not provided';
+      const phone = btn.dataset.userPhone || 'Not provided';
+      const nameEl = document.getElementById('uimName');
+      const emailEl = document.getElementById('uimEmail');
+      const phoneEl = document.getElementById('uimPhone');
+      if(nameEl) nameEl.textContent = name;
+      if(emailEl) emailEl.textContent = email;
+      if(phoneEl) phoneEl.textContent = phone;
+      if(userInfoModal) userInfoModal.style.display = 'flex';
+    });
+  });
 })();
 </script>
 <?php include __DIR__ . '/partials/footer.php'; ?>

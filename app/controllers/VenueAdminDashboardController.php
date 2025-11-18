@@ -111,6 +111,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
             else { $message = is_string($res) ? $res : 'Failed to delete court.'; }
         }
     }
+    elseif ($action === 'update_booking_status') {
+        $booking_id = (int)($_POST['booking_id'] ?? 0);
+        $new_status = $_POST['new_status'] ?? '';
+        if ($booking_id <= 0) {
+            $message = 'Invalid booking selected.';
+        } else {
+            $res = Booking::updateStatusByAdmin($GLOBALS['conn'], $booking_id, $adminId, $new_status);
+            if ($res === true) {
+                header('Location: VenueAdminDashboardController.php?venue_id='.$selectedVenue['venue_id'].'&booking_updated=1');
+                exit();
+            } else {
+                $message = is_string($res) ? $res : 'Failed to update booking.';
+            }
+        }
+    }
 }
 
 if (isset($_GET['saved'])) { $success = 'Venue settings saved.'; }
@@ -118,6 +133,7 @@ if (isset($_GET['court_created'])) { $success = 'Court created.'; }
 if (isset($_GET['court_updated'])) { $success = 'Court updated.'; }
 if (isset($_GET['court_toggled'])) { $success = 'Court status updated.'; }
 if (isset($_GET['court_deleted'])) { $success = 'Court deleted.'; }
+if (isset($_GET['booking_updated'])) { $success = 'Booking updated.'; }
 
 $courts = $selectedVenue ? Court::listByVenue($GLOBALS['conn'], $selectedVenue['venue_id']) : [];
 $bookings = $selectedVenue ? Booking::listByVenue($GLOBALS['conn'], $selectedVenue['venue_id']) : [];

@@ -161,6 +161,7 @@ body { font-family: Inter, system-ui, Arial, sans-serif; }
 }
 .slot.available{background:linear-gradient(180deg,#fff,#fbfbfb);border:2px solid transparent}
 .slot.booked{background:linear-gradient(180deg,#ffd9d5,#ffbdb6);border:2px solid rgba(0,0,0,0.04);color:#fff}
+.slot.closed{background:linear-gradient(180deg,#ffe0de,#ffb3ad);border:2px solid rgba(0,0,0,0.04);color:#fff;cursor:not-allowed;pointer-events:none}
 .slot.in-range{background:linear-gradient(180deg,#d6f5d6,#bff0bf);border:2px solid var(--accent)}
 .slot.selected{background:var(--accent);color:#111}
 .slot.disabled{opacity:0.5;pointer-events:none}
