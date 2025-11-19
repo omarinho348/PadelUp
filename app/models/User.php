@@ -49,20 +49,20 @@ class User
             }
             $newId = $stmtUser->insert_id;
             $stmtUser->close();
-
-            $sqlProfile = "INSERT INTO player_profiles (player_id,skill_level,gender,birth_date,padel_iq_rating,preferred_hand) VALUES (?,?,?,?,?,?)";
+ 
+            $sqlProfile = "INSERT INTO player_profiles (player_id, skill_level, gender, birth_date, padel_iq_rating, preferred_side) VALUES (?, ?, ?, ?, ?, ?)";
             $stmtProf = $conn->prepare($sqlProfile);
             if (!$stmtProf) {
                 throw new Exception("Prepare player_profiles failed");
             }
             $stmtProf->bind_param(
-                "isssis",
+                "idssis",
                 $newId,
                 $profileData['skill_level'],
                 $profileData['gender'],
                 $profileData['birth_date'],
                 $profileData['padel_iq_rating'],
-                $profileData['preferred_hand']
+                $profileData['preferred_side']
             );
             if (!$stmtProf->execute()) {
                 throw new Exception($stmtProf->error ?: 'Insert profile failed');
@@ -251,7 +251,7 @@ class User
 
     public static function listPlayers(mysqli $conn, string $searchTerm = ''): array
     {
-        $sql = "SELECT u.user_id, u.name, u.email, u.created_at, pp.skill_level, pp.gender, pp.birth_date, pp.preferred_hand 
+        $sql = "SELECT u.user_id, u.name, u.email, u.created_at, pp.skill_level, pp.gender, pp.birth_date, pp.preferred_side 
                 FROM users u 
                 LEFT JOIN player_profiles pp ON u.user_id = pp.player_id 
                 WHERE u.role = 'player'";

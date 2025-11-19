@@ -14,13 +14,24 @@
     <div class="container">      
 
         <!-- Top hero banner using the provided image -->
-        <section class="top-hero home-hero" aria-hidden="false">
+        <section class="top-hero home-hero">
             <div class="inner">
                 <h1>PadelUp</h1>
                     <p>Play • Connect • Level Up</p>
                 <div class="cta">
+                    <?php
+                        // Check if user is logged in and has a skill level to change the button text
+                        $skillLevelButtonText = 'Skill Level';
+                        if (isset($_SESSION['user_id'])) {
+                            require_once __DIR__ . '/../controllers/UserController.php';
+                            $profile = UserController::getPlayerProfile();
+                            if ($profile && isset($profile['skill_level']) && $profile['skill_level'] > 0) {
+                                $skillLevelButtonText = 'View My Level';
+                            }
+                        }
+                    ?>
                     <a href="venues.php"><button class="btn">Start Playing</button></a>
-                    <a href="marketplace.php"><button class="btn">Shop Now</button></a>
+                    <a href="skill_level.php"><button class="btn"><?php echo $skillLevelButtonText; ?></button></a>
                 </div>
             </div>
             <div class="feature-pills">

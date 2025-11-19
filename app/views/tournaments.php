@@ -19,13 +19,7 @@
 
             <div class="filters-container">
                 <input type="text" placeholder="Search by name or location...">
-                <select>
-                    <option value="">All Skill Levels</option>
-                    <option value="beginner">Beginner</option>
-                    <option value="intermediate">Intermediate</option>
-                    <option value="advanced">Advanced</option>
-                    <option value="professional">Professional</option>
-                </select>
+                <select><option value="">All Categories</option><option value="mens">Men's</option><option value="womens">Women's</option><option value="mixed">Mixed</option></select>
                 <input type="date">
                 <button class="btn btn-primary">Find Tournaments</button>
             </div>

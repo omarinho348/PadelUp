@@ -51,41 +51,12 @@ $error = UserController::register();
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="hand">Preferred Hand</label>
-                            <select name="hand" id="hand" required>
-                                <option value="">Select Hand</option>
+                            <label for="side">Preferred Side</label>
+                            <select name="side" id="side" required>
+                                <option value="">Select Side</option>
                                 <option value="right">Right</option>
                                 <option value="left">Left</option>
                             </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="experience">Padel Level</label>
-                            <div class="skill-selector">
-                                <label class="skill-card">
-                                    <input type="radio" name="skill" value="beginner" checked>
-                                    <span class="skill-card-content">
-                                        <span class="skill-icon">🎓</span>
-                                        <strong>Beginner</strong>
-                                        <small>Just getting started</small>
-                                    </span>
-                                </label>
-                                <label class="skill-card">
-                                    <input type="radio" name="skill" value="intermediate">
-                                    <span class="skill-card-content">
-                                        <span class="skill-icon">🎾</span>
-                                        <strong>Intermediate</strong>
-                                        <small>Play regularly</small>
-                                    </span>
-                                </label>
-                                <label class="skill-card">
-                                    <input type="radio" name="skill" value="advanced">
-                                    <span class="skill-card-content">
-                                        <span class="skill-icon">🏆</span>
-                                        <strong>Advanced</strong>
-                                        <small>Live for the game</small>
-                                    </span>
-                                </label>
-                            </div>
                         </div>
                         <div class="form-group">
                             <input type="password" name="password" id="password" placeholder="Password" required>

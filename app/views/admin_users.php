@@ -54,7 +54,7 @@ $players = UserController::getPlayers();
                         <th>Email</th>
                         <th>Skill Level</th>
                         <th>Gender</th>
-                        <th>Preferred Hand</th>
+                        <th>Preferred Side</th>
                         <th>Register Date</th>
                         <th>Actions</th>
                     </tr>
@@ -67,11 +67,9 @@ $players = UserController::getPlayers();
                             <td><?php echo (int)$player['user_id']; ?></td>
                             <td><?php echo htmlspecialchars($player['name']); ?></td>
                             <td><?php echo htmlspecialchars($player['email']); ?></td>
-                            <td>
-                                <span class="status-pill user"><?php echo htmlspecialchars(ucfirst($player['skill_level'] ?? 'N/A')); ?></span>
-                            </td>
+                            <td><?php echo htmlspecialchars(number_format((float)($player['skill_level'] ?? 0), 2)); ?></td>
                             <td><?php echo htmlspecialchars(ucfirst($player['gender'] ?? 'N/A')); ?></td>
-                            <td><?php echo htmlspecialchars(ucfirst($player['preferred_hand'] ?? 'N/A')); ?></td>
+                            <td><?php echo htmlspecialchars(ucfirst($player['preferred_side'] ?? 'N/A')); ?></td>
                             <td><?php echo htmlspecialchars(date('Y-m-d', strtotime($player['created_at']))); ?></td>
                             <td class="actions">
                                 <button class="btn-action contact contact-player-btn" 

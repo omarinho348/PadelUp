@@ -14,7 +14,7 @@ class UserController
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             return "";
         }
-        $required = ['fullname','email','gender','dob','hand','skill','password','confirm-password'];
+        $required = ['fullname','email','gender','dob','side','password','confirm-password'];
         foreach ($required as $field) {
             if (empty($_POST[$field])) {
                 return "Please fill in all required fields.";
@@ -32,11 +32,11 @@ class UserController
             'phone' => htmlspecialchars($_POST['phone'] ?? null)
         ];
         $profileData = [
-            'skill_level' => htmlspecialchars($_POST['skill']),
+            'skill_level' => 0.00, // Set default skill level on registration
             'gender' => htmlspecialchars($_POST['gender']),
             'birth_date' => htmlspecialchars($_POST['dob']),
             'padel_iq_rating' => 0,
-            'preferred_hand' => htmlspecialchars($_POST['hand'])
+            'preferred_side' => htmlspecialchars($_POST['side'])
         ];
         $result = User::createPlayerUser($GLOBALS['conn'], $userData, $profileData);
         if ($result === true) {
@@ -116,10 +116,9 @@ class UserController
             $profileData = null;
             if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                 $profileData = [
-                    'skill_level' => htmlspecialchars($_POST['skill'] ?? 'beginner'),
                     'gender' => htmlspecialchars($_POST['gender'] ?? ''),
                     'birth_date' => htmlspecialchars($_POST['dob'] ?? ''),
-                    'preferred_hand' => htmlspecialchars($_POST['hand'] ?? 'right')
+                    'preferred_side' => htmlspecialchars($_POST['side'] ?? 'right')
                 ];
             }
 

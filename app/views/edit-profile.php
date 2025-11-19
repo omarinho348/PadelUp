@@ -64,42 +64,13 @@ require_once __DIR__ . '/../controllers/UserController.php';
                     </div>
                     
                     <div class="form-group">
-                        <label for="hand">Preferred Hand</label>
-                        <select id="hand" name="hand" required>
-                            <option value="right" <?php if($profile['preferred_hand'] == 'right') echo 'selected'; ?>>Right</option>
-                            <option value="left" <?php if($profile['preferred_hand'] == 'left') echo 'selected'; ?>>Left</option>
+                        <label for="side">Preferred Side</label>
+                        <select id="side" name="side" required>
+                            <option value="right" <?php if($profile['preferred_side'] == 'right') echo 'selected'; ?>>Right</option>
+                            <option value="left" <?php if($profile['preferred_side'] == 'left') echo 'selected'; ?>>Left</option>
                         </select>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Padel Level</label>
-                        <div class="skill-selector">
-                            <label class="skill-card">
-                                <input type="radio" name="skill" value="beginner" <?php if($profile['skill_level'] == 'beginner') echo 'checked'; ?>>
-                                <span class="skill-card-content">
-                                    <span class="skill-icon">🎓</span>
-                                    <strong>Beginner</strong>
-                                    <small>Just getting started</small>
-                                </span>
-                            </label>
-                            <label class="skill-card">
-                                <input type="radio" name="skill" value="intermediate" <?php if($profile['skill_level'] == 'intermediate') echo 'checked'; ?>>
-                                <span class="skill-card-content">
-                                    <span class="skill-icon">🎾</span>
-                                    <strong>Intermediate</strong>
-                                    <small>Play regularly</small>
-                                </span>
-                            </label>
-                            <label class="skill-card">
-                                <input type="radio" name="skill" value="advanced" <?php if($profile['skill_level'] == 'advanced') echo 'checked'; ?>>
-                                <span class="skill-card-content">
-                                    <span class="skill-icon">🏆</span>
-                                    <strong>Advanced</strong>
-                                    <small>Live for the game</small>
-                                </span>
-                            </label>
-                        </div>
-                    </div>
                 </div>
                 <?php endif; ?>
                 <div class="form-buttons">

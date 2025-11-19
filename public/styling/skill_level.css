@@ -1,0 +1,232 @@
+/* -----------------------------------------------------
+   Skill Level Questionnaire Styles
+   ----------------------------------------------------- */
+
+.questionnaire-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: var(--radius);
+    box-shadow: 0 10px 30px rgba(5, 52, 40, 0.07);
+    overflow: hidden;
+    border: 1px solid rgba(5, 52, 40, 0.08);
+}
+
+.progress-bar-container {
+    padding: 1rem 2rem;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-inner {
+    height: 100%;
+    width: 0; /* JS will update this */
+    background-color: var(--accent);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+.questionnaire-form {
+    padding: 2.5rem 3rem;
+}
+
+.question-step {
+    display: none;
+    animation: fadeIn 0.5s ease;
+}
+
+.question-step.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.question-step h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--muted);
+    margin-top: 0;
+    margin-bottom: 2rem;
+}
+
+.options-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.option-card {
+    display: block;
+    cursor: pointer;
+}
+
+.option-card input[type="radio"] {
+    display: none; /* Hide the actual radio button */
+}
+
+.option-card-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius);
+    border: 2px solid #e9ecef;
+    background-color: #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.option-card:hover .option-card-content {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(47, 74, 63, 0.06);
+    border-color: #ced4da;
+}
+
+.option-card input[type="radio"]:checked + .option-card-content {
+    border-color: var(--accent);
+    background-color: #e6fffa;
+    box-shadow: 0 0 0 3px rgba(17, 122, 77, 0.2);
+}
+
+.option-card-content .icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.option-card-content .text strong {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.option-card-content .text small {
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-secondary {
+    background-color: #e9ecef;
+    color: var(--muted);
+    border: 1px solid #ced4da;
+}
+
+.btn-secondary:hover {
+    background-color: #dee2e6;
+}
+
+/* -----------------------------------------------------
+   New Result Card Styles
+   ----------------------------------------------------- */
+
+.result-container {
+    padding: 2.5rem 3rem;
+}
+
+.result-card-new {
+    display: flex;
+    align-items: center;
+    gap: 3rem;
+    background-color: #f8f9fa;
+    border-radius: var(--radius);
+    padding: 3rem;
+    border: 1px solid #e9ecef;
+    animation: fadeIn 0.5s ease;
+}
+
+.result-score-new {
+    flex-shrink: 0;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, var(--accent), #1fcca4);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    font-weight: 700;
+    box-shadow: 0 10px 20px rgba(17, 122, 77, 0.2), 0 0 0 8px #fff, 0 0 0 10px var(--accent-light);
+}
+
+.result-details-new {
+    text-align: left;
+}
+
+.result-title-new {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin: 0;
+}
+
+.result-level-new {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0.25rem 0 1rem;
+}
+
+.result-description-new {
+    font-size: 1rem;
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+}
+
+.result-card-new .btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+}
+
+/* Hide buttons when not applicable */
+.prev-btn[style*="display: none"],
+.next-btn[style*="display: none"],
+.submit-btn[style*="display: none"] {
+    display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .questionnaire-form {
+        padding: 2rem 1.5rem;
+    }
+
+    .question-step h3 {
+        font-size: 1.5rem;
+    }
+
+    .option-card-content {
+        padding: 0.8rem 1rem;
+    }
+
+    .result-card-new {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem;
+        gap: 2rem;
+    }
+
+    .result-details-new {
+        text-align: center;
+    }
+}

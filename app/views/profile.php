@@ -45,7 +45,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                         <?php if ($profile): ?>
                         <div class="stat">
                             <span class="stat-label">Skill Level</span>
-                            <span class="stat-value"><?php echo ucfirst(htmlspecialchars($profile['skill_level'])); ?></span>
+                            <span class="stat-value"><?php echo number_format((float)($profile['skill_level'] ?? 0), 2); ?></span>
                         </div>
                         <div class="stat">
                             <span class="stat-label">Padel IQ</span>
@@ -57,10 +57,10 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                             <span class="stat-value"><?php echo ucfirst(htmlspecialchars($profile['gender'])); ?></span>
                         </div>
                         <?php endif; ?>
-                        <?php if(!empty($profile['preferred_hand'])): ?>
+                        <?php if(!empty($profile['preferred_side'])): ?>
                         <div class="stat">
-                            <span class="stat-label">Preferred Hand</span>
-                            <span class="stat-value"><?php echo ucfirst(htmlspecialchars($profile['preferred_hand'])); ?></span>
+                            <span class="stat-label">Preferred Side</span>
+                            <span class="stat-value"><?php echo ucfirst(htmlspecialchars($profile['preferred_side'])); ?></span>
                         </div>
                         <?php endif; ?>
                         <?php if(!empty($profile['birth_date'])): ?>

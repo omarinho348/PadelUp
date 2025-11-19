@@ -45,11 +45,11 @@ CREATE TABLE `users` (
 -- Player profiles (extended player-only attributes)
 CREATE TABLE `player_profiles` (
   `player_id` INT PRIMARY KEY,
-  `skill_level` ENUM('beginner','intermediate','advanced') NOT NULL DEFAULT 'beginner',
+  `skill_level` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
   `gender` ENUM('male','female','other') NULL,
   `birth_date` DATE NULL,
-  `padel_iq_rating` INT NOT NULL DEFAULT 0,
-  `preferred_hand` ENUM('right','left') NULL,
+  `padel_iq_rating` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
+  `preferred_side` ENUM('right','left') NULL,
   CONSTRAINT `fk_player_user` FOREIGN KEY (`player_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -124,7 +124,6 @@ CREATE TABLE `products` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   CONSTRAINT `fk_product_seller` FOREIGN KEY (`seller_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
