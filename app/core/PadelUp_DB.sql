@@ -125,6 +125,39 @@ CREATE TABLE `products` (
   CONSTRAINT `fk_product_seller` FOREIGN KEY (`seller_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------
+-- MATCHMAKING TABLES
+-- --------------------------------------------------
+
+-- 1. Matches Table
+CREATE TABLE IF NOT EXISTS matches (
+    match_id INT AUTO_INCREMENT PRIMARY KEY,
+    creator_id INT NOT NULL,                         
+    venue_id INT NOT NULL,                           
+    match_date DATE NOT NULL,
+    match_time TIME NOT NULL,
+    min_skill_level INT NOT NULL,
+    max_skill_level INT NOT NULL,
+    max_players INT NOT NULL DEFAULT 4,
+    current_players INT NOT NULL DEFAULT 1,
+    status ENUM('open','full','completed') NOT NULL DEFAULT 'open',
+    description TEXT,
+    FOREIGN KEY (creator_id) REFERENCES users(user_id),
+    FOREIGN KEY (venue_id) REFERENCES venues(venue_id)
+);
+
+-- 2. Match Players Table
+CREATE TABLE IF NOT EXISTS match_players (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    match_id INT NOT NULL,
+    player_id INT NOT NULL,                         -- references player_profile.player_id
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (match_id) REFERENCES matches(match_id),
+    FOREIGN KEY (player_id) REFERENCES users(user_id),
+    UNIQUE KEY unique_player_match (match_id, player_id)
+);
+
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

@@ -303,7 +303,7 @@ if (isset($_SESSION['user_id'])) {
                     <div class="two-col">
                         <div class="form-group">
                             <label for="price">Price (EGP)</label>
-                            <input type="number" id="price" name="price" min="0" step="0.01" placeholder="1500.00" required>
+                            <input type="number" id="price" name="price" min="0" step="100" placeholder="1500.00" required>
                         </div>
                         <div class="form-group">
                             <label for="category">Category</label>

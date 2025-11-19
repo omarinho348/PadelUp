@@ -16,346 +16,257 @@
     <link rel="stylesheet" href="../../public/styling/matchmaking.css">
 </head>
 <body>
-    <?php include __DIR__ . '/partials/navbar.php'; ?>
+    <?php 
+    require_once __DIR__ . '/../controllers/MatchController.php';
+    require_once __DIR__ . '/../models/Venue.php'; // For fetching venues for the modal
+
+    // Handle POST requests for creating/joining matches
+    $create_error = MatchController::createMatch();
+    $join_error = MatchController::joinMatch();
+    $leave_error = MatchController::leaveMatch();
+
+    // Fetch all open matches, applying any GET filters
+    $matches = MatchController::showMatches();
+
+    // Fetch all venues for the "Create Match" modal dropdown
+    $venues = Venue::listAll($GLOBALS['conn']);
+
+    $current_user_id = $_SESSION['user_id'] ?? null;
+
+    include __DIR__ . '/partials/navbar.php'; 
+    ?>
     <main class="matchmaking-container">
         <!-- Hero Section with Filters -->
         <section class="match-finder-hero" style="background-image: url('../../public/Photos/tapia_coello.jpg');">
             <h1 class="hero-title">Find Your Perfect Padel Match</h1>
-            <div class="filter-bar">
+            <form class="filter-bar" method="GET" action="matchmaking.php">
                 <div class="filter-item">
                     <i data-feather="map-pin"></i>
-                    <input type="text" placeholder="City or Club...">
+                    <select name="venue_id">
+                        <option value="">Any Venue</option>
+                        <?php foreach ($venues as $venue): ?>
+                            <option value="<?php echo $venue['venue_id']; ?>" <?php if (isset($_GET['venue_id']) && $_GET['venue_id'] == $venue['venue_id']) echo 'selected'; ?>>
+                                <?php echo htmlspecialchars($venue['name']); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
                 <div class="filter-item">
                     <i data-feather="calendar"></i>
-                    <button class="when-filter-btn">Date</button>
-                    <!-- Custom Date/Time Popover -->
-                    <div class="when-popover">
-                        <div class="day-selector">
-                            <button class="day-btn active">Today</button>
-                            <button class="day-btn">Tom</button>
-                            <button class="day-btn">Mon</button>
-                            <button class="day-btn">Tue</button>
-                            <button class="day-btn">Wed</button>
-                            <button class="day-btn">Thu</button>
-                            <button class="day-btn">Fri</button>
-                        </div>
-                        <div class="time-range-selector">
-                            <label>Time Range</label>
-                            <div class="time-range-slider">
-                                <div class="time-range-track"></div>
-                            </div>
-                            <div class="time-inputs">
-                                <div class="time-input-group">
-                                    <span class="time-label">Start</span>
-                                    <span class="time-value" id="start-time">8:00 AM</span>
-                                    <div class="time-stepper">
-                                        <button class="stepper-btn" aria-label="Increase start time"><i data-feather="chevron-up"></i></button>
-                                        <button class="stepper-btn" aria-label="Decrease start time"><i data-feather="chevron-down"></i></button>
-                                    </div>
-                                </div>
-                                <div class="time-input-group">
-                                    <span class="time-label">End</span>
-                                    <span class="time-value" id="end-time">10:00 PM</span>
-                                    <div class="time-stepper">
-                                        <button class="stepper-btn" aria-label="Increase end time"><i data-feather="chevron-up"></i></button>
-                                        <button class="stepper-btn" aria-label="Decrease end time"><i data-feather="chevron-down"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <button class="btn-primary done-btn">Done</button>
-                    </div>
+                    <input type="date" name="date" value="<?php echo htmlspecialchars($_GET['date'] ?? ''); ?>">
                 </div>
                 <div class="filter-item">
                     <i data-feather="bar-chart-2"></i>
-                    <select>
-                        <option>Level</option>
-                        <option value="beginner">Beginner (1.0 - 2.5)</option>
-                        <option value="intermediate">Intermediate (3.0 - 4.5)</option>
-                        <option value="advanced">Advanced (5.0 - 5.5)</option>
-                        <option value="expert">Expert / Pro (6.0+)</option>
+                    <select name="min_skill">
+                        <option value="">Min Skill</option>
+                        <?php for ($i = 1; $i <= 7; $i++): ?>
+                            <option value="<?php echo $i; ?>" <?php if (isset($_GET['min_skill']) && $_GET['min_skill'] == $i) echo 'selected'; ?>><?php echo $i; ?></option>
+                        <?php endfor; ?>
                     </select>
                 </div>
                 <div class="filter-item">
-                    <i data-feather="users"></i>
-                    <select>
-                        <option> Game Type</option>
-                        <option>Singles</option>
-                        <option>Doubles</option>
-                        <option>Mixed Doubles</option>
+                    <i data-feather="bar-chart-2"></i>
+                    <select name="max_skill">
+                        <option value="">Max Skill</option>
+                        <?php for ($i = 1; $i <= 7; $i++): ?>
+                            <option value="<?php echo $i; ?>" <?php if (isset($_GET['max_skill']) && $_GET['max_skill'] == $i) echo 'selected'; ?>><?php echo $i; ?></option>
+                        <?php endfor; ?>
                     </select>
                 </div>
                 <div class="filter-actions">
-                    <button class="btn btn-primary search-btn">Search</button>
-                    <button class="btn create-match-header-btn">Create Match</button>
+                    <button type="submit" class="btn btn-primary search-btn">Search</button>
+                    <button type="button" class="btn create-match-header-btn">Create Match</button>
                 </div>
-            </div>
+            </form>
         </section>
 
         <!-- Match Feed / Lobby -->
         <section class="match-lobby">
+            <?php if (!empty($join_error)): ?>
+                <div class="alert alert-error"><?php echo htmlspecialchars($join_error); ?></div>
+            <?php endif; ?>
+            <?php if (!empty($create_error)): ?>
+                <div class="alert alert-error"><?php echo htmlspecialchars($create_error); ?></div>
+            <?php endif; ?>
+            <?php if (!empty($leave_error)): ?>
+                <div class="alert alert-error"><?php echo htmlspecialchars($leave_error); ?></div>
+            <?php endif; ?>
+            <?php if (isset($_GET['status']) && $_GET['status'] === 'created'): ?>
+                <div class="alert alert-success">Match created successfully!</div>
+            <?php elseif (isset($_GET['status']) && $_GET['status'] === 'joined'): ?>
+                <div class="alert alert-success">You have successfully joined the match!</div>
+            <?php elseif (isset($_GET['status']) && $_GET['status'] === 'left'): ?>
+                <div class="alert alert-success">You have left the match.</div>
+            <?php endif; ?>
+
             <div class="match-grid"> 
-                <!-- Sample Match Card 1 (Full) -->
-                <div class="match-card match-card--private">
-                    <div class="card-header">
-                        <span>Today, 7:00 PM</span>
-                        <span class="tag private-tag">Private</span>
+                <?php if (empty($matches)): ?>
+                    <div class="empty-state">
+                        <h3>No Open Matches Found</h3>
+                        <p>Try adjusting your filters or be the first to create a new match!</p>
+                        <button class="btn btn-primary create-match-header-btn">Create a Match</button>
                     </div>
-                    <div class="card-body">
-                        <div class="location-info">
-                            <i data-feather="map-pin"></i>
-                            <div>
-                                <strong>Padel Club Barcelona</strong>
-                                <p>Carrer de la Pista, 123</p>
+                <?php else: ?>
+                    <?php foreach ($matches as $match): ?>
+                        <article class="match-card">
+                            <div class="match-card-content">
+                                <div class="match-card-header">
+                                    <div class="match-info-item">
+                                        <i data-feather="map-pin"></i>
+                                        <span><?php echo htmlspecialchars($match['venue_name']); ?></span>
+                                    </div>
+                                    <div class="match-info-item">
+                                        <i data-feather="calendar"></i>
+                                        <span><?php echo date("D, M j", strtotime($match['match_date'])); ?> at <?php echo date("g:i A", strtotime($match['match_time'])); ?></span>
+                                    </div>
+                                </div>
+                                <div class="match-card-body">
+                                    <div class="match-skill-level">
+                                        <div class="skill-level-label">Skill Level</div>
+                                        <div class="skill-level-value"><?php echo htmlspecialchars($match['min_skill_level']); ?> - <?php echo htmlspecialchars($match['max_skill_level']); ?></div>
+                                    </div>
+                                    <div class="match-players">
+                                        <div class="player-avatars">
+                                            <?php for($i = 0; $i < $match['current_players']; $i++): ?>
+                                                <div class="player-avatar"><i data-feather="user"></i></div>
+                                            <?php endfor; ?>
+                                            <?php for($i = 0; $i < ($match['max_players'] - $match['current_players']); $i++): ?>
+                                                <div class="player-avatar-empty"></div>
+                                            <?php endfor; ?>
+                                        </div>
+                                        <div class="player-count">
+                                            <strong><?php echo (int)$match['current_players']; ?>/<?php echo (int)$match['max_players']; ?></strong> Players
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="match-card-creator">
+                                    Created by: <strong><?php echo htmlspecialchars($match['creator_name']); ?></strong>
+                                </div>
                             </div>
-                        </div>
-                        <div class="duration-info">
-                            <i data-feather="clock"></i>
-                            <span>90 min</span>
-                        </div>
-                        <div class="skill-level">
-                            <div class="skill-bar intermediate"></div>
-                            <span>Intermediate</span>
-                        </div>
-                        <div class="player-slots">
-                            <div class="avatar-stack">
-                                <img src="https://i.pravatar.cc/40?img=1" alt="Player 1">
-                                <img src="https://i.pravatar.cc/40?img=2" alt="Player 2">
-                                <img src="https://i.pravatar.cc/40?img=3" alt="Player 3">
-                                <div class="avatar-placeholder"><i data-feather="plus"></i></div>
+                            <div class="match-card-action">
+                                <?php
+                                    $isLoggedIn = !is_null($current_user_id);
+                                    $hasJoined = $isLoggedIn && MatchPlayer::hasJoined($GLOBALS['conn'], $match['match_id'], $current_user_id);
+                                    $isFull = $match['current_players'] >= $match['max_players'];
+                                    $canJoin = $isLoggedIn && !$isFull && !$hasJoined;
+                                    $isCreator = $isLoggedIn && $current_user_id == $match['creator_id'];
+                                ?>
+                                <?php if ($hasJoined): ?>
+                                    <form method="POST" action="matchmaking.php">
+                                        <input type="hidden" name="action" value="leave_match">
+                                        <input type="hidden" name="match_id" value="<?php echo $match['match_id']; ?>">
+                                        <button type="submit" class="btn btn-secondary" <?php if ($isCreator) echo 'disabled title="Creators cannot leave a match"'; ?>>Leave</button>
+                                    </form>
+                                <?php else: ?>
+                                    <form method="POST" action="matchmaking.php">
+                                        <input type="hidden" name="action" value="join_match">
+                                        <input type="hidden" name="match_id" value="<?php echo $match['match_id']; ?>">
+                                        <button type="submit" class="btn btn-primary" <?php if (!$canJoin) echo 'disabled'; ?>>
+                                            <?php echo ($isFull) ? 'Full' : 'Join Match'; ?>
+                                        </button>
+                                    </form>
+                                <?php endif; ?>
                             </div>
-                            <span class="slot-count">3/4 Players</span>
-                        </div>
-                        <div class="host-info">
-                            Hosted by <a href="#" class="host-username">AlexMartinez</a>
-                            <div class="rating">★ 4.9</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary join-btn">Request to Join</button>
-                </div>
-
-                <!-- Sample Match Card 2 (with open slots) -->
-                <div class="match-card match-card--public">
-                    <div class="card-header">
-                        <span>Tomorrow, 6:30 PM</span>
-                        <span class="tag public-tag">Public</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="location-info">
-                            <i data-feather="map-pin"></i>
-                            <div>
-                                <strong>Madrid Central Padel</strong>
-                                <p>Plaza del Deporte, 5</p>
-                            </div>
-                        </div>
-                        <div class="duration-info">
-                            <i data-feather="clock"></i>
-                            <span>120 min</span>
-                        </div>
-                        <div class="skill-level">
-                            <div class="skill-bar beginner"></div>
-                            <span>Beginner</span>
-                        </div>
-                        <div class="player-slots">
-                            <div class="avatar-stack">
-                                <img src="https://i.pravatar.cc/40?img=5" alt="Player 1">
-                                <div class="avatar-placeholder"><i data-feather="plus"></i></div>
-                                <div class="avatar-placeholder"><i data-feather="plus"></i></div>
-                                <div class="avatar-placeholder"><i data-feather="plus"></i></div>
-                            </div>
-                            <span class="slot-count">1/4 Players</span>
-                        </div>
-                        <div class="host-info">
-                            Hosted by <a href="#" class="host-username">SofiaG</a>
-                            <div class="rating">★ 4.7</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary join-btn">Join Match</button>
-                </div>
-
-                <!-- Sample Match Card 3 -->
-                <div class="match-card match-card--public">
-                    <div class="card-header">
-                        <span>Friday, 8:00 PM</span>
-                        <span class="tag public-tag">Public</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="location-info">
-                            <i data-feather="map-pin"></i>
-                            <div>
-                                <strong>Valencia Padel Center</strong>
-                                <p>Avinguda de la Pista, 45</p>
-                            </div>
-                        </div>
-                        <div class="duration-info">
-                            <i data-feather="clock"></i>
-                            <span>90 min</span>
-                        </div>
-                        <div class="skill-level">
-                            <div class="skill-bar advanced"></div>
-                            <span>Advanced</span>
-                        </div>
-                        <div class="player-slots">
-                            <div class="avatar-stack">
-                                <img src="https://i.pravatar.cc/40?img=11" alt="Player 1">
-                                <img src="https://i.pravatar.cc/40?img=12" alt="Player 2">
-                                <img src="https://i.pravatar.cc/40?img=14" alt="Player 3">
-                                <div class="avatar-placeholder"><i data-feather="plus"></i></div>
-                            </div>
-                            <span class="slot-count">3/4 Players</span>
-                        </div>
-                        <div class="host-info">
-                            Hosted by <a href="#" class="host-username">JuanVLC</a>
-                            <div class="rating">★ 5.0</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary join-btn">Join Match</button>
-                </div>
-
-                <!-- Sample Match Card 4 -->
-                <div class="match-card match-card--private">
-                    <div class="card-header">
-                        <span>Saturday, 11:00 AM</span>
-                        <span class="tag private-tag">Private</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="location-info">
-                            <i data-feather="map-pin"></i>
-                            <div>
-                                <strong>Seville Padel Club</strong>
-                                <p>Calle Sol, 88</p>
-                            </div>
-                        </div>
-                        <div class="duration-info">
-                            <i data-feather="clock"></i>
-                            <span>60 min</span>
-                        </div>
-                        <div class="skill-level">
-                            <div class="skill-bar intermediate"></div>
-                            <span>Intermediate</span>
-                        </div>
-                        <div class="player-slots">
-                            <div class="avatar-stack">
-                                <img src="https://i.pravatar.cc/40?img=21" alt="Player 1">
-                                <img src="https://i.pravatar.cc/40?img=22" alt="Player 2">
-                                <div class="avatar-placeholder"><i data-feather="plus"></i></div>
-                                <div class="avatar-placeholder"><i data-feather="plus"></i></div>
-                            </div>
-                            <span class="slot-count">2/4 Players</span>
-                        </div>
-                        <div class="host-info">
-                            Hosted by <a href="#" class="host-username">MariaS</a>
-                            <div class="rating">★ 4.8</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary join-btn">Request to Join</button>
-                </div>
-
-                <!-- Sample Match Card 5 (Full) -->
-                <div class="match-card match-card--full">
-                    <div class="card-header">
-                        <span>Today, 9:00 PM</span>
-                        <span class="tag public-tag">Public</span>
-                    </div>
-                    <div class="card-body">
-                        <div class="location-info">
-                            <i data-feather="map-pin"></i>
-                            <div>
-                                <strong>PadelUp Club Madrid</strong>
-                                <p>Avenida de Padel, 101</p>
-                            </div>
-                        </div>
-                        <div class="duration-info">
-                            <i data-feather="clock"></i>
-                            <span>90 min</span>
-                        </div>
-                        <div class="skill-level">
-                            <div class="skill-bar intermediate"></div>
-                            <span>Intermediate</span>
-                        </div>
-                        <div class="player-slots">
-                            <div class="avatar-stack">
-                                <img src="https://i.pravatar.cc/40?img=31" alt="Player 1">
-                                <img src="https://i.pravatar.cc/40?img=32" alt="Player 2">
-                                <img src="https://i.pravatar.cc/40?img=33" alt="Player 3">
-                                <img src="https://i.pravatar.cc/40?img=34" alt="Player 4">
-                            </div>
-                            <span class="slot-count">4/4 Players</span>
-                        </div>
-                        <div class="host-info">
-                            Hosted by <a href="#" class="host-username">CarlosR</a>
-                            <div class="rating">★ 4.8</div>
-                        </div>
-                    </div>
-                    <button class="btn btn-primary join-btn">Match Full</button>
-                </div>
-
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </section>
     </main>
-
-    <!-- User Profile Popover (Hidden by default) -->
-    <div id="user-popover" class="user-popover" style="display: none; position: absolute;">
-        <div class="popover-header">
-            <img src="https://i.pravatar.cc/60?img=1" alt="User Avatar" class="popover-avatar">
-            <div>
-                <strong class="popover-name">Alex Martinez</strong>
-                <span class="popover-skill">Advanced (4.5)</span>
-            </div>
-        </div>
-        <p class="popover-bio">Loves aggressive net play and fast-paced games. Looking for competitive matches.</p>
-        <div class="popover-stats">★ 4.9 | 88 Matches</div>
-    </div>
 
     <!-- Create Match Modal (Hidden by default) -->
     <div id="create-match-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <button class="modal-close-btn"><i data-feather="x"></i></button>
             <h2>Create a New Match</h2>
-            <form class="create-match-form">
-                <!-- Form fields similar to the filter bar -->
+            <form class="create-match-form" method="POST" action="matchmaking.php">
+                <input type="hidden" name="action" value="create_match">
                 <div class="form-group">
-                    <label for="match-location">Location</label>
-                    <input type="text" id="match-location" placeholder="Padel Club Name">
-                </div>
-                <div class="form-group">
-                    <label for="match-datetime">Date & Time</label>
-                    <input type="datetime-local" id="match-datetime">
-                </div>
-                <div class="form-group">
-                    <label for="match-duration">Duration</label>
-                    <select id="match-duration">
-                        <option>60 min</option>
-                        <option selected>90 min</option>
-                        <option>120 min</option>
+                    <label for="venue_id">Venue</label>
+                    <select id="venue_id" name="venue_id" required>
+                        <option value="">Select a Venue</option>
+                        <?php foreach ($venues as $venue): ?>
+                            <option value="<?php echo $venue['venue_id']; ?>"><?php echo htmlspecialchars($venue['name']); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label for="match-skill">Skill Level</label>
-                    <select id="match-skill">
-                        <option value="beginner">Beginner (1.0 - 2.5)</option>
-                        <option value="intermediate">Intermediate (3.0 - 4.5)</option>
-                        <option value="advanced">Advanced (5.0 - 5.5)</option>
-                        <option value="expert">Expert / Pro (6.0+)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Players Needed</label>
-                    <div class="player-count-selector">
-                        <button type="button" class="player-count-btn">1</button>
-                        <button type="button" class="player-count-btn">2</button>
-                        <button type="button" class="player-count-btn active">3</button>
-                        <button type="button" class="player-count-btn">4</button>
-                        <button type="button" class="player-count-btn">5</button>
+                <div class="form-group two-columns">
+                    <div>
+                        <label for="match_date">Date</label>
+                        <input type="date" id="match_date" name="match_date" required>
+                    </div>
+                    <div>
+                        <label for="match_time">Time</label>
+                        <input type="time" id="match_time" name="match_time" required>
                     </div>
                 </div>
-                <button type="submit" class="btn-primary">Create Match</button>
+                <div class="form-group two-columns">
+                    <div>
+                        <label for="min_skill_level">Min Skill</label>
+                        <select id="min_skill_level" name="min_skill_level" required>
+                            <?php for ($i = 1; $i <= 7; $i++): ?>
+                                <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="max_skill_level">Max Skill</label>
+                        <select id="max_skill_level" name="max_skill_level" required>
+                            <?php for ($i = 1; $i <= 7; $i++): ?>
+                                <option value="<?php echo $i; ?>" <?php if($i==7) echo 'selected';?>><?php echo $i; ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description (Optional)</label>
+                    <textarea id="description" name="description" rows="3" placeholder="e.g., 'Friendly game, looking for one more player.'"></textarea>
+                </div>
+                <button type="submit" class="btn-primary" <?php if (!$isLoggedIn) echo 'disabled'; ?>>
+                    <?php echo $isLoggedIn ? 'Create Match' : 'Log in to Create'; ?>
+                </button>
             </form>
         </div>
     </div>
 
     <script>
+        feather.replace(); // Initialize Feather Icons
+
+        // --- Modal Logic ---
+        const createMatchModal = document.getElementById('create-match-modal');
+        const createMatchBtns = document.querySelectorAll('.create-match-header-btn');
+        const closeModalBtn = createMatchModal.querySelector('.modal-close-btn');
+
+        createMatchBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                createMatchModal.style.display = 'flex';
+            });
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            createMatchModal.style.display = 'none';
+        });
+
+        // Close modal if user clicks on the overlay
+        createMatchModal.addEventListener('click', (e) => {
+            if (e.target === createMatchModal) {
+                createMatchModal.style.display = 'none';
+            }
+        });
+
+        // Clean up success/error messages from URL
+        if (window.history.replaceState) {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            const currentParams = new URLSearchParams(window.location.search);
+            // Keep filter params, remove status params
+            currentParams.delete('status');
+            currentParams.delete('match_id');
+            if (currentParams.toString()) {
+                window.history.replaceState({path: cleanUrl + '?' + currentParams.toString()}, '', cleanUrl + '?' + currentParams.toString());
+            } else {
+                window.history.replaceState({path: cleanUrl}, '', cleanUrl);
+            }
+        }
         feather.replace(); // Initialize Feather Icons
 
         // --- JAVASCRIPT FOR INTERACTIVE FILTERS ---

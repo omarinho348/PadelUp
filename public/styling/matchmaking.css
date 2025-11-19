@@ -74,14 +74,6 @@
     color: white;
 }
 
-.filter-item .when-filter-btn {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
 .filter-item i {
     color: rgba(255, 255, 255, 0.7);
     width: 18px;
@@ -129,120 +121,6 @@
     color: var(--text);
 }
 
-/* --- Custom "When?" Popover Styles --- */
-.filter-item {
-    position: relative; /* Needed for popover positioning */
-}
-
-.when-popover {
-    position: absolute;
-    top: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 300px;
-    background: var(--card);
-    border-radius: var(--radius);
-    padding: 1rem;
-    box-shadow: var(--shadow-lg);
-    z-index: 20;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    transform-origin: top center;
-}
-
-.when-popover.visible {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(0);
-}
-
-.day-selector {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.day-btn {
-    flex: 1;
-    padding: 0.5rem 0;
-    border: 1px solid var(--border-color);
-    background: transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    color: var(--muted);
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.day-btn:hover { background-color: #eaf7ef; }
-.day-btn.active { background-color: var(--accent); color: white; border-color: var(--accent); }
-
-.time-range-selector label {
-    font-weight: 600;
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-    display: block;
-}
-
-.time-range-slider {
-    padding: 0 8px;
-    margin-bottom: 1rem;
-}
-
-.time-range-track {
-    height: 4px;
-    background-color: var(--border-color);
-    border-radius: 2px;
-    position: relative;
-}
-
-.time-inputs {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.time-input-group {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    background-color: #f3fbf6;
-    border-radius: 8px;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border-color);
-}
-
-.time-input-group .time-label { font-size: 0.8rem; color: var(--muted); margin-right: auto; }
-.time-input-group .time-value { font-weight: 600; color: var(--text); }
-
-.time-stepper {
-    display: flex;
-    flex-direction: column;
-    margin-left: 0.5rem;
-}
-
-.stepper-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--muted);
-    padding: 0;
-    line-height: 1;
-}
-.stepper-btn:hover { color: var(--accent); }
-.stepper-btn i { width: 16px; height: 16px; }
-
-.done-btn {
-    width: 100%;
-    padding: 0.75rem;
-    font-weight: 600;
-}
-
-
 .filter-item input::placeholder {
     color: rgba(255, 255, 255, 0.7);
 }
@@ -251,17 +129,6 @@
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
     cursor: pointer;
-}
-
-.filter-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.filter-bar .search-btn {
-    padding: 0.85rem 2rem;
-    border-radius: 999px;
 }
 
 .filter-bar .create-match-header-btn {
@@ -280,146 +147,178 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 .match-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    /* Use auto-fit to create a responsive grid that centers items */
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
     gap: 1.5rem;
+    justify-content: center; /* Center grid items if there's extra space */
 }
 
 .match-card {
     background-color: var(--card);
-    border-radius: 12px;
+    border-radius: var(--radius);
     box-shadow: 0 6px 18px rgba(47, 74, 63, 0.07);
-    padding: 1.5rem;
     display: flex;
-    flex-direction: column;
     position: relative;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden; /* To contain the action button */
 }
 
 .match-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 25px rgba(47, 74, 63, 0.1);
 }
-
-.match-card .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
-}
-
-.match-card .tag {
-    padding: 0.25rem 0.75rem;
-    border-radius: 99px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.tag.competitive-tag { background-color: #fde8e8; color: #c53030; }
-.tag.friendly-tag { background-color: #e6fffa; color: #2c7a7b; }
-.tag.public-tag { background-color: #e6fffa; color: #2c7a7b; }
-.tag.private-tag { background-color: #ebf4ff; color: #3182ce; }
-
-.match-card .card-body {
-    flex-grow: 1;
+.match-card-content {
+    padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
+    flex-grow: 1;
 }
 
-.location-info { display: flex; align-items: center; gap: 0.75rem; }
-.location-info i { color: var(--accent); }
-.location-info strong { color: var(--text); }
-.location-info p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+.match-card-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 1rem;
+}
 
-.duration-info { display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-weight: 500; }
-.duration-info i { color: var(--accent); }
+.match-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
 
+.match-info-item i {
+    width: 16px;
+    height: 16px;
+    color: var(--accent);
+}
 
-.skill-level { display: flex; align-items: center; gap: 0.5rem; }
-.skill-bar { height: 6px; width: 40px; border-radius: 3px; }
-.skill-bar.beginner { background-color: #63b3ed; }
-.skill-bar.intermediate { background-color: #48bb78; }
-.skill-bar.advanced { background-color: #f6ad55; }
+.match-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    flex-grow: 1;
+}
 
-.player-slots { display: flex; justify-content: space-between; align-items: center; }
-.player-slots .slot-count { font-size: 0.9rem; font-weight: 500; color: var(--muted); }
+.match-skill-level {
+    background-color: #f3fbf6;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    text-align: center;
+}
 
-.avatar-stack { display: flex; }
-.avatar-stack img, .avatar-stack .avatar-placeholder {
-    width: 32px;
-    height: 32px;
+.skill-level-label {
+    font-size: 0.8rem;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.skill-level-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.match-players {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.player-avatars {
+    display: flex;
+}
+
+.player-avatar {
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
-    border: 2px solid var(--card);
+    border: 2px solid white;
     margin-left: -10px;
     object-fit: cover;
-    background-color: #e2e8f0;
-}
-.avatar-stack .avatar-placeholder {
+    background-color: #e9ecef;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-style: dashed;
-    border-color: #cbd5e0;
-    color: #a0aec0;
 }
-.avatar-stack .avatar-placeholder i {
+
+.player-avatar svg {
     width: 14px;
     height: 14px;
-    stroke-width: 3;
+    color: #a0aec0;
 }
-.avatar-stack .avatar-placeholder { background-color: #e2e8f0; }
-.avatar-stack img:first-child, .avatar-stack .avatar-placeholder:first-child { margin-left: 0; }
 
-.host-info { font-size: 0.9rem; color: var(--muted); }
-.host-info .host-username { color: var(--accent); font-weight: 600; text-decoration: none; }
-.host-info .rating { display: inline-block; margin-left: 0.5rem; color: #f6ad55; font-weight: 600; }
+.player-avatar:first-child {
+    margin-left: 0;
+}
 
-.join-btn {
+.player-avatar-empty {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px dashed var(--border-color);
+    margin-left: -10px;
+    background-color: #f7fafc;
+}
+
+.player-count {
+    font-size: 0.9rem;
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.match-card-creator {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: auto; /* Pushes to the bottom */
+    padding-top: 1rem;
+}
+
+.match-card-action {
+    flex-shrink: 0;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3fbf6;
+    border-left: 1px solid var(--border-color);
+}
+
+.match-card-action form {
     width: 100%;
-    margin-top: 1.5rem;
-    padding: 0.8rem;
-    font-size: 1rem;
-    font-weight: 700;
-    border-radius: 999px; /* Create pill shape */
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    height: 100%;
 }
-.join-btn:hover { background-color: #159a63; }
-.join-btn.joined {
-    background-color: #a0aec0;
+
+.match-card-action .btn {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    border: none;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.match-card-action .btn:disabled {
+    background-color: #e2e8f0;
+    color: var(--muted);
     cursor: not-allowed;
 }
 
-/* --- Full Match Card State --- */
-.match-card--full {
-    opacity: 0.7;
-}
-.match-card--full .join-btn {
-    background-color: #c53030; /* Red color */
+.match-card-action .btn.btn-secondary {
+    background-color: #e53e3e; /* A clear red for leaving/danger */
     color: white;
-    cursor: not-allowed;
-    transform: none;
 }
 
-/* --- 3. User Profile Popover --- */
-.user-popover {
-    background: var(--card);
-    border-radius: 8px;
-    box-shadow: var(--shadow-lg);
-    padding: 1rem;
-    width: 280px;
-    z-index: 10;
-    border: 1px solid #eee;
+.match-card-action .btn.btn-secondary:hover:not(:disabled) {
+    background-color: #c53030; /* A darker red on hover */
 }
-.popover-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
-.popover-avatar { width: 50px; height: 50px; border-radius: 50%; }
-.popover-header div { display: flex; flex-direction: column; }
-.popover-name { font-weight: 600; }
-.popover-skill { font-size: 0.85rem; color: var(--muted); }
-.popover-bio { font-size: 0.9rem; line-height: 1.5; margin-bottom: 0.75rem; }
-.popover-stats { font-weight: 600; color: var(--accent); }
+
 
 .modal-overlay {
     position: fixed;
@@ -466,35 +365,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     font-size: 1rem;
 }
 .create-match-form button { padding: 0.8rem; margin-top: 1rem; }
-
-/* Player Count Selector in Modal */
-.player-count-selector {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.player-count-btn {
-    flex: 1;
-    padding: 0.75rem 0;
-    border: 1px solid var(--border-color);
-    background: transparent;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
-    color: var(--muted);
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.player-count-btn:hover {
-    background-color: #eaf7ef;
-}
-
-.player-count-btn.active {
-    background-color: var(--accent);
-    color: white;
-    border-color: var(--accent);
-}
 
 /* --- 5. Responsive Design --- */
 @media (max-width: 1024px) {
