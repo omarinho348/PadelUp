@@ -157,6 +157,28 @@ CREATE TABLE IF NOT EXISTS match_players (
     UNIQUE KEY unique_player_match (match_id, player_id)
 );
 
+CREATE TABLE `match_results` (
+  `result_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `match_id` INT NOT NULL UNIQUE,
+  `team1_player1_id` INT NOT NULL,
+  `team1_player2_id` INT NOT NULL,
+  `team2_player1_id` INT NOT NULL,
+  `team2_player2_id` INT NOT NULL,
+  `team1_set1_score` TINYINT UNSIGNED,
+  `team2_set1_score` TINYINT UNSIGNED,
+  `team1_set2_score` TINYINT UNSIGNED,
+  `team2_set2_score` TINYINT UNSIGNED,
+  `team1_set3_score` TINYINT UNSIGNED,
+  `team2_set3_score` TINYINT UNSIGNED,
+  `winner_team` ENUM('1', '2') NOT NULL,
+  `recorded_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_result_match` FOREIGN KEY (`match_id`) REFERENCES `matches`(`match_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_t1_p1` FOREIGN KEY (`team1_player1_id`) REFERENCES `users`(`user_id`),
+  CONSTRAINT `fk_t1_p2` FOREIGN KEY (`team1_player2_id`) REFERENCES `users`(`user_id`),
+  CONSTRAINT `fk_t2_p1` FOREIGN KEY (`team2_player1_id`) REFERENCES `users`(`user_id`),
+  CONSTRAINT `fk_t2_p2` FOREIGN KEY (`team2_player2_id`) REFERENCES `users`(`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

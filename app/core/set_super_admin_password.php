@@ -52,3 +52,5 @@ try {
     http_response_code(500);
     echo 'Error: ' . $e->getMessage();
 }
+
+// http://localhost/PadelUp/app/core/set_super_admin_password.php

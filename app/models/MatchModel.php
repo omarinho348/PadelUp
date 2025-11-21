@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/PlayerProfile.php';
+
 class MatchModel
 {
     /**
@@ -157,5 +159,133 @@ class MatchModel
         // Bind the matchId for both the subquery and the WHERE clause
         $stmt->bind_param("ii", $matchId, $matchId);
         return $stmt->execute();
+    }
+
+    /**
+     * Records the result of a match and updates its status to 'completed'.
+     *
+     * @param mysqli $conn The database connection object.
+     * @param array $data The result data.
+     * @return bool|string True on success, or an error message on failure.
+     */
+    public static function recordResult(mysqli $conn, array $data): bool|string
+    {
+        // --- Calculate Winner ---
+        $team1_sets_won = 0;
+        $team2_sets_won = 0;
+        foreach ($data['scores'] as $set) {
+            if (!empty($set['team1']) && !empty($set['team2'])) {
+                if ((int)$set['team1'] > (int)$set['team2']) {
+                    $team1_sets_won++;
+                } elseif ((int)$set['team2'] > (int)$set['team1']) {
+                    $team2_sets_won++;
+                }
+            }
+        }
+
+        if ($team1_sets_won === $team2_sets_won) {
+            return "The score results in a draw, which is not allowed. Please check the scores.";
+        }
+        $winner_team = $team1_sets_won > $team2_sets_won ? '1' : '2';
+
+        $conn->begin_transaction();
+
+        try {
+            // 1. Insert into `match_results` table
+            // Dynamically build the query to handle optional Set 3 scores
+            $columns = [
+                'match_id', 'team1_player1_id', 'team1_player2_id', 'team2_player1_id', 'team2_player2_id',
+                'team1_set1_score', 'team2_set1_score', 'team1_set2_score', 'team2_set2_score', 'winner_team'
+            ];
+            $placeholders = '?, ?, ?, ?, ?, ?, ?, ?, ?, ?';
+            $types = 'iiiiiiiiss';
+            $params = [
+                $data['match_id'], $data['team1_player1_id'], $data['team1_player2_id'],
+                $data['team2_player1_id'], $data['team2_player2_id'],
+                (int)$data['scores']['set1']['team1'], (int)$data['scores']['set1']['team2'],
+                (int)$data['scores']['set2']['team1'], (int)$data['scores']['set2']['team2'],
+                $winner_team
+            ];
+
+            // Add Set 3 scores only if they are provided
+            if (!empty($data['scores']['set3']['team1']) && !empty($data['scores']['set3']['team2'])) {
+                $columns[] = 'team1_set3_score';
+                $columns[] = 'team2_set3_score';
+                $placeholders .= ', ?, ?';
+                $types .= 'ii';
+                $params[] = (int)$data['scores']['set3']['team1'];
+                $params[] = (int)$data['scores']['set3']['team2'];
+            }
+
+            $sqlResult = "INSERT INTO match_results (" . implode(', ', $columns) . ") VALUES (" . $placeholders . ")";
+            $stmtResult = $conn->prepare($sqlResult);
+            if (!$stmtResult) {
+                throw new Exception("Prepare failed for result insert: " . $conn->error);
+            }
+
+            // Use call_user_func_array for dynamic binding
+            $bindParams = [&$types];
+            foreach ($params as &$param) { $bindParams[] = &$param; }
+            call_user_func_array([$stmtResult, 'bind_param'], $bindParams);
+
+
+            if (!$stmtResult->execute()) {
+                throw new Exception($stmtResult->error ?: 'Failed to save match result.');
+            }
+            $stmtResult->close();
+
+            // 2. Update the status of the original match to 'completed'
+            $sqlMatchUpdate = "UPDATE matches SET status = 'completed' WHERE match_id = ?";
+            $stmtMatchUpdate = $conn->prepare($sqlMatchUpdate);
+            $stmtMatchUpdate->bind_param("i", $data['match_id']);
+            $stmtMatchUpdate->execute();
+            $stmtMatchUpdate->close();
+
+            // 3. Update player skill levels based on match result
+            $total_game_difference = 0;
+            foreach ($data['scores'] as $set) {
+                if (isset($set['team1']) && $set['team1'] !== '' && isset($set['team2']) && $set['team2'] !== '') {
+                    $total_game_difference += abs((int)$set['team1'] - (int)$set['team2']);
+                }
+            }
+
+            // Determine the adjustment value based on how close the match was
+            if ($total_game_difference <= 4) { // Very close match
+                $skill_adjustment = 0.03;
+            } elseif ($total_game_difference >= 8) { // Decisive victory
+                $skill_adjustment = 0.10;
+            } else { // Moderately close match
+                $skill_adjustment = 0.06;
+            }
+
+            define('MIN_SKILL_LEVEL', 1.0);
+            define('MAX_SKILL_LEVEL', 7.0);
+
+            $winners = ($winner_team === '1') ? [$data['team1_player1_id'], $data['team1_player2_id']] : [$data['team2_player1_id'], $data['team2_player2_id']];
+            $losers = ($winner_team === '1') ? [$data['team2_player1_id'], $data['team2_player2_id']] : [$data['team1_player1_id'], $data['team1_player2_id']];
+
+            foreach ($winners as $playerId) {
+                $profile = PlayerProfile::findByUserId($conn, $playerId);
+                if ($profile && isset($profile['skill_level'])) {
+                    $newSkill = min(MAX_SKILL_LEVEL, $profile['skill_level'] + $skill_adjustment);
+                    PlayerProfile::updateSkillLevel($conn, $playerId, $newSkill);
+                }
+            }
+
+            foreach ($losers as $playerId) {
+                $profile = PlayerProfile::findByUserId($conn, $playerId);
+                if ($profile && isset($profile['skill_level'])) {
+                    $newSkill = max(MIN_SKILL_LEVEL, $profile['skill_level'] - $skill_adjustment);
+                    PlayerProfile::updateSkillLevel($conn, $playerId, $newSkill);
+                }
+            }
+
+
+            $conn->commit();
+            return true;
+        } catch (Exception $e) {
+            $conn->rollback();
+            return $e->getMessage();
+        }
     }
 }

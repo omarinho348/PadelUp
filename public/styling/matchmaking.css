@@ -158,9 +158,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     border-radius: var(--radius);
     box-shadow: 0 6px 18px rgba(47, 74, 63, 0.07);
     display: flex;
+    flex-direction: column; /* Changed from default row */
     position: relative;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    overflow: hidden; /* To contain the action button */
+    overflow: hidden;
 }
 
 .match-card:hover {
@@ -171,7 +172,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     padding: 1.25rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem; /* Increased gap for better spacing */
     flex-grow: 1;
 }
 
@@ -179,7 +180,7 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color-light);
     padding-bottom: 1rem;
 }
 
@@ -189,12 +190,19 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     gap: 0.5rem;
     font-size: 0.9rem;
     color: var(--muted);
+    font-weight: 500;
+}
+
+.match-info-item span {
+    color: var(--text);
 }
 
 .match-info-item i {
     width: 16px;
     height: 16px;
     color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 2px;
 }
 
 .match-card-body {
@@ -204,13 +212,22 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     flex-grow: 1;
 }
 
+.match-card-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
 .match-skill-level {
-    background-color: #f3fbf6;
+    background-color: var(--background);
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 0.75rem 1rem;
     text-align: center;
-}
+    flex-shrink: 0; /* Prevent it from shrinking */
+    min-width: 120px; /* Give it a minimum width */
+} 
 
 .skill-level-label {
     font-size: 0.8rem;
@@ -239,18 +256,18 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     height: 28px;
     border-radius: 50%;
     border: 2px solid white;
-    margin-left: -10px;
+    margin-left: -8px; /* Slightly reduce overlap for a cleaner look */
     object-fit: cover;
-    background-color: #e9ecef;
+    background-color: var(--border-color); /* Use a theme variable for consistency */
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .player-avatar svg {
-    width: 14px;
-    height: 14px;
-    color: #a0aec0;
+    width: 16px; /* Make icon slightly larger */
+    height: 16px;
+    color: var(--muted); /* Use a theme variable for consistency */
 }
 
 .player-avatar:first-child {
@@ -261,9 +278,9 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    border: 2px dashed var(--border-color);
-    margin-left: -10px;
-    background-color: #f7fafc;
+    border: 1px dashed var(--border-color-light); /* Make border thinner and lighter */
+    margin-left: -8px;
+    background-color: transparent; /* Remove background for a faded effect */
 }
 
 .player-count {
@@ -275,39 +292,35 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 .match-card-creator {
     font-size: 0.85rem;
     color: var(--muted);
-    text-align: center;
+    text-align: left; /* Align to the left */
     margin-top: auto; /* Pushes to the bottom */
     padding-top: 1rem;
 }
 
 .match-card-action {
-    flex-shrink: 0;
-    width: 120px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f3fbf6;
-    border-left: 1px solid var(--border-color);
+    padding: 1rem 1.25rem;
+    background-color: var(--background);
+    border-top: 1px solid var(--border-color-light);
 }
 
 .match-card-action form {
     width: 100%;
-    height: 100%;
 }
 
 .match-card-action .btn {
     width: 100%;
-    height: 100%;
-    border-radius: 0;
-    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
     font-weight: 600;
     transition: background-color 0.2s ease;
 }
 
 .match-card-action .btn:disabled {
-    background-color: #e2e8f0;
+    background-color: var(--border-color);
     color: var(--muted);
     cursor: not-allowed;
+    border-color: var(--border-color);
+    opacity: 0.7;
 }
 
 .match-card-action .btn.btn-secondary {
@@ -317,6 +330,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 
 .match-card-action .btn.btn-secondary:hover:not(:disabled) {
     background-color: #c53030; /* A darker red on hover */
+}
+
+.match-card-action .btn.btn-accent {
+    background-color: var(--accent);
+    color: white;
 }
 
 
@@ -361,10 +379,49 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 .create-match-form input, .create-match-form select {
     padding: 0.75rem;
     border: 1px solid #ccc;
-    border-radius: 8px;
+    border-radius: var(--radius);
     font-size: 1rem;
 }
+.score-input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+}
+.score-header {
+    grid-column: span 1;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+.score-input-grid input {
+    text-align: center;
+    padding: 0.5rem;
+}
+.form-text {
+    font-size: 0.8rem; color: var(--muted);
+}
 .create-match-form button { padding: 0.8rem; margin-top: 1rem; }
+
+/* --- Confirmation Modal --- */
+.confirmation-modal-content {
+    max-width: 450px;
+    text-align: center;
+}
+
+.confirmation-modal-content h2 {
+    margin-top: 1rem;
+}
+
+.confirmation-modal-content p {
+    color: var(--muted);
+    margin-bottom: 1.5rem;
+}
+
+.confirmation-modal-content .btn {
+    width: 100%;
+}
 
 /* --- 5. Responsive Design --- */
 @media (max-width: 1024px) {

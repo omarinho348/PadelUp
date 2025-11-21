@@ -20,10 +20,14 @@
     require_once __DIR__ . '/../controllers/MatchController.php';
     require_once __DIR__ . '/../models/Venue.php'; // For fetching venues for the modal
 
+    date_default_timezone_set('Africa/Cairo'); // Set the correct timezone for all date/time operations
+    require_once __DIR__ . '/../models/Venue.php'; // For fetching venues for the modal
+
     // Handle POST requests for creating/joining matches
     $create_error = MatchController::createMatch();
     $join_error = MatchController::joinMatch();
     $leave_error = MatchController::leaveMatch();
+    $result_error = MatchController::recordMatchResult();
 
     // Fetch all open matches, applying any GET filters
     $matches = MatchController::showMatches();
@@ -82,23 +86,6 @@
 
         <!-- Match Feed / Lobby -->
         <section class="match-lobby">
-            <?php if (!empty($join_error)): ?>
-                <div class="alert alert-error"><?php echo htmlspecialchars($join_error); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($create_error)): ?>
-                <div class="alert alert-error"><?php echo htmlspecialchars($create_error); ?></div>
-            <?php endif; ?>
-            <?php if (!empty($leave_error)): ?>
-                <div class="alert alert-error"><?php echo htmlspecialchars($leave_error); ?></div>
-            <?php endif; ?>
-            <?php if (isset($_GET['status']) && $_GET['status'] === 'created'): ?>
-                <div class="alert alert-success">Match created successfully!</div>
-            <?php elseif (isset($_GET['status']) && $_GET['status'] === 'joined'): ?>
-                <div class="alert alert-success">You have successfully joined the match!</div>
-            <?php elseif (isset($_GET['status']) && $_GET['status'] === 'left'): ?>
-                <div class="alert alert-success">You have left the match.</div>
-            <?php endif; ?>
-
             <div class="match-grid"> 
                 <?php if (empty($matches)): ?>
                     <div class="empty-state">
@@ -121,51 +108,71 @@
                                     </div>
                                 </div>
                                 <div class="match-card-body">
-                                    <div class="match-skill-level">
-                                        <div class="skill-level-label">Skill Level</div>
-                                        <div class="skill-level-value"><?php echo htmlspecialchars($match['min_skill_level']); ?> - <?php echo htmlspecialchars($match['max_skill_level']); ?></div>
-                                    </div>
-                                    <div class="match-players">
-                                        <div class="player-avatars">
-                                            <?php for($i = 0; $i < $match['current_players']; $i++): ?>
-                                                <div class="player-avatar"><i data-feather="user"></i></div>
+                                    <div class="match-card-details">
+                                        <div class="match-skill-level">
+                                            <div class="skill-level-label">Skill Level</div>
+                                            <div class="skill-level-value"><?php echo htmlspecialchars($match['min_skill_level']); ?> - <?php echo htmlspecialchars($match['max_skill_level']); ?></div>
+                                        </div>
+                                        <div class="match-players">
+                                            <div class="player-avatars">
+                                                <?php for($i = 0; $i < $match['current_players']; $i++): ?>
+                                                <div class="player-avatar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle>
+                                                    </svg>
+                                                </div>
                                             <?php endfor; ?>
                                             <?php for($i = 0; $i < ($match['max_players'] - $match['current_players']); $i++): ?>
-                                                <div class="player-avatar-empty"></div>
+                                                    <div class="player-avatar-empty"></div>
                                             <?php endfor; ?>
-                                        </div>
-                                        <div class="player-count">
-                                            <strong><?php echo (int)$match['current_players']; ?>/<?php echo (int)$match['max_players']; ?></strong> Players
+                                            </div>
+                                            <div class="player-count">
+                                                <strong><?php echo (int)$match['current_players']; ?>/<?php echo (int)$match['max_players']; ?></strong> Players
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="match-card-creator">
                                     Created by: <strong><?php echo htmlspecialchars($match['creator_name']); ?></strong>
                                 </div>
-                            </div>
-                            <div class="match-card-action">
+                                
                                 <?php
-                                    $isLoggedIn = !is_null($current_user_id);
-                                    $hasJoined = $isLoggedIn && MatchPlayer::hasJoined($GLOBALS['conn'], $match['match_id'], $current_user_id);
-                                    $isFull = $match['current_players'] >= $match['max_players'];
-                                    $canJoin = $isLoggedIn && !$isFull && !$hasJoined;
-                                    $isCreator = $isLoggedIn && $current_user_id == $match['creator_id'];
+                                $isLoggedIn = !is_null($current_user_id);
+                                $hasJoined = $isLoggedIn && MatchPlayer::hasJoined($GLOBALS['conn'], $match['match_id'], $current_user_id);
+                                $isFull = $match['current_players'] >= $match['max_players'];
+                                $canJoin = $isLoggedIn && !$isFull && !$hasJoined;
+                                $isCreator = $isLoggedIn && ($current_user_id == $match['creator_id']);
+                                // A match is considered playable if it's full and the date is today or in the past.
+                                $match_datetime_str = $match['match_date'] . ' ' . $match['match_time'];
+                                $isPlayable = $isFull && (new DateTime($match_datetime_str) <= new DateTime());
                                 ?>
-                                <?php if ($hasJoined): ?>
-                                    <form method="POST" action="matchmaking.php">
-                                        <input type="hidden" name="action" value="leave_match">
-                                        <input type="hidden" name="match_id" value="<?php echo $match['match_id']; ?>">
-                                        <button type="submit" class="btn btn-secondary" <?php if ($isCreator) echo 'disabled title="Creators cannot leave a match"'; ?>>Leave</button>
-                                    </form>
-                                <?php else: ?>
-                                    <form method="POST" action="matchmaking.php">
-                                        <input type="hidden" name="action" value="join_match">
-                                        <input type="hidden" name="match_id" value="<?php echo $match['match_id']; ?>">
-                                        <button type="submit" class="btn btn-primary" <?php if (!$canJoin) echo 'disabled'; ?>>
-                                            <?php echo ($isFull) ? 'Full' : 'Join Match'; ?>
-                                        </button>
-                                    </form>
-                                <?php endif; ?>
+                                <div class="match-card-action">
+                                    <?php if ($isCreator && $isPlayable): ?>
+                                        <button type="button" class="btn btn-accent record-result-btn" 
+                                                data-match-id="<?php echo $match['match_id']; ?>"
+                                                data-players='<?php 
+                                                    $other_players = array_filter(
+                                                        MatchPlayer::getPlayersForMatch($GLOBALS['conn'], $match['match_id']), 
+                                                        fn($p) => $p['user_id'] != $current_user_id
+                                                    );
+                                                    echo htmlspecialchars(json_encode(array_values($other_players)), ENT_QUOTES, 'UTF-8'); 
+                                                ?>'>Record Result</button>
+                                    <?php elseif ($hasJoined): ?>
+                                        <form method="POST" action="matchmaking.php">
+                                            <input type="hidden" name="action" value="leave_match">
+                                            <input type="hidden" name="match_id" value="<?php echo $match['match_id']; ?>">
+                                            <button type="submit" class="btn btn-secondary" <?php if ($isCreator) echo 'disabled title="Creators cannot leave a match"'; ?>>Leave</button>
+                                        </form>
+                                    <?php else: ?>
+                                        <form method="POST" action="matchmaking.php">
+                                            <input type="hidden" name="action" value="join_match">
+                                            <input type="hidden" name="match_id" value="<?php echo $match['match_id']; ?>">
+                                            <button type="submit" class="btn btn-primary" <?php if (!$canJoin) echo 'disabled'; ?>>
+                                                <?php echo ($isFull) ? 'Full' : 'Join Match'; ?>
+                                            </button>
+                                        </form>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </article>
                     <?php endforeach; ?>
@@ -229,6 +236,63 @@
         </div>
     </div>
 
+    <!-- Record Match Result Modal -->
+    <div id="record-result-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close-btn"><i data-feather="x"></i></button>
+            <h2>Record Match Result</h2>
+            <form id="record-result-form" method="POST" action="matchmaking.php">
+                <input type="hidden" name="action" value="record_result">
+                <input type="hidden" id="record-match-id" name="match_id" value="">
+
+                <div class="form-group">
+                    <label for="teammate_id">Who was your teammate?</label>
+                    <select id="teammate_id" name="teammate_id" required>
+                        <option value="">Select a player</option>
+                        <!-- Options will be populated by JS -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Match Score</label>
+                    <div class="score-input-grid">
+                        <div class="score-header">Your Team</div>
+                        <div class="score-header">Opponents</div>
+                        
+                        <!-- Set 1 -->
+                        <input type="number" name="score[set1][team1]" min="0" max="7" placeholder="S1" required>
+                        <input type="number" name="score[set1][team2]" min="0" max="7" placeholder="S1" required>
+
+                        <!-- Set 2 -->
+                        <input type="number" name="score[set2][team1]" min="0" max="7" placeholder="S2" required>
+                        <input type="number" name="score[set2][team2]" min="0" max="7" placeholder="S2" required>
+
+                        <!-- Set 3 (Optional) -->
+                        <input type="number" name="score[set3][team1]" min="0" max="7" placeholder="S3">
+                        <input type="number" name="score[set3][team2]" min="0" max="7" placeholder="S3">
+                    </div>
+                    <small class="form-text">Enter scores for each set. Leave Set 3 blank if not played.</small>
+                </div>
+
+                <button type="submit" class="btn-primary">Submit Result</button>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Confirmation Modal (for join/leave/create success/error) -->
+    <div id="confirmation-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content confirmation-modal-content">
+            <div id="confirmation-modal-icon">
+                <!-- Icon will be injected by JS -->
+            </div>
+            <h2 id="confirmation-modal-title"></h2>
+            <p id="confirmation-modal-message"></p>
+            <button id="confirmation-modal-close" class="btn btn-primary">OK</button>
+        </div>
+    </div>
+
+
     <script>
         feather.replace(); // Initialize Feather Icons
 
@@ -254,133 +318,104 @@
             }
         });
 
-        // Clean up success/error messages from URL
-        if (window.history.replaceState) {
-            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-            const currentParams = new URLSearchParams(window.location.search);
-            // Keep filter params, remove status params
-            currentParams.delete('status');
-            currentParams.delete('match_id');
-            if (currentParams.toString()) {
-                window.history.replaceState({path: cleanUrl + '?' + currentParams.toString()}, '', cleanUrl + '?' + currentParams.toString());
-            } else {
-                window.history.replaceState({path: cleanUrl}, '', cleanUrl);
-            }
-        }
-        feather.replace(); // Initialize Feather Icons
+        // --- Record Result Modal Logic ---
+        const recordResultModal = document.getElementById('record-result-modal');
+        const recordResultBtns = document.querySelectorAll('.record-result-btn');
+        const closeRecordModalBtn = recordResultModal.querySelector('.modal-close-btn');
+        const recordMatchIdInput = document.getElementById('record-match-id');
+        const teammateSelect = document.getElementById('teammate_id');
 
-        // --- JAVASCRIPT FOR INTERACTIVE FILTERS ---
-        const whenFilterBtn = document.querySelector('.when-filter-btn');
-        const whenPopover = document.querySelector('.when-popover');
-        const dayButtons = document.querySelectorAll('.day-btn');
-        const doneBtn = document.querySelector('.done-btn');
-        const startTimeValue = document.getElementById('start-time');
-        const endTimeValue = document.getElementById('end-time');
-        const increaseStartTimeBtn = document.querySelector('[aria-label="Increase start time"]');
-        const decreaseStartTimeBtn = document.querySelector('[aria-label="Decrease start time"]');
-        const increaseEndTimeBtn = document.querySelector('[aria-label="Increase end time"]');
-        const decreaseEndTimeBtn = document.querySelector('[aria-label="Decrease end time"]');
-        let selectedDay = 'Today'; // Default value
+        recordResultBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const matchId = btn.dataset.matchId;
+                const players = JSON.parse(btn.dataset.players);
+                
+                recordMatchIdInput.value = matchId;
+                teammateSelect.innerHTML = '<option value="">Select a player</option>'; // Clear previous options
+                players.forEach(player => {
+                    const option = new Option(player.name, player.user_id);
+                    teammateSelect.add(option);
+                });
 
-        // --- Modal Logic ---
-        const createMatchModal = document.getElementById('create-match-modal');
-        const createMatchBtn = document.querySelector('.create-match-header-btn');
-        const closeModalBtn = createMatchModal.querySelector('.modal-close-btn');
-
-
-        // Toggle the popover's visibility when the "Anytime" button is clicked
-        whenFilterBtn.addEventListener('click', (e) => {
-          e.stopPropagation(); // Prevents the window click event from firing immediately
-          whenPopover.classList.toggle('visible');
-        });
-
-        // Close the popover when clicking anywhere else on the page
-        const closePopover = () => {
-          if (whenPopover.classList.contains('visible')) {
-            whenPopover.classList.remove('visible');
-          }
-        };
-        window.addEventListener('click', closePopover);
-        whenPopover.addEventListener('click', (e) => e.stopPropagation()); // Prevent clicks inside the popover from closing it
-
-        // Handle active state for day selector buttons
-        dayButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                dayButtons.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-                selectedDay = button.textContent; // Store selected day
+                recordResultModal.style.display = 'flex';
             });
         });
 
-        // --- Time Stepper Logic ---
-        const timeStep = 30; // 30 minutes
-
-        const parseTime = (timeString) => {
-            const [time, period] = timeString.split(' ');
-            let [hours, minutes] = time.split(':').map(Number);
-            if (period === 'PM' && hours !== 12) hours += 12;
-            if (period === 'AM' && hours === 12) hours = 0; // Midnight case
-            return { hours, minutes };
-        };
-
-        const formatTime = (date) => {
-            const hours = date.getHours();
-            const minutes = date.getMinutes();
-            const period = hours >= 12 ? 'PM' : 'AM';
-            let displayHours = hours % 12;
-            if (displayHours === 0) displayHours = 12;
-            const displayMinutes = String(minutes).padStart(2, '0');
-            return `${displayHours}:${displayMinutes} ${period}`;
-        };
-
-        const adjustTime = (timeElement, minuteChange) => {
-            const { hours, minutes } = parseTime(timeElement.textContent);
-            const date = new Date();
-            date.setHours(hours, minutes, 0, 0);
-            date.setMinutes(date.getMinutes() + minuteChange);
-            timeElement.textContent = formatTime(date);
-        };
-
-        increaseStartTimeBtn.addEventListener('click', () => adjustTime(startTimeValue, timeStep));
-        decreaseStartTimeBtn.addEventListener('click', () => adjustTime(startTimeValue, -timeStep));
-        increaseEndTimeBtn.addEventListener('click', () => adjustTime(endTimeValue, timeStep));
-        decreaseEndTimeBtn.addEventListener('click', () => adjustTime(endTimeValue, -timeStep));
-
-
-        // Handle "Done" button click
-        doneBtn.addEventListener('click', () => {
-            const startTime = document.getElementById('start-time').textContent;
-            const endTime = document.getElementById('end-time').textContent;
-
-            // Update the main button text
-            whenFilterBtn.textContent = `${selectedDay}, ${startTime} - ${endTime}`;
-            
-            closePopover(); // Close the popover
-        });
-
-        // --- "Create Match" Modal Functionality ---
-        createMatchBtn.addEventListener('click', () => {
-            createMatchModal.style.display = 'flex';
-        });
-
-        closeModalBtn.addEventListener('click', () => {
-            createMatchModal.style.display = 'none';
-        });
-
-        // Close modal if user clicks on the overlay
-        createMatchModal.addEventListener('click', (e) => {
-            if (e.target === createMatchModal) {
-                createMatchModal.style.display = 'none';
+        closeRecordModalBtn.addEventListener('click', () => recordResultModal.style.display = 'none');
+        recordResultModal.addEventListener('click', (e) => {
+            if (e.target === recordResultModal) {
+                recordResultModal.style.display = 'none';
             }
         });
 
-        // Handle active state for player count buttons in modal
-        const playerCountBtns = document.querySelectorAll('.player-count-btn');
-        playerCountBtns.forEach(button => {
-            button.addEventListener('click', () => {
-                playerCountBtns.forEach(btn => btn.classList.remove('active'));
-                button.classList.add('active');
-            });
-        });
     </script>
 <?php include __DIR__ . '/partials/footer.php'; ?>
+
+<script>
+    // --- Confirmation Modal Logic ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const confirmationModalIcon = document.getElementById('confirmation-modal-icon');
+        const confirmationModalTitle = document.getElementById('confirmation-modal-title');
+        const confirmationModalMessage = document.getElementById('confirmation-modal-message');
+        const confirmationModalClose = document.getElementById('confirmation-modal-close');
+
+        const icons = {
+            success: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`,
+            error: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`
+        };
+
+        function showConfirmationModal(type, title, message) {
+            if (!confirmationModal) return;
+            confirmationModalIcon.innerHTML = icons[type] || '';
+            confirmationModalTitle.textContent = title;
+            confirmationModalMessage.textContent = message;
+            confirmationModal.style.display = 'flex';
+        }
+
+        function closeConfirmationModal() {
+            if (!confirmationModal) return;
+            confirmationModal.style.display = 'none';
+        }
+
+        if (confirmationModal) {
+            confirmationModalClose.addEventListener('click', closeConfirmationModal);
+            confirmationModal.addEventListener('click', (e) => {
+                if (e.target === confirmationModal) {
+                    closeConfirmationModal();
+                }
+            });
+        }
+
+        // Check for PHP-generated errors
+        <?php if (!empty($create_error)): ?>
+            showConfirmationModal('error', 'Creation Failed', '<?php echo addslashes($create_error); ?>');
+        <?php elseif (!empty($join_error)): ?>
+            showConfirmationModal('error', 'Join Failed', '<?php echo addslashes($join_error); ?>');
+        <?php elseif (!empty($leave_error)): ?>
+            showConfirmationModal('error', 'Could Not Leave', '<?php echo addslashes($leave_error); ?>');
+        <?php elseif (!empty($result_error)): ?>
+            showConfirmationModal('error', 'Result Error', '<?php echo addslashes($result_error); ?>');
+        <?php endif; ?>
+
+        // Check for URL status parameters for success messages
+        const urlParams = new URLSearchParams(window.location.search);
+        const status = urlParams.get('status');
+
+        if (status === 'created') {
+            showConfirmationModal('success', 'Success!', 'Your match has been created successfully.');
+        } else if (status === 'joined') {
+            showConfirmationModal('success', 'You\'re In!', 'You have successfully joined the match.');
+        } else if (status === 'left') {
+            showConfirmationModal('success', 'Match Left', 'You have successfully left the match.');
+        } else if (status === 'result_recorded') {
+            showConfirmationModal('success', 'Success!', 'The match result has been recorded.');
+        }
+
+        // Clean up URL after showing modal
+        if (status && window.history.replaceState) {
+            const cleanUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + window.location.search.replace(/&?status=[^&]*/, '').replace(/\?&/, '?').replace(/\?$/, '');
+            window.history.replaceState({ path: cleanUrl }, '', cleanUrl);
+        }
+    });
+</script>

@@ -122,6 +122,9 @@ class MatchController
         if ($playerProfile && isset($playerProfile['skill_level']) && $playerProfile['skill_level'] < $match['min_skill_level']) { // Check if player's skill is too low
             return "Error: Your skill level ({$playerProfile['skill_level']}) is below the minimum required ({$match['min_skill_level']}) for this match.";
         }
+        if ($playerProfile && isset($playerProfile['skill_level']) && $playerProfile['skill_level'] > $match['max_skill_level']) { // Check if player's skill is too high
+            return "Error: Your skill level ({$playerProfile['skill_level']}) is above the maximum allowed ({$match['max_skill_level']}) for this match.";
+        }
 
         $result = MatchPlayer::joinMatch($conn, $matchId, $playerId);
 
@@ -167,6 +170,86 @@ class MatchController
             exit();
         } else {
             // Failure
+            return "Error: " . $result;
+        }
+    }
+
+    /**
+     * Handles recording the result of a completed match.
+     *
+     * @return string A message indicating success or failure.
+     */
+    public static function recordMatchResult(): string
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['action']) || $_POST['action'] !== 'record_result') {
+            return "";
+        }
+
+        if (!isset($_SESSION['user_id'])) {
+            return "Error: You must be logged in to record a result.";
+        }
+
+        // --- Input Validation ---
+        $matchId = (int)($_POST['match_id'] ?? 0);
+        $teammateId = (int)($_POST['teammate_id'] ?? 0);
+        $scores = $_POST['score'] ?? [];
+        $creatorId = (int)$_SESSION['user_id'];
+
+        if ($matchId <= 0 || $teammateId <= 0) {
+            return "Error: Invalid match or teammate selected.";
+        }
+
+        $conn = $GLOBALS['conn'];
+        $match = MatchModel::findById($conn, $matchId);
+
+        // --- Authorization and Match State Check ---
+        if (!$match) {
+            return "Error: Match not found.";
+        }
+        if ($match['creator_id'] != $creatorId) {
+            return "Error: Only the match creator can record the result.";
+        }
+        if ($match['status'] !== 'full') {
+            return "Error: Can only record results for full matches.";
+        }
+        if ($match['status'] === 'completed') {
+            return "Error: A result has already been recorded for this match.";
+        }
+
+        // --- Determine Teams ---
+        $allPlayers = MatchPlayer::getPlayersForMatch($conn, $matchId);
+        if (count($allPlayers) !== 4) {
+            return "Error: Match does not have 4 players.";
+        }
+
+        $team1 = [$creatorId, $teammateId];
+        $team2 = [];
+        foreach ($allPlayers as $player) {
+            if (!in_array($player['user_id'], $team1)) {
+                $team2[] = $player['user_id'];
+            }
+        }
+
+        if (count($team2) !== 2) {
+            return "Error: Could not determine teams correctly.";
+        }
+
+        // --- Prepare Data for Model ---
+        $resultData = [
+            'match_id' => $matchId,
+            'team1_player1_id' => $team1[0],
+            'team1_player2_id' => $team1[1],
+            'team2_player1_id' => $team2[0],
+            'team2_player2_id' => $team2[1],
+            'scores' => $scores
+        ];
+
+        $result = MatchModel::recordResult($conn, $resultData);
+
+        if ($result === true) {
+            header('Location: matchmaking.php?status=result_recorded');
+            exit();
+        } else {
             return "Error: " . $result;
         }
     }
