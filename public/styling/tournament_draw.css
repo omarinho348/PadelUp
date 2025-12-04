@@ -1,0 +1,286 @@
+:root {
+    --primary: var(--accent);
+}
+html, body {
+    height: auto;
+    min-height: 100vh;
+    width: 100%;
+}
+body {
+    background-color: var(--bg);
+    font-family: var(--ff);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+}
+
+.hero-section {
+    position: relative;
+    height: 350px;
+    background-image: linear-gradient(rgba(5, 52, 40, 0.7), rgba(5, 52, 40, 0.8)), url('../../public/Photos/tournaments.webp');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin-bottom: 50px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.hero-content {
+    text-align: center;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+}
+
+.venue-logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    background: white;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    border: 4px solid rgba(255,255,255,0.2);
+}
+
+.tournament-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    margin: 0;
+    letter-spacing: -1px;
+    line-height: 1.1;
+}
+
+.tournament-meta {
+    display: flex;
+    gap: 30px;
+    font-size: 1.1rem;
+    background: rgba(255,255,255,0.15);
+    padding: 12px 30px;
+    border-radius: 50px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.3);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+}
+
+.meta-icon {
+    opacity: 0.8;
+}
+
+.bracket-wrapper {
+    padding: 0 40px;
+    max-width: 100%;
+    overflow-x: auto;
+    padding-bottom: 60px;
+}
+
+.bracket {
+    display: flex;
+    gap: 80px;
+    padding: 20px;
+    width: max-content;
+    margin: 0 auto;
+    /* Ensure bracket takes full height to stretch rounds */
+    align-items: stretch; 
+}
+
+.round {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+    /* Remove justify-content: space-around from here */
+}
+
+.round-matches {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex: 1; /* Take remaining height */
+    gap: 20px; /* Add a small gap to prevent touching, but space-around handles the main spacing */
+}
+
+.round-title {
+    text-align: center;
+    color: var(--primary);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+    font-size: 1.2rem;
+    padding-bottom: 15px;
+    border-bottom: 3px solid var(--accent);
+    position: relative;
+    /* Fixed height for title to ensure match containers start at same level */
+    height: 50px; 
+    box-sizing: border-box;
+}
+
+.match {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    /* Remove margin-bottom to allow space-around to work perfectly */
+    margin-bottom: 0; 
+    position: relative;
+    border: 1px solid rgba(0,0,0,0.03);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    /* Ensure matches don't collapse */
+    min-height: 100px;
+}
+
+.match:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.player {
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    height: 85px;
+    transition: background 0.2s;
+}
+
+.player:last-child {
+    border-bottom: none;
+}
+
+.player.winner {
+    background: linear-gradient(to right, rgba(17, 122, 77, 0.08), rgba(17, 122, 77, 0.02));
+    border-left: 5px solid var(--accent);
+}
+
+.player.loser {
+    opacity: 0.5;
+    background: #fafafa;
+    filter: grayscale(0.8);
+}
+
+.player.bye {
+    color: var(--muted);
+    font-style: italic;
+    background: #fcfcfc;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.team-names {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.team-member {
+    display: block;
+}
+
+.winner-badge {
+    background: var(--accent);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    box-shadow: 0 4px 10px rgba(17, 122, 77, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.set-winner-btn {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.set-winner-btn:hover {
+    background: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Custom scrollbar */
+.bracket-wrapper::-webkit-scrollbar {
+    height: 12px;
+}
+
+.bracket-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+
+.bracket-wrapper::-webkit-scrollbar-thumb {
+    background: #d1d1d1;
+    border-radius: 6px;
+    border: 3px solid #f1f1f1;
+}
+
+.bracket-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+}
+
+.back-btn-container {
+    text-align: center;
+    margin-top: 20px;
+    padding-bottom: 60px;
+}
+
+.btn-back {
+    background: white;
+    color: var(--primary);
+    border: none;
+    padding: 15px 40px;
+    border-radius: 50px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-back:hover {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 8px 25px rgba(5, 52, 40, 0.25);
+    transform: translateY(-3px);
+}
+
+.btn-back svg {
+    transition: transform 0.3s ease;
+}
+
+.btn-back:hover svg {
+    transform: translateX(-5px);
+}

@@ -3,6 +3,7 @@ if (!isset($selectedVenue)) { $selectedVenue = null; }
 if (!isset($venues)) { $venues = []; }
 if (!isset($courts)) { $courts = []; }
 if (!isset($bookings)) { $bookings = []; }
+if (!isset($tournaments)) { $tournaments = []; }
 if (!isset($message)) { $message = ''; }
 if (!isset($success)) { $success = ''; }
 ?>
@@ -134,6 +135,56 @@ if (!isset($success)) { $success = ''; }
       </div>
     </div>
 
+    <div class="card">
+      <h2>Create Tournament</h2>
+      <form method="POST" class="form-grid">
+        <input type="hidden" name="action" value="create_tournament" />
+        <div class="field">
+          <label>Name</label>
+          <input type="text" name="tournament_name" maxlength="150" required />
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input type="date" name="tournament_date" required />
+        </div>
+        <div class="field">
+          <label>Start Time</label>
+          <input type="time" name="start_time" required />
+        </div>
+        <div class="field">
+          <label>Max Level</label>
+          <select name="max_level" required>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Max Tournament Size</label>
+          <select name="max_size" required>
+            <option value="4">4</option>
+            <option value="8">8</option>
+            <option value="16">16</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Entrance Fee ($)</label>
+          <input type="number" name="entrance_fee" min="0" step="0.01" value="0" required />
+        </div>
+        <div class="field">
+          <label>Total Prize Money</label>
+          <input type="number" name="total_prize_money" min="0" step="0.01" value="0.00" required />
+        </div>
+        <div class="actions">
+          <button type="submit" class="btn-primary">Create Tournament</button>
+        </div>
+      </form>
+    </div>
+
     <div class="card span-2">
       <h2>Bookings</h2>
       <div class="table-wrap">
@@ -188,6 +239,75 @@ if (!isset($success)) { $success = ''; }
                     <input type="hidden" name="new_status" value="cancelled" />
                     <button type="submit" class="action-btn danger" <?php echo $isCancelled ? 'disabled' : ''; ?>>Cancel</button>
                   </form>
+                <?php endif; ?>
+              </td>
+            </tr>
+          <?php endforeach; endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- My Tournaments Section -->
+  <section class="va-section" style="margin-top: 32px;">
+    <div class="card span-2">
+      <h2>My Tournaments</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Date</th>
+              <th>Start</th>
+              <th>Level</th>
+              <th>Fee</th>
+              <th>Prize</th>
+              <th>Registered</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          <?php if(empty($tournaments)): ?>
+            <tr><td colspan="10" class="muted">No tournaments found.</td></tr>
+          <?php else: foreach($tournaments as $t): ?>
+            <tr>
+              <td><?php echo (int)$t['tournament_id']; ?></td>
+              <td><?php echo htmlspecialchars($t['tournament_name']); ?></td>
+              <td><?php echo htmlspecialchars($t['tournament_date']); ?></td>
+              <td><?php echo htmlspecialchars(substr($t['start_time'],0,5)); ?></td>
+              <td><?php echo htmlspecialchars($t['max_level']); ?></td>
+              <td>$<?php echo number_format($t['entrance_fee'],2); ?></td>
+              <td>$<?php echo number_format($t['total_prize_money'],2); ?></td>
+              <td><?php echo Tournament::getRegistrationCount($GLOBALS['conn'], (int)$t['tournament_id']) . ' / ' . (int)$t['max_size']; ?></td>
+              <td>
+                <span class="status-badge status-<?php echo $t['status']; ?>"><?php echo ucfirst($t['status']); ?></span>
+              </td>
+              <td class="row-actions">
+                <?php if($t['status'] === 'scheduled'): ?>
+                  <?php 
+                    // Check if draw exists
+                    $hasDraw = Tournament::hasDraw($GLOBALS['conn'], (int)$t['tournament_id']);
+                  ?>
+                  <?php if($hasDraw): ?>
+                    <button type="button" class="action-btn" onclick="openResultsModal(<?php echo (int)$t['tournament_id']; ?>, '<?php echo htmlspecialchars($t['tournament_name']); ?>')">Enter Results</button>
+                  <?php endif; ?>
+                  <form method="POST" style="display:inline" onsubmit="return confirm('Mark this tournament as completed?');">
+                    <input type="hidden" name="action" value="update_tournament_status" />
+                    <input type="hidden" name="tournament_id" value="<?php echo (int)$t['tournament_id']; ?>" />
+                    <input type="hidden" name="new_status" value="completed" />
+                    <button type="submit" class="action-btn">Complete</button>
+                  </form>
+                  <form method="POST" style="display:inline" onsubmit="return confirm('Cancel this tournament?');">
+                    <input type="hidden" name="action" value="update_tournament_status" />
+                    <input type="hidden" name="tournament_id" value="<?php echo (int)$t['tournament_id']; ?>" />
+                    <input type="hidden" name="new_status" value="cancelled" />
+                    <button type="submit" class="action-btn danger">Cancel</button>
+                  </form>
+                <?php else: ?>
+                  <span class="muted">—</span>
                 <?php endif; ?>
               </td>
             </tr>
@@ -328,6 +448,154 @@ if (!isset($success)) { $success = ''; }
   });
 })();
 </script>
+
+  <!-- Tournament Results Modal -->
+  <div id="resultsModal" class="modal" style="display:none;">
+    <div class="modal-dialog" style="max-width: 700px;">
+      <button class="modal-close" onclick="closeResultsModal()">✕</button>
+      <h3 id="resultsModalTitle">Enter Match Results</h3>
+      <div class="results-modal-content" id="resultsModalContent">
+        <p style="text-align: center; padding: 20px; color: var(--muted);">Loading matches...</p>
+      </div>
+      <div style="text-align: right; margin-top: 16px;">
+        <button type="button" class="btn btn-secondary" onclick="closeResultsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+let currentTournamentId = null;
+
+function openResultsModal(tournamentId, tournamentName) {
+  currentTournamentId = tournamentId;
+  document.getElementById('resultsModalTitle').textContent = `Enter Match Results - ${tournamentName}`;
+  document.getElementById('resultsModal').style.display = 'flex';
+  loadTournamentMatches(tournamentId);
+}
+
+function closeResultsModal() {
+  document.getElementById('resultsModal').style.display = 'none';
+  currentTournamentId = null;
+}
+
+function loadTournamentMatches(tournamentId) {
+  fetch(`/PadelUp/public/api/get_tournament_matches.php?tournament_id=${tournamentId}`)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        renderMatches(data.matches);
+      } else {
+        document.getElementById('resultsModalContent').innerHTML = 
+          `<p class="no-matches-message">Error loading matches: ${data.error || 'Unknown error'}</p>`;
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      document.getElementById('resultsModalContent').innerHTML = 
+        '<p class="no-matches-message">Error loading matches. Please try again.</p>';
+    });
+}
+
+function renderMatches(matches) {
+  const content = document.getElementById('resultsModalContent');
+  
+  if (!matches || matches.length === 0) {
+    content.innerHTML = '<p class="no-matches-message">No matches available yet. The draw must be generated first.</p>';
+    return;
+  }
+
+  let html = '';
+  matches.forEach(match => {
+    const hasWinner = match.winner_seed !== null;
+    
+    html += `
+      <div class="match-result-item">
+        <h4>${match.round_name} - Match ${match.match_number}</h4>
+        <div class="match-teams">
+          <label class="team-option ${hasWinner && match.winner_seed === match.team1_seed ? 'selected' : ''}">
+            <input type="radio" 
+                   name="match_${match.round_number}_${match.match_number}" 
+                   value="${match.team1_seed}"
+                   ${hasWinner && match.winner_seed === match.team1_seed ? 'checked' : ''}
+                   onchange="setMatchWinner(${match.round_number}, ${match.match_number}, ${match.team1_seed}, ${match.team2_seed}, ${match.team1_seed})"
+                   ${match.team1_is_bye ? 'disabled' : ''}>
+            <div class="team-names">
+              ${match.team1_is_bye ? 
+                '<span class="team-member-name">BYE</span>' :
+                `<span class="team-member-name">${match.team1_player1}</span>
+                 <span class="team-member-name">${match.team1_player2}</span>`
+              }
+            </div>
+            ${hasWinner && match.winner_seed === match.team1_seed ? '<span class="winner-indicator">WINNER</span>' : ''}
+          </label>
+          
+          <label class="team-option ${hasWinner && match.winner_seed === match.team2_seed ? 'selected' : ''}">
+            <input type="radio" 
+                   name="match_${match.round_number}_${match.match_number}" 
+                   value="${match.team2_seed}"
+                   ${hasWinner && match.winner_seed === match.team2_seed ? 'checked' : ''}
+                   onchange="setMatchWinner(${match.round_number}, ${match.match_number}, ${match.team1_seed}, ${match.team2_seed}, ${match.team2_seed})"
+                   ${match.team2_is_bye ? 'disabled' : ''}>
+            <div class="team-names">
+              ${match.team2_is_bye ? 
+                '<span class="team-member-name">BYE</span>' :
+                match.team2_is_tbd ?
+                '<span class="team-member-name">TBD</span>' :
+                `<span class="team-member-name">${match.team2_player1}</span>
+                 <span class="team-member-name">${match.team2_player2}</span>`
+              }
+            </div>
+            ${hasWinner && match.winner_seed === match.team2_seed ? '<span class="winner-indicator">WINNER</span>' : ''}
+          </label>
+        </div>
+      </div>
+    `;
+  });
+  
+  content.innerHTML = html;
+}
+
+function setMatchWinner(roundNumber, matchNumber, team1Seed, team2Seed, winnerSeed) {
+  fetch('/PadelUp/public/api/set_match_winner.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      tournament_id: currentTournamentId,
+      round_number: roundNumber,
+      match_number: matchNumber,
+      team1_seed: team1Seed,
+      team2_seed: team2Seed,
+      winner_seed: winnerSeed
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Reload matches to update TBD teams in next rounds
+      loadTournamentMatches(currentTournamentId);
+    } else {
+      alert('Error: ' + (data.error || 'Could not set winner'));
+      // Reload to reset radio buttons
+      loadTournamentMatches(currentTournamentId);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('An error occurred');
+    loadTournamentMatches(currentTournamentId);
+  });
+}
+
+// Close modal when clicking outside
+document.getElementById('resultsModal')?.addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeResultsModal();
+  }
+});
+</script>
+
 <?php include __DIR__ . '/partials/footer.php'; ?>
 </body>
 </html>

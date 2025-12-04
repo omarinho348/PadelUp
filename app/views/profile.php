@@ -3,14 +3,18 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 require_once __DIR__ . '/../controllers/UserController.php';
+require_once __DIR__ . '/../models/Tournament.php';
+
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['name'])) {
     header("Location: signin.php");
     exit();
 }
 // Fetch player profile (if role player)
 $profile = null;
+$wonTournaments = [];
 if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
     $profile = UserController::getPlayerProfile();
+    $wonTournaments = Tournament::getWonTournaments($GLOBALS['conn'], (int)$_SESSION['user_id']);
 }
 ?>
 
@@ -87,6 +91,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
         <div class="profile-content">
             <div class="profile-tabs">
                 <button class="tab-button active" data-tab="activity">Activity</button>
+                <button class="tab-button" data-tab="achievements">Achievements</button>
                 <button class="tab-button" data-tab="matches">Matches</button>
                 <button class="tab-button" data-tab="bookings">Bookings</button>
                 <button class="tab-button" data-tab="settings">Settings</button>
@@ -105,6 +110,44 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                         <p>Your recent matches and bookings will appear here</p>
                         <a href="matchmaking.php" class="btn profile-btn-accent">Find a Match</a>
                     </div>
+                </div>
+
+                <!-- Achievements Tab -->
+                <div id="achievements" class="tab-pane">
+                    <?php if(empty($wonTournaments)): ?>
+                        <div class="empty-state">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                <path d="M4 22h16"></path>
+                                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                            </svg>
+                            <h3>No Achievements Yet</h3>
+                            <p>Win tournaments to earn trophies!</p>
+                        </div>
+                    <?php else: ?>
+                        <div class="achievements-grid">
+                            <?php foreach($wonTournaments as $wt): ?>
+                                <div class="achievement-card">
+                                    <div class="trophy-icon">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="#FFD700" stroke="#B8860B" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+                                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+                                            <path d="M4 22h16"></path>
+                                            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+                                            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+                                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+                                        </svg>
+                                    </div>
+                                    <h4><?php echo htmlspecialchars($wt['tournament_name']); ?></h4>
+                                    <p class="achievement-date"><?php echo htmlspecialchars($wt['tournament_date']); ?></p>
+                                    <span class="achievement-level">Max-Level <?php echo htmlspecialchars($wt['max_level']); ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 
                 <!-- Matches Tab -->

@@ -358,3 +358,113 @@
 .venue-admin .span-2 {
     grid-column: 1 / -1;
 }
+
+/* Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  min-width: 70px;
+  justify-content: center;
+}
+
+.status-scheduled {
+  background-color: #e3f2fd;
+  color: #1565c0;
+  border: 1px solid #bbdefb;
+}
+
+.status-completed {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+  border: 1px solid #c8e6c9;
+}
+
+.status-cancelled {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
+}
+
+/* Results Modal Styles */
+.results-modal-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.match-result-item {
+  padding: 16px;
+  border: 1px solid rgba(5,52,40,0.08);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: var(--bg);
+}
+
+.match-result-item h4 {
+  color: var(--primary);
+  margin-bottom: 12px;
+  font-size: 1rem;
+}
+
+.match-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.team-option {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border: 2px solid rgba(5,52,40,0.1);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.team-option:hover {
+  border-color: var(--primary);
+  background: rgba(5,52,40,0.02);
+}
+
+.team-option input[type="radio"] {
+  margin-right: 10px;
+}
+
+.team-option.selected {
+  border-color: var(--accent);
+  background: rgba(76,175,80,0.05);
+}
+
+.team-names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.team-member-name {
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.winner-indicator {
+  margin-left: auto;
+  background: var(--accent);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.no-matches-message {
+  text-align: center;
+  padding: 40px;
+  color: var(--muted);
+}

@@ -99,7 +99,7 @@ CREATE TABLE `bookings` (
   `start_time` TIME NOT NULL,
   `end_time` TIME NOT NULL,
   `total_price` DECIMAL(10,2) NOT NULL,
-  `status` ENUM('pending','confirmed','cancelled') DEFAULT 'confirmed',
+  `status` ENUM('pending','confirmed','cancelled','paid') DEFAULT 'confirmed',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT `fk_booking_court` FOREIGN KEY (`court_id`) REFERENCES `courts`(`court_id`) ON DELETE CASCADE,
   CONSTRAINT `fk_booking_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
@@ -178,6 +178,91 @@ CREATE TABLE `match_results` (
   CONSTRAINT `fk_t2_p1` FOREIGN KEY (`team2_player1_id`) REFERENCES `users`(`user_id`),
   CONSTRAINT `fk_t2_p2` FOREIGN KEY (`team2_player2_id`) REFERENCES `users`(`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------
+-- TOURNAMENTS
+-- --------------------------------------------------
+-- Tournaments are created by a `venue_admin` (application-level enforcement).
+-- By default the location for a tournament will be one of the courts managed by the venue_admin
+-- (this should be validated in application code before inserting or by a trigger if desired).
+CREATE TABLE IF NOT EXISTS tournaments (
+  tournament_id INT AUTO_INCREMENT PRIMARY KEY,
+  venue_id INT NOT NULL ,
+  tournament_name VARCHAR(150) NOT NULL,
+  created_by INT DEFAULT NULL, -- user_id of the venue_admin who created the tournament
+  tournament_date DATE NOT NULL, -- 1-day tournaments only
+  start_time TIME NOT NULL,
+  max_level INT NOT NULL, -- maximum allowed skill level for participants
+  max_size INT NOT NULL DEFAULT 4,
+  entrance_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  total_prize_money DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  status ENUM('scheduled','cancelled','completed') NOT NULL DEFAULT 'scheduled',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_tournament_venue` FOREIGN KEY (`venue_id`) REFERENCES `venues`(`venue_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_tournament_creator` FOREIGN KEY (`created_by`) REFERENCES `users`(`user_id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  KEY `idx_tournament_date` (`tournament_date`),
+  KEY `idx_venue_id` (`venue_id`)
+)
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Tournament registrations (players registering for tournaments)
+CREATE TABLE IF NOT EXISTS tournament_registrations (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tournament_id INT NOT NULL,
+  user_id INT NOT NULL,
+  registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_reg_tournament` FOREIGN KEY (`tournament_id`) REFERENCES `tournaments`(`tournament_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_reg_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_tournament_user` (`tournament_id`, `user_id`)
+)
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Tournament teams (doubles registration: 2 players per team)
+CREATE TABLE IF NOT EXISTS tournament_teams (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tournament_id INT NOT NULL,
+  player1_user_id INT NOT NULL,
+  player2_user_id INT NOT NULL,
+  registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_team_tournament` FOREIGN KEY (`tournament_id`) REFERENCES `tournaments`(`tournament_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_team_p1` FOREIGN KEY (`player1_user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_team_p2` FOREIGN KEY (`player2_user_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_team_pair` (`tournament_id`, `player1_user_id`, `player2_user_id`),
+  UNIQUE KEY `unique_team_player1` (`tournament_id`, `player1_user_id`),
+  UNIQUE KEY `unique_team_player2` (`tournament_id`, `player2_user_id`)
+)
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Tournament draw (stores the bracket seeding once generated)
+CREATE TABLE IF NOT EXISTS tournament_draw (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tournament_id INT NOT NULL,
+  seed_position INT NOT NULL,
+  team_id INT NULL,
+  is_bye BOOLEAN NOT NULL DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_draw_tournament` FOREIGN KEY (`tournament_id`) REFERENCES `tournaments`(`tournament_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_draw_team` FOREIGN KEY (`team_id`) REFERENCES `tournament_teams`(`id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_tournament_seed` (`tournament_id`, `seed_position`)
+)
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Tournament match results (stores winner of each match)
+CREATE TABLE IF NOT EXISTS tournament_match_results (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  tournament_id INT NOT NULL,
+  round_number INT NOT NULL,
+  match_number INT NOT NULL,
+  team1_seed INT NOT NULL,
+  team2_seed INT NOT NULL,
+  winner_seed INT NOT NULL,
+  recorded_by INT NOT NULL,
+  recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_match_result_tournament` FOREIGN KEY (`tournament_id`) REFERENCES `tournaments`(`tournament_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_match_result_recorder` FOREIGN KEY (`recorded_by`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  UNIQUE KEY `unique_tournament_match` (`tournament_id`, `round_number`, `match_number`)
+)
+ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

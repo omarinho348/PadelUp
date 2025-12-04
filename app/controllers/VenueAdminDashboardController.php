@@ -4,6 +4,8 @@ require_once __DIR__ . '/UserController.php';
 require_once __DIR__ . '/../models/Venue.php';
 require_once __DIR__ . '/../models/Court.php';
 require_once __DIR__ . '/../models/Booking.php';
+require_once __DIR__ . '/../models/Tournament.php';
+require_once __DIR__ . '/SkillLevelController.php';
 
 UserController::requireVenueAdmin();
 
@@ -80,6 +82,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
             else { $message = is_string($res) ? $res : 'Failed to create court.'; }
         }
     }
+    elseif ($action === 'create_tournament') {
+        // Required fields: tournament_name, tournament_date, start_time, max_level, total_prize_money
+        $t_name = trim($_POST['tournament_name'] ?? '');
+        $t_date = trim($_POST['tournament_date'] ?? '');
+        $t_start = trim($_POST['start_time'] ?? '');
+        $t_max_level = trim($_POST['max_level'] ?? '');
+        $t_prize = trim($_POST['total_prize_money'] ?? '0');
+        $t_entrance_fee = trim($_POST['entrance_fee'] ?? '0');
+        $t_max_size = (int)($_POST['max_size'] ?? 4);
+
+        // validate allowed sizes
+        $allowedSizes = [4,8,16];
+        if (!in_array($t_max_size, $allowedSizes, true)) {
+            $message = 'Invalid tournament size selected.';
+        }
+
+        // validate max_level (skill level range 1-7)
+        $maxLevelInt = (int)$t_max_level;
+        if ($maxLevelInt < 1 || $maxLevelInt > 7) {
+            $message = 'Max level must be between 1 and 7.';
+        }
+
+        if ($t_name === '' || $t_date === '' || $t_start === '' || $t_max_level === '') {
+            $message = 'Name, date, start time and max level are required.';
+        }
+
+        if (empty($message)) {
+            // sanitize and prepare data (no court_id stored)
+            $data = [
+                'venue_id' => (int)$selectedVenue['venue_id'],
+                'tournament_name' => htmlspecialchars($t_name),
+                'created_by' => $adminId,
+                'tournament_date' => $t_date,
+                'start_time' => $t_start,
+                'max_level' => (int)$t_max_level,
+                'entrance_fee' => (float)$t_entrance_fee,
+                'total_prize_money' => (float)$t_prize,
+                'max_size' => (int)$t_max_size,
+            ];
+
+            $res = Tournament::create($GLOBALS['conn'], $data);
+            if (is_int($res)) {
+                header('Location: VenueAdminDashboardController.php?venue_id='.$selectedVenue['venue_id'].'&tournament_created=1');
+                exit();
+            } else {
+                $message = is_string($res) ? $res : 'Failed to create tournament.';
+            }
+        }
+    }
     elseif ($action === 'update_court') {
         $court_id = (int)($_POST['court_id'] ?? 0);
         $court_name = trim($_POST['court_name'] ?? '');
@@ -126,6 +177,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
             }
         }
     }
+    elseif ($action === 'update_tournament_status') {
+        $tournamentId = (int)($_POST['tournament_id'] ?? 0);
+        $newStatus = trim($_POST['new_status'] ?? '');
+        
+        if ($tournamentId <= 0 || !in_array($newStatus, ['completed', 'cancelled'])) {
+            $message = 'Invalid tournament or status.';
+        } else {
+            $sql = "UPDATE tournaments SET status = ? WHERE tournament_id = ? AND venue_id = ?";
+            $stmt = $GLOBALS['conn']->prepare($sql);
+            $stmt->bind_param('sii', $newStatus, $tournamentId, $selectedVenue['venue_id']);
+            
+            if ($stmt->execute() && $stmt->affected_rows > 0) {
+                header('Location: VenueAdminDashboardController.php?venue_id='.$selectedVenue['venue_id'].'&tournament_updated=1');
+                exit();
+            } else {
+                $message = 'Failed to update tournament status.';
+            }
+            $stmt->close();
+        }
+    }
 }
 
 if (isset($_GET['saved'])) { $success = 'Venue settings saved.'; }
@@ -134,8 +205,11 @@ if (isset($_GET['court_updated'])) { $success = 'Court updated.'; }
 if (isset($_GET['court_toggled'])) { $success = 'Court status updated.'; }
 if (isset($_GET['court_deleted'])) { $success = 'Court deleted.'; }
 if (isset($_GET['booking_updated'])) { $success = 'Booking updated.'; }
+if (isset($_GET['tournament_created'])) { $success = 'Tournament created.'; }
+if (isset($_GET['tournament_updated'])) { $success = 'Tournament status updated.'; }
 
 $courts = $selectedVenue ? Court::listByVenue($GLOBALS['conn'], $selectedVenue['venue_id']) : [];
 $bookings = $selectedVenue ? Booking::listByVenue($GLOBALS['conn'], $selectedVenue['venue_id']) : [];
+$tournaments = $selectedVenue ? Tournament::listByVenue($GLOBALS['conn'], $selectedVenue['venue_id']) : [];
 
 include __DIR__ . '/../views/venue_admin.php';
