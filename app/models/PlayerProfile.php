@@ -3,7 +3,7 @@ class PlayerProfile
 {
     public static function findByUserId(mysqli $conn, int $userId): ?array
     {
-        $sql = "SELECT player_id, skill_level, gender, birth_date, padel_iq_rating, preferred_side FROM player_profiles WHERE player_id = ?";
+        $sql = "SELECT player_id, skill_level, gender, birth_date, preferred_side FROM player_profiles WHERE player_id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("i", $userId);
         $stmt->execute();

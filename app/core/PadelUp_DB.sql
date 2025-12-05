@@ -48,7 +48,6 @@ CREATE TABLE `player_profiles` (
   `skill_level` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
   `gender` ENUM('male','female','other') NULL,
   `birth_date` DATE NULL,
-  `padel_iq_rating` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
   `preferred_side` ENUM('right','left') NULL,
   CONSTRAINT `fk_player_user` FOREIGN KEY (`player_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

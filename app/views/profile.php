@@ -51,10 +51,7 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                             <span class="stat-label">Skill Level</span>
                             <span class="stat-value"><?php echo number_format((float)($profile['skill_level'] ?? 0), 2); ?></span>
                         </div>
-                        <div class="stat">
-                            <span class="stat-label">Padel IQ</span>
-                            <span class="stat-value"><?php echo (int)$profile['padel_iq_rating']; ?></span>
-                        </div>
+
                         <?php if(!empty($profile['gender'])): ?>
                         <div class="stat">
                             <span class="stat-label">Gender</span>

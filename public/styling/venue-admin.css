@@ -311,13 +311,15 @@
 .modal {
     position: fixed;
     inset: 0;
-    display: flex;
+    display: none; /* hidden by default; JS sets display:flex */
     align-items: center;
     justify-content: center;
     background: rgba(5,52,40,0.3);
     backdrop-filter: blur(4px);
     z-index: 3000;
 }
+
+.modal.show { display: flex; }
 
 .modal-dialog {
     width: 500px;
