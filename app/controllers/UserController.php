@@ -35,7 +35,6 @@ class UserController
             'skill_level' => 0.00, // Set default skill level on registration
             'gender' => htmlspecialchars($_POST['gender']),
             'birth_date' => htmlspecialchars($_POST['dob']),
-            'padel_iq_rating' => 0,
             'preferred_side' => htmlspecialchars($_POST['side'])
         ];
         $result = User::createPlayerUser($GLOBALS['conn'], $userData, $profileData);

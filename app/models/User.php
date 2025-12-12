@@ -50,18 +50,17 @@ class User
             $newId = $stmtUser->insert_id;
             $stmtUser->close();
  
-            $sqlProfile = "INSERT INTO player_profiles (player_id, skill_level, gender, birth_date, padel_iq_rating, preferred_side) VALUES (?, ?, ?, ?, ?, ?)";
+            $sqlProfile = "INSERT INTO player_profiles (player_id, skill_level, gender, birth_date, preferred_side) VALUES (?, ?, ?, ?, ?)";
             $stmtProf = $conn->prepare($sqlProfile);
             if (!$stmtProf) {
                 throw new Exception("Prepare player_profiles failed");
             }
             $stmtProf->bind_param(
-                "idssis",
+                "idsss",
                 $newId,
                 $profileData['skill_level'],
                 $profileData['gender'],
                 $profileData['birth_date'],
-                $profileData['padel_iq_rating'],
                 $profileData['preferred_side']
             );
             if (!$stmtProf->execute()) {
