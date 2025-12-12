@@ -275,7 +275,7 @@
                     <small class="form-text">Enter scores for each set. Leave Set 3 blank if not played.</small>
                 </div>
 
-                <button type="submit" class="btn-primary">Submit Result</button>
+                <button type="submit" class="btn btn-primary">Submit Result</button>
             </form>
         </div>
     </div>
