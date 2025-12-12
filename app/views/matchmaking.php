@@ -36,6 +36,7 @@
     $venues = Venue::listAll($GLOBALS['conn']);
 
     $current_user_id = $_SESSION['user_id'] ?? null;
+    $isLoggedIn = !is_null($current_user_id);
 
     include __DIR__ . '/partials/navbar.php'; 
     ?>
