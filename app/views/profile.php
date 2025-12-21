@@ -9,12 +9,17 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['name'])) {
     header("Location: signin.php");
     exit();
 }
-// Fetch player profile (if role player)
+// Fetch player profile (if role player) and coach requests if user is a coach
 $profile = null;
 $wonTournaments = [];
+$coachRequests = [];
 if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
     $profile = UserController::getPlayerProfile();
     $wonTournaments = Tournament::getWonTournaments($GLOBALS['conn'], (int)$_SESSION['user_id']);
+}
+if (isset($_SESSION['role']) && $_SESSION['role'] === 'coach') {
+    $updateRequestMessage = UserController::updateSessionRequest();
+    $coachRequests = UserController::getCoachRequests();
 }
 ?>
 
@@ -91,6 +96,9 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                 <button class="tab-button" data-tab="achievements">Achievements</button>
                 <button class="tab-button" data-tab="matches">Matches</button>
                 <button class="tab-button" data-tab="bookings">Bookings</button>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'coach'): ?>
+                    <button class="tab-button" data-tab="requests">Requests</button>
+                <?php endif; ?>
                 <button class="tab-button" data-tab="settings">Settings</button>
             </div>
             
@@ -166,6 +174,68 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
                 <div id="bookings" class="tab-pane">
                     <h3>My Bookings</h3>
                     <div id="bookingsList">Loading...</div>
+                </div>
+
+                <!-- Requests Tab (visible to coaches) -->
+                <div id="requests" class="tab-pane">
+                    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'coach'): ?>
+                        <h3>Session Requests</h3>
+                        <?php if (empty($coachRequests)): ?>
+                            <div class="empty-state">
+                                <h3>No Session Requests</h3>
+                                <p>Visitors can request a session from your public profile. Requests will appear here.</p>
+                            </div>
+                        <?php else: ?>
+                            <table class="requests-table" style="width:100%;border-collapse:collapse;margin-top:12px;">
+                                <thead>
+                                    <tr style="text-align:left;border-bottom:1px solid #eee;">
+                                        <th style="padding:8px;">Date</th>
+                                        <th style="padding:8px;">Name</th>
+                                        <th style="padding:8px;">Email</th>
+                                        <th style="padding:8px;">Phone</th>
+                                        <th style="padding:8px;">Message</th>
+                                        <th style="padding:8px;">Actions</th>
+                                        <th style="padding:8px;">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($coachRequests as $r): ?>
+                                        <tr style="border-bottom:1px solid #f3f3f3;">
+                                            <td style="padding:8px;vertical-align:top;"><?php echo htmlspecialchars($r['created_at']); ?></td>
+                                            <td style="padding:8px;vertical-align:top;"><?php echo htmlspecialchars($r['name']); ?></td>
+                                            <td style="padding:8px;vertical-align:top;"><?php echo htmlspecialchars($r['email']); ?></td>
+                                            <td style="padding:8px;vertical-align:top;"><?php echo htmlspecialchars($r['phone'] ?? ''); ?></td>
+                                            <td style="padding:8px;vertical-align:top;"><?php echo nl2br(htmlspecialchars($r['message'] ?? '')); ?></td>
+                                            <td style="padding:8px;vertical-align:top;">
+                                                <?php if ($r['status'] === 'pending'): ?>
+                                                    <div class="requests-actions-vertical">
+                                                        <form method="POST" class="requests-action-form">
+                                                            <input type="hidden" name="update_request_id" value="<?php echo $r['request_id']; ?>">
+                                                            <input type="hidden" name="update_action" value="accept">
+                                                            <button class="btn profile-btn-accent request-vertical-btn" type="submit">Accept</button>
+                                                        </form>
+                                                        <form method="POST" class="requests-action-form">
+                                                            <input type="hidden" name="update_request_id" value="<?php echo $r['request_id']; ?>">
+                                                            <input type="hidden" name="update_action" value="decline">
+                                                            <button class="btn btn-danger request-vertical-btn" type="submit">Decline</button>
+                                                        </form>
+                                                    </div>
+                                                <?php else: ?>
+                                                    <span><?php echo ucfirst(htmlspecialchars($r['status'])); ?></span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td style="padding:8px;vertical-align:top;"><?php echo htmlspecialchars($r['status']); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        <?php endif; ?>
+                    <?php else: ?>
+                        <div class="empty-state">
+                            <h3>Not a coach account</h3>
+                            <p>Only coaches can view session requests here.</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 
                 <!-- Settings Tab -->

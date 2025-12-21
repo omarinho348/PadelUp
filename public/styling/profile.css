@@ -388,6 +388,27 @@
     display: inline-block;
 }
 
+/* Requests table styles */
+.requests-table th, .requests-table td { padding: 10px; border-bottom: 1px solid #f3f3f3; }
+.requests-table thead th { color: #555; font-weight:700; }
+.requests-table tbody tr:hover { background:#fafafa; }
+
+/* Inline action button spacing for requests */
+.requests-action-form { display:inline-block; margin-right:6px; }
+
+/* Vertical stacked actions for requests: centered, equal width, small gap */
+.requests-actions-vertical {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+}
+.requests-actions-vertical .requests-action-form { width:180px; }
+.requests-actions-vertical .request-vertical-btn { width:100%; padding:10px 8px; border-radius:8px; font-weight:700; }
+@media (max-width:480px) {
+    .requests-actions-vertical .requests-action-form { width:100%; }
+}
+
 .profile-btn-accent:hover {
     background-color: #0c6a42; /* Darker shade of the accent color */
 }

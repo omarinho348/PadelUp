@@ -81,6 +81,7 @@ $coaches = UserController::getCoaches(); // Now handles search
             <button class="btn-action contact contact-coach-btn"
                     data-coach-id="<?php echo (int)$coach['user_id']; ?>"
                     data-coach-email="<?php echo htmlspecialchars($coach['email']); ?>"
+                    data-coach-phone="<?php echo htmlspecialchars($coach['phone'] ?? ''); ?>"
                     data-coach-name="<?php echo htmlspecialchars($coach['name']); ?>">
                 Contact
             </button>
@@ -96,32 +97,30 @@ $coaches = UserController::getCoaches(); // Now handles search
   </div>
 </div>
 
-<!-- Modal for Contacting a Coach -->
+<!-- Modal for Contacting a Coach (View only) -->
 <div id="contactModal" class="modal-overlay" style="display:none;">
   <div class="modal-content" style="max-width: 550px;">
     <button id="closeContactModal" class="modal-close-btn">✕</button>
-    <h2 style="margin:0 0 4px;font-size:26px;">Contact Coach</h2>
-    <p id="contactModalSub" style="margin:0 0 18px;font-size:14px;color:#555;">Your message will be sent to the coach's email.</p>    
-    <form method="POST" action="admin.php" id="contactForm" class="auth-form" style="display:grid;gap:14px; max-width: 100%;">
-      <input type="hidden" name="contact_coach_id" id="contact_coach_id_input">
-      
+    <h2 style="margin:0 0 4px;font-size:26px;">Coach Contact Details</h2>
+    <p id="contactModalSub" style="margin:0 0 18px;font-size:14px;color:#555;">View the coach's contact information below.</p>
+
+    <div id="contactDetails" class="auth-form" style="display:grid;gap:12px; max-width: 100%;">
       <div class="form-group">
-        <label for="recipient_email">Recipient</label>
-        <input type="email" id="recipient_email_input" name="recipient_email" readonly style="background-color: #e9ecef; cursor: not-allowed;">
+        <label>Email</label>
+        <input type="text" id="recipient_email_display" readonly style="background-color: #e9ecef; cursor: not-allowed;">
       </div>
 
       <div class="form-group">
-        <label for="message_subject">Subject</label>
-        <input type="text" id="message_subject_input" name="subject" value="A message from PadelUp Admin" required>
+        <label>Phone</label>
+        <input type="text" id="recipient_phone_display" readonly style="background-color: #e9ecef; cursor: not-allowed;">
       </div>
 
-      <div class="form-group">
-        <label for="message_body">Message</label>
-        <textarea id="message_body_input" name="message" rows="6" required placeholder="Write your message here..."></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+        <button type="button" id="contactCopyEmail" class="btn">Copy Email</button>
+        <button type="button" id="contactCopyPhone" class="btn">Copy Phone</button>
+        <button type="button" id="closeContactBottom" class="btn profile-btn-accent">Close</button>
       </div>
-
-      <button type="submit" class="btn-primary" style="margin-top:4px; justify-self: flex-end;">Send Message</button>
-    </form>
+    </div>
   </div>
 </div>
 
@@ -171,21 +170,32 @@ $coaches = UserController::getCoaches(); // Now handles search
    modal.addEventListener('click', e=>{ if(e.target===modal) close(); });
    document.addEventListener('keydown', e=>{ if(e.key==='Escape' && modal.style.display==='flex') close(); });
 
-   // Contact Modal JS
+   // Contact Modal JS (view-only)
    const contactModal = document.getElementById('contactModal');
    const closeContactBtn = document.getElementById('closeContactModal');
+   const closeContactBottom = document.getElementById('closeContactBottom');
+   const copyEmailBtn = document.getElementById('contactCopyEmail');
+   const copyPhoneBtn = document.getElementById('contactCopyPhone');
+   const emailDisplay = document.getElementById('recipient_email_display');
+   const phoneDisplay = document.getElementById('recipient_phone_display');
+
    document.querySelectorAll('.contact-coach-btn').forEach(btn => {
      btn.addEventListener('click', function() {
-       document.getElementById('contact_coach_id_input').value = this.dataset.coachId;
-       document.getElementById('recipient_email_input').value = this.dataset.coachEmail;
-       document.getElementById('contactModalSub').innerText = `Your message will be sent to ${this.dataset.coachName}.`;
+       emailDisplay.value = this.dataset.coachEmail || '';
+       phoneDisplay.value = this.dataset.coachPhone || 'Not set';
+       document.getElementById('contactModalSub').innerText = `Contact details for ${this.dataset.coachName}.`;
        contactModal.style.display = 'flex';
      });
    });
+
    function closeContact(){ contactModal.style.display='none'; }
    closeContactBtn.addEventListener('click', closeContact);
+   if (closeContactBottom) closeContactBottom.addEventListener('click', closeContact);
    contactModal.addEventListener('click', e => { if(e.target === contactModal) closeContact(); });
    document.addEventListener('keydown', e => { if(e.key === 'Escape' && contactModal.style.display === 'flex') closeContact(); });
+
+   if (copyEmailBtn) copyEmailBtn.addEventListener('click', function(){ navigator.clipboard && navigator.clipboard.writeText(emailDisplay.value); });
+   if (copyPhoneBtn) copyPhoneBtn.addEventListener('click', function(){ navigator.clipboard && navigator.clipboard.writeText(phoneDisplay.value); });
  })();
 </script>
 <?php include __DIR__ . '/partials/footer.php'; ?>

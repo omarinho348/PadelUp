@@ -4,13 +4,21 @@
 
 .coach-finder-header {
     position: relative;
-    padding: 60px 0;
-    margin-bottom: 40px;
+    margin: 0 20px 40px; /* left/right margins create visible space */
+    padding: 60px 24px; /* keep top/bottom spacing, add small inner padding */
     border-radius: 24px;
-    background: url('../Assets/Photos/coaches.jpeg') no-repeat top center;
+    background: url('../Photos/professional-padel-coach-giving-a-lesson-to-a-male-student-on-court-photo.jpg') no-repeat center center;
     background-size: cover;
     color: white;
     overflow: hidden;
+}
+
+@media (max-width: 600px) {
+    .coach-finder-header {
+        margin: 0 12px 24px;
+        padding: 40px 12px;
+        border-radius: 14px;
+    }
 }
 
 .coach-finder-header::before {
@@ -42,7 +50,9 @@
     overflow: hidden;
     text-align: center;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer; 
 }
+.coach-card:focus { outline: 3px solid rgba(17,122,77,0.12); outline-offset: 4px; }
 
 .coach-card:hover {
     transform: translateY(-8px);
@@ -55,9 +65,27 @@
     background-position: top center;
 }
 
+.coach-avatar {
+    height: 280px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-size:48px;
+    font-weight:700;
+}
+.coach-avatar .avatar-initials { font-size:48px; }
+
 .coach-info {
     padding: 24px;
 }
+
+.avatar-bg-1{background:linear-gradient(135deg,#6EE7B7,#34D399);}
+.avatar-bg-2{background:linear-gradient(135deg,#FDE68A,#F59E0B);}
+.avatar-bg-3{background:linear-gradient(135deg,#BFDBFE,#60A5FA);}
+.avatar-bg-4{background:linear-gradient(135deg,#FBCFE8,#F472B6);}
+.avatar-bg-5{background:linear-gradient(135deg,#E9D5FF,#A78BFA);}
+.avatar-bg-6{background:linear-gradient(135deg,#FECACA,#FB7185);}
 
 .coach-name {
     font-size: 1.4rem;
@@ -65,6 +93,9 @@
     color: var(--accent);
     margin: 0 0 4px;
 }
+.coach-name a { color: inherit; text-decoration: none; }
+.coach-name a:hover { text-decoration: none; }
+
 
 .coach-location {
     font-size: 1rem;
@@ -82,3 +113,87 @@
     font-weight: 600;
     margin-bottom: 20px;
 }
+
+
+.coach-profile-wrapper {
+    padding: 36px 0;
+}
+.back-link {
+    display:inline-block;
+    margin-bottom:18px;
+    color:var(--accent);
+    text-decoration:none;
+    font-weight:600;
+}
+.profile-header {
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap:32px;
+    align-items:start;
+}
+.profile-sidebar {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 8px 22px rgba(5,52,40,0.04);
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+}
+.profile-avatar {
+    width:100%;
+    height:320px;
+    border-radius:10px;
+    background-size:cover;
+    background-position:center;
+    box-shadow: inset 0 -28px 40px rgba(0,0,0,0.05);
+}
+.profile-meta { text-align:left; }
+.profile-name { font-size:1.4rem; margin:8px 0 4px; color:var(--accent); font-weight:700; }
+.profile-sub { color:var(--muted); font-size: .95rem; }
+.profile-rate { margin-top:8px; font-weight:700; color:var(--accent); }
+.profile-exp { color:var(--muted); font-size: .9rem; }
+.profile-actions { margin-top:8px; }
+
+.profile-main { background:transparent; }
+.profile-bio p { color:#444; line-height:1.7; font-size:1rem; }
+.profile-contact { margin-top:20px; padding:18px; background: #fff; border-radius:10px; border:1px solid #f0f0f0; box-shadow:0 6px 16px rgba(5,52,40,0.03); }
+.contact-list { display:grid; grid-template-columns:1fr 1fr; gap:12px 28px; }
+.contact-list .muted { color:#555; }
+
+.profile-details { margin-top:20px; }
+.profile-details ul { padding-left:20px; color:#555; }
+
+@media (max-width: 880px) {
+    .profile-header { grid-template-columns: 1fr; }
+    .profile-avatar { height:260px; }
+    .contact-list { grid-template-columns:1fr; }
+}
+
+
+.coach-profile-wrapper { display:flex; justify-content:center; padding:36px 0; }
+.profile-card { width:100%; max-width:980px; background:var(--card); border-radius:12px; padding:22px; box-shadow:0 12px 30px rgba(5,52,40,0.06); }
+.profile-card-header { display:flex; justify-content:flex-start; align-items:center; gap:18px; border-bottom:1px solid #eef3ee; padding-bottom:18px; }
+.profile-card-title { flex:1; display:flex; align-items:center; justify-content:center; }
+.profile-name { font-size:1.6rem; color:var(--accent); margin:0; font-weight:800; text-align:center; }
+.profile-sub { color:var(--muted); margin-top:6px; text-align:center; }
+.profile-card-cta { text-align:right; min-width:180px; }
+.profile-avatar { width:220px; height:220px; border-radius:12px; background-size:cover; background-position:center; box-shadow: inset 0 -20px 30px rgba(0,0,0,0.04); display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800; }
+.profile-avatar.initials { font-size:56px; }
+.avatar-initials-large { font-size:56px; }
+.profile-rate { font-weight:800; color:var(--accent); font-size:1.1rem; }
+.profile-exp { color:var(--muted); margin-top:6px; }
+.profile-card-body { display:grid; grid-template-columns: 1fr 320px; gap:22px; margin-top:18px; }
+.profile-bio h3, .profile-contact h3, .profile-details h3 { margin:0 0 8px; color:var(--accent); }
+.profile-contact .contact-card { background:#fff; padding:14px; border-radius:10px; border:1px solid #f0f0f0; box-shadow:0 6px 16px rgba(5,52,40,0.03); }
+.profile-bio p { color:#444; line-height:1.7; }
+.profile-details ul { color:#555; padding-left:18px; }
+
+@media (max-width: 880px) {
+  .profile-card-body { grid-template-columns: 1fr; }
+  .profile-card-cta { text-align:left; }
+  .profile-card { padding:16px; }
+}
+
+
+

@@ -3,6 +3,7 @@ require_once __DIR__ . '/../core/dbh.inc.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/PlayerProfile.php';
 require_once __DIR__ . '/../models/Venue.php';
+require_once __DIR__ . '/../models/SessionRequest.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -306,6 +307,13 @@ class UserController
         return User::listCoaches($GLOBALS['conn'], $searchTerm);
     }
 
+    // Public coach listing for the frontend (no auth required)
+    public static function getPublicCoaches(): array
+    {
+        $searchTerm = trim($_GET['search'] ?? '');
+        return User::listCoaches($GLOBALS['conn'], $searchTerm);
+    }
+
     // Handle coach creation
     public static function createCoach(): string
     {
@@ -365,6 +373,77 @@ class UserController
             $conn->rollback();
             return $e->getMessage();
         }
+    }
+
+    // Handle session request submission from public coach profile
+    public static function createSessionRequest(): string
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['request_coach_id'])) {
+            return '';
+        }
+        $coachId = (int)$_POST['request_coach_id'];
+        $name = trim(htmlspecialchars($_POST['name'] ?? ''));
+        $email = trim(htmlspecialchars($_POST['email'] ?? ''));
+        $phone = trim(htmlspecialchars($_POST['phone'] ?? ''));
+        $message = trim(htmlspecialchars($_POST['message'] ?? ''));
+
+        if ($coachId <= 0) {
+            return 'Invalid coach ID.';
+        }
+        if (empty($name) || empty($email)) {
+            return 'Name and email are required.';
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return 'Invalid email address.';
+        }
+
+        $requestData = [
+            'coach_id' => $coachId,
+            'requester_id' => $_SESSION['user_id'] ?? null,
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'message' => $message
+        ];
+
+        $res = SessionRequest::create($GLOBALS['conn'], $requestData);
+        return $res === true ? 'REQUEST_SENT' : (is_string($res) ? $res : 'Failed to send request.');
+    }
+
+    // Return all session requests for the logged-in coach
+    public static function getCoachRequests(): array
+    {
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'coach') {
+            return [];
+        }
+        return SessionRequest::findByCoachId($GLOBALS['conn'], (int)$_SESSION['user_id']);
+    }
+
+    // Handle status update (accept / decline) by a coach for their own requests
+    public static function updateSessionRequest(): string
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !isset($_POST['update_request_id']) || !isset($_POST['update_action'])) {
+            return '';
+        }
+        if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'coach') {
+            return 'Unauthorized';
+        }
+        $requestId = (int)$_POST['update_request_id'];
+        $action = $_POST['update_action'] === 'accept' ? 'accepted' : ($_POST['update_action'] === 'decline' ? 'declined' : '');
+        if (empty($action)) {
+            return 'Invalid action';
+        }
+
+        $req = SessionRequest::findById($GLOBALS['conn'], $requestId);
+        if (!$req) {
+            return 'Request not found';
+        }
+        if ((int)$req['coach_id'] !== (int)$_SESSION['user_id']) {
+            return 'Unauthorized';
+        }
+
+        $res = SessionRequest::updateStatus($GLOBALS['conn'], $requestId, $action);
+        return $res === true ? 'STATUS_UPDATED' : (is_string($res) ? $res : 'Failed to update status');
     }
 
     public static function deleteCoach(): string

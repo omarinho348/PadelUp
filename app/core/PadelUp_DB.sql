@@ -62,6 +62,22 @@ CREATE TABLE `coach_profiles` (
   CONSTRAINT `fk_coach_user` FOREIGN KEY (`coach_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Session requests: visitors can request a coaching session with a coach. Persist requester's contact details so coach can follow up.
+CREATE TABLE IF NOT EXISTS `session_requests` (
+  `request_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `coach_id` INT NOT NULL,
+  `requester_id` INT NULL,
+  `name` VARCHAR(150) NOT NULL,
+  `email` VARCHAR(150) NOT NULL,
+  `phone` VARCHAR(30) NULL,
+  `message` TEXT NULL,
+  `status` ENUM('pending','accepted','declined') NOT NULL DEFAULT 'pending',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_session_coach` FOREIGN KEY (`coach_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_session_requester` FOREIGN KEY (`requester_id`) REFERENCES `users`(`user_id`) ON DELETE SET NULL,
+  KEY `idx_session_coach` (`coach_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- Venues (owned/managed by venue_admin) 
 CREATE TABLE `venues` (
   `venue_id` INT AUTO_INCREMENT PRIMARY KEY,
