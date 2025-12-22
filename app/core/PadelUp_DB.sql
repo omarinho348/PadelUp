@@ -177,6 +177,21 @@ CREATE TABLE IF NOT EXISTS tournaments (
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- Navigation Menu (self-referencing)
+CREATE TABLE IF NOT EXISTS `menu_items` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `parent_id` INT NULL,
+  `title` VARCHAR(150) NOT NULL,
+  `url` VARCHAR(255) NOT NULL,
+  `display_order` INT NOT NULL DEFAULT 0,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_menu_parent` FOREIGN KEY (`parent_id`) REFERENCES `menu_items`(`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  KEY `idx_menu_parent` (`parent_id`),
+  KEY `idx_menu_order` (`display_order`),
+  KEY `idx_menu_active` (`is_active`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 CREATE TABLE IF NOT EXISTS tournament_registrations (
   id INT AUTO_INCREMENT PRIMARY KEY,
   tournament_id INT NOT NULL,

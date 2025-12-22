@@ -7,10 +7,40 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $isController = strpos($_SERVER['PHP_SELF'], '/controllers/') !== false || strpos($_SERVER['PHP_SELF'], "\\controllers\\") !== false;
 $viewsBase = $isController ? '../views/' : '';
 $controllersBase = $isController ? '' : '../controllers/';
+require_once __DIR__ . '/../../core/dbh.inc.php';
+require_once __DIR__ . '/../../models/MenuItem.php';
+$conn = Database::getInstance()->getConnection();
+$menuTree = MenuItem::getTree($conn);
 ?>
 <nav class="nav-bar">
     
     <a href="<?php echo $viewsBase; ?>index.php" class="nav-brand">PadelUp</a>
+
+    <ul class="nav-menu">
+        <?php
+        // Recursive renderer for nested menu items
+        $renderMenu = function(array $nodes, int $depth = 0) use (&$renderMenu, $viewsBase) {
+            if (empty($nodes)) { return; }
+            echo '<ul class="menu-level-'.$depth.'">';
+            foreach ($nodes as $node) {
+                $title = htmlspecialchars($node['title'] ?? '', ENT_QUOTES, 'UTF-8');
+                $url = htmlspecialchars($node['url'] ?? '#', ENT_QUOTES, 'UTF-8');
+                $hasChildren = !empty($node['children']);
+                $liClass = $hasChildren ? 'has-children' : '';
+                echo '<li class="'.$liClass.'">';
+                echo '<a href="'.($url).'" class="menu-link">'.$title.'</a>';
+                if ($hasChildren) {
+                    echo '<div class="submenu">';
+                    $renderMenu($node['children'], $depth + 1);
+                    echo '</div>';
+                }
+                echo '</li>';
+            }
+            echo '</ul>';
+        };
+        $renderMenu($menuTree, 0);
+        ?>
+    </ul>
 
     <div class="nav-buttons">
   
@@ -52,3 +82,19 @@ $controllersBase = $isController ? '' : '../controllers/';
         <?php endif; ?>
     </div>
  </nav>
+
+<script>
+// Basic click-to-toggle for submenus (mobile-friendly)
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.nav-menu .has-children > a').forEach(function(anchor) {
+        anchor.addEventListener('click', function(e) {
+            // Allow normal navigation if no submenu
+            var parentLi = anchor.parentElement;
+            var submenu = parentLi.querySelector('.submenu');
+            if (!submenu) return;
+            e.preventDefault();
+            parentLi.classList.toggle('open');
+        });
+    });
+});
+</script>
