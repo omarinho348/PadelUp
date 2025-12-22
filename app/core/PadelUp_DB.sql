@@ -1,37 +1,11 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- Host: 127.0.0.1
--- Generation Time: Oct 17, 2025 at 01:02 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
 
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
---
--- Database: `padelup`
---
-
--- --------------------------------------------------------
-
---
--- Table structure for table `users`
---
-
--- NEW SCHEMA: DROP OLD TABLES (manual execution may be required if they exist)
--- NOTE: Remove/drop old tables manually before running if needed:
--- DROP TABLE IF EXISTS users, player_profiles, coach_profiles, venues;
-
--- Users table (base identities & roles)
 CREATE TABLE `users` (
   `user_id` INT AUTO_INCREMENT PRIMARY KEY,
   `name` VARCHAR(100) NOT NULL,
@@ -42,7 +16,6 @@ CREATE TABLE `users` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Player profiles (extended player-only attributes)
 CREATE TABLE `player_profiles` (
   `player_id` INT PRIMARY KEY,
   `skill_level` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
@@ -52,7 +25,6 @@ CREATE TABLE `player_profiles` (
   CONSTRAINT `fk_player_user` FOREIGN KEY (`player_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Coach profiles (extended coach-only attributes)
 CREATE TABLE `coach_profiles` (
   `coach_id` INT PRIMARY KEY,
   `bio` TEXT NULL,
@@ -62,7 +34,6 @@ CREATE TABLE `coach_profiles` (
   CONSTRAINT `fk_coach_user` FOREIGN KEY (`coach_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Session requests: visitors can request a coaching session with a coach. Persist requester's contact details so coach can follow up.
 CREATE TABLE IF NOT EXISTS `session_requests` (
   `request_id` INT AUTO_INCREMENT PRIMARY KEY,
   `coach_id` INT NOT NULL,
@@ -78,7 +49,6 @@ CREATE TABLE IF NOT EXISTS `session_requests` (
   KEY `idx_session_coach` (`coach_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Venues (owned/managed by venue_admin) 
 CREATE TABLE `venues` (
   `venue_id` INT AUTO_INCREMENT PRIMARY KEY,
   `venue_admin_id` INT NOT NULL,
@@ -121,10 +91,7 @@ CREATE TABLE `bookings` (
  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 
--- Migration (run separately if table already exists):
--- ALTER TABLE venues ADD COLUMN `hourly_rate` INT NOT NULL DEFAULT 0 AFTER `closing_time`;
 
--- Marketplace Products
 CREATE TABLE `products` (
   `product_id` INT AUTO_INCREMENT PRIMARY KEY,
   `seller_id` INT NOT NULL,
@@ -140,11 +107,7 @@ CREATE TABLE `products` (
   CONSTRAINT `fk_product_seller` FOREIGN KEY (`seller_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------
--- MATCHMAKING TABLES
--- --------------------------------------------------
 
--- 1. Matches Table
 CREATE TABLE IF NOT EXISTS matches (
     match_id INT AUTO_INCREMENT PRIMARY KEY,
     creator_id INT NOT NULL,                         
@@ -161,11 +124,10 @@ CREATE TABLE IF NOT EXISTS matches (
     FOREIGN KEY (venue_id) REFERENCES venues(venue_id)
 );
 
--- 2. Match Players Table
 CREATE TABLE IF NOT EXISTS match_players (
     id INT AUTO_INCREMENT PRIMARY KEY,
     match_id INT NOT NULL,
-    player_id INT NOT NULL,                         -- references player_profile.player_id
+    player_id INT NOT NULL,                       
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (match_id) REFERENCES matches(match_id),
     FOREIGN KEY (player_id) REFERENCES users(user_id),
@@ -194,20 +156,15 @@ CREATE TABLE `match_results` (
   CONSTRAINT `fk_t2_p2` FOREIGN KEY (`team2_player2_id`) REFERENCES `users`(`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------
--- TOURNAMENTS
--- --------------------------------------------------
--- Tournaments are created by a `venue_admin` (application-level enforcement).
--- By default the location for a tournament will be one of the courts managed by the venue_admin
--- (this should be validated in application code before inserting or by a trigger if desired).
+
 CREATE TABLE IF NOT EXISTS tournaments (
   tournament_id INT AUTO_INCREMENT PRIMARY KEY,
   venue_id INT NOT NULL ,
   tournament_name VARCHAR(150) NOT NULL,
-  created_by INT DEFAULT NULL, -- user_id of the venue_admin who created the tournament
-  tournament_date DATE NOT NULL, -- 1-day tournaments only
+  created_by INT DEFAULT NULL, 
+  tournament_date DATE NOT NULL, 
   start_time TIME NOT NULL,
-  max_level INT NOT NULL, -- maximum allowed skill level for participants
+  max_level INT NOT NULL, 
   max_size INT NOT NULL DEFAULT 4,
   entrance_fee DECIMAL(10,2) NOT NULL DEFAULT 0.00,
   total_prize_money DECIMAL(10,2) NOT NULL DEFAULT 0.00,
@@ -220,7 +177,6 @@ CREATE TABLE IF NOT EXISTS tournaments (
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Tournament registrations (players registering for tournaments)
 CREATE TABLE IF NOT EXISTS tournament_registrations (
   id INT AUTO_INCREMENT PRIMARY KEY,
   tournament_id INT NOT NULL,
@@ -232,7 +188,6 @@ CREATE TABLE IF NOT EXISTS tournament_registrations (
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Tournament teams (doubles registration: 2 players per team)
 CREATE TABLE IF NOT EXISTS tournament_teams (
   id INT AUTO_INCREMENT PRIMARY KEY,
   tournament_id INT NOT NULL,
@@ -248,7 +203,6 @@ CREATE TABLE IF NOT EXISTS tournament_teams (
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Tournament draw (stores the bracket seeding once generated)
 CREATE TABLE IF NOT EXISTS tournament_draw (
   id INT AUTO_INCREMENT PRIMARY KEY,
   tournament_id INT NOT NULL,
@@ -262,7 +216,6 @@ CREATE TABLE IF NOT EXISTS tournament_draw (
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- Tournament match results (stores winner of each match)
 CREATE TABLE IF NOT EXISTS tournament_match_results (
   id INT AUTO_INCREMENT PRIMARY KEY,
   tournament_id INT NOT NULL,
@@ -278,8 +231,3 @@ CREATE TABLE IF NOT EXISTS tournament_match_results (
   UNIQUE KEY `unique_tournament_match` (`tournament_id`, `round_number`, `match_number`)
 )
 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

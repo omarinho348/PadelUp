@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/12.5/phpunit.xsd" bootstrap="bootstrap.php" colors="true" stopOnFailure="false" cacheDirectory=".phpunit.cache">
+  <testsuites>
+    <testsuite name="PadelUp Tests">
+      <file>UserTest.php</file>
+      <file>MatchModelTest.php</file>
+    </testsuite>
+  </testsuites>
+  <php>
+    <ini name="display_errors" value="On"/>
+    <ini name="display_startup_errors" value="On"/>
+    <ini name="error_reporting" value="-1"/>
+    <ini name="memory_limit" value="256M"/>
+  </php>
+  <source>
+    <include>
+      <directory suffix=".php">../app/models</directory>
+      <directory suffix=".php">../app/controllers</directory>
+    </include>
+    <exclude>
+      <directory suffix=".php">.</directory>
+      <directory suffix=".php">../core</directory>
+    </exclude>
+  </source>
+</phpunit>
