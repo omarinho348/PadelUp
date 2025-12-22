@@ -21,7 +21,7 @@ class MarketplaceController
             'sort' => $_GET['sort'] ?? 'relevance',
         ];
 
-        return Product::findAllAvailable($GLOBALS['conn'], $filters);
+        return Product::findAllAvailable(Database::getInstance()->getConnection(), $filters);
     }
 
     /**
@@ -87,7 +87,7 @@ class MarketplaceController
             ];
 
             // --- 4. Call Model to create product ---
-            if (Product::create($GLOBALS['conn'], $data)) {
+            if (Product::create(Database::getInstance()->getConnection(), $data)) {
                 // --- 5. Redirect on success ---
                 header('Location: marketplace.php?status=listed');
                 exit();
@@ -120,7 +120,7 @@ class MarketplaceController
             }
 
             // Verify ownership
-            $product = Product::findById($GLOBALS['conn'], $productId);
+            $product = Product::findById(Database::getInstance()->getConnection(), $productId);
             if (!$product || $product['seller_id'] !== $_SESSION['user_id']) {
                 throw new Exception("You do not have permission to edit this item.");
             }
@@ -167,7 +167,7 @@ class MarketplaceController
                 'status' => htmlspecialchars($_POST['status'])
             ];
 
-            if (Product::update($GLOBALS['conn'], $productId, $data)) {
+            if (Product::update(Database::getInstance()->getConnection(), $productId, $data)) {
                 header('Location: marketplace.php?status=updated');
                 exit();
             } else {

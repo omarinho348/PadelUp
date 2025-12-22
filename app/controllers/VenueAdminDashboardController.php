@@ -9,13 +9,15 @@ require_once __DIR__ . '/SkillLevelController.php';
 
 UserController::requireVenueAdmin();
 
+$conn = Database::getInstance()->getConnection();
+
 $adminId = (int)$_SESSION['user_id'];
-$venues = Venue::listByAdmin($GLOBALS['conn'], $adminId);
+$venues = Venue::listByAdmin($conn, $adminId);
 if (isset($_GET['venue_id'])) {
     $selectedVenueId = (int)$_GET['venue_id'];
-    $selectedVenue = Venue::findById($GLOBALS['conn'], $selectedVenueId);
+    $selectedVenue = Venue::findById($conn, $selectedVenueId);
 } else {
-    $selectedVenue = Venue::findFirstByAdmin($GLOBALS['conn'], $adminId);
+    $selectedVenue = Venue::findFirstByAdmin($conn, $adminId);
     $selectedVenueId = $selectedVenue['venue_id'] ?? null;
 }
 
@@ -62,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
                 'closing_time' => $closing_time,
             ];
             if ($logo_path) { $fields['logo_path'] = $logo_path; }
-            $res = Venue::update($GLOBALS['conn'], $selectedVenue['venue_id'], $fields);
+            $res = Venue::update($conn, $selectedVenue['venue_id'], $fields);
             if ($res === true) { header('Location: VenueAdminDashboardController.php?venue_id='.$selectedVenue['venue_id'].'&saved=1'); exit(); }
             else { $message = is_string($res) ? $res : 'Failed to update venue.'; }
         }
@@ -72,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
         $court_type = $_POST['court_type'] ?? 'outdoor';
         if ($court_name === '') { $message = 'Court name is required.'; }
         else {
-            $res = Court::create($GLOBALS['conn'], [
+            $res = Court::create($conn, [
                 'venue_id' => $selectedVenue['venue_id'],
                 'court_name' => htmlspecialchars($court_name),
                 'court_type' => htmlspecialchars($court_type),
@@ -122,7 +124,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
                 'max_size' => (int)$t_max_size,
             ];
 
-            $res = Tournament::create($GLOBALS['conn'], $data);
+            $res = Tournament::create($conn, $data);
             if (is_int($res)) {
                 header('Location: VenueAdminDashboardController.php?venue_id='.$selectedVenue['venue_id'].'&tournament_created=1');
                 exit();
@@ -137,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
         $court_type = $_POST['court_type'] ?? 'outdoor';
         if ($court_id <= 0 || $court_name === '') { $message = 'Invalid court update data.'; }
         else {
-            $res = Court::update($GLOBALS['conn'], $court_id, [
+            $res = Court::update($conn, $court_id, [
                 'court_name' => htmlspecialchars($court_name),
                 'court_type' => htmlspecialchars($court_type)
             ]);
@@ -149,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
         $court_id = (int)($_POST['court_id'] ?? 0);
         $desired = $_POST['desired'] ?? 'close';
         if ($court_id > 0) {
-            $res = Court::update($GLOBALS['conn'], $court_id, [ 'is_active' => ($desired === 'open' ? 1 : 0) ]);
+            $res = Court::update($conn, $court_id, [ 'is_active' => ($desired === 'open' ? 1 : 0) ]);
             if ($res === true) { header('Location: VenueAdminDashboardController.php?venue_id='.$selectedVenue['venue_id'].'&court_toggled=1'); exit(); }
             else { $message = is_string($res) ? $res : 'Failed to update court status.'; }
         }
@@ -157,7 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
     elseif ($action === 'delete_court') {
         $court_id = (int)($_POST['court_id'] ?? 0);
         if ($court_id > 0) {
-            $res = Court::delete($GLOBALS['conn'], $court_id);
+            $res = Court::delete($conn, $court_id);
             if ($res === true) { header('Location: VenueAdminDashboardController.php?venue_id='.$selectedVenue['venue_id'].'&court_deleted=1'); exit(); }
             else { $message = is_string($res) ? $res : 'Failed to delete court.'; }
         }
@@ -168,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
         if ($booking_id <= 0) {
             $message = 'Invalid booking selected.';
         } else {
-            $res = Booking::updateStatusByAdmin($GLOBALS['conn'], $booking_id, $adminId, $new_status);
+            $res = Booking::updateStatusByAdmin($conn, $booking_id, $adminId, $new_status);
             if ($res === true) {
                 header('Location: VenueAdminDashboardController.php?venue_id='.$selectedVenue['venue_id'].'&booking_updated=1');
                 exit();
@@ -185,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $selectedVenue) {
             $message = 'Invalid tournament or status.';
         } else {
             $sql = "UPDATE tournaments SET status = ? WHERE tournament_id = ? AND venue_id = ?";
-            $stmt = $GLOBALS['conn']->prepare($sql);
+            $stmt = $conn->prepare($sql);
             $stmt->bind_param('sii', $newStatus, $tournamentId, $selectedVenue['venue_id']);
             
             if ($stmt->execute() && $stmt->affected_rows > 0) {
@@ -208,8 +210,8 @@ if (isset($_GET['booking_updated'])) { $success = 'Booking updated.'; }
 if (isset($_GET['tournament_created'])) { $success = 'Tournament created.'; }
 if (isset($_GET['tournament_updated'])) { $success = 'Tournament status updated.'; }
 
-$courts = $selectedVenue ? Court::listByVenue($GLOBALS['conn'], $selectedVenue['venue_id']) : [];
-$bookings = $selectedVenue ? Booking::listByVenue($GLOBALS['conn'], $selectedVenue['venue_id']) : [];
-$tournaments = $selectedVenue ? Tournament::listByVenue($GLOBALS['conn'], $selectedVenue['venue_id']) : [];
+$courts = $selectedVenue ? Court::listByVenue($conn, $selectedVenue['venue_id']) : [];
+$bookings = $selectedVenue ? Booking::listByVenue($conn, $selectedVenue['venue_id']) : [];
+$tournaments = $selectedVenue ? Tournament::listByVenue($conn, $selectedVenue['venue_id']) : [];
 
 include __DIR__ . '/../views/venue_admin.php';

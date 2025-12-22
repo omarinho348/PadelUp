@@ -18,7 +18,7 @@ class MatchController
      */
     public static function showMatches(): array
     {
-        $conn = $GLOBALS['conn'];
+        $conn = Database::getInstance()->getConnection();
         $filters = [];
 
         // Example of how you might process filters from a form
@@ -75,7 +75,7 @@ class MatchController
             'description' => htmlspecialchars($_POST['description'] ?? '')
         ];
 
-        $conn = $GLOBALS['conn'];
+        $conn = Database::getInstance()->getConnection();
         $result = MatchModel::create($conn, $data);
 
         if (is_int($result)) {
@@ -109,7 +109,7 @@ class MatchController
         }
 
         $playerId = (int)$_SESSION['user_id'];
-        $conn = $GLOBALS['conn'];
+        $conn = Database::getInstance()->getConnection();
     
         // Optional: Check player eligibility (e.g., skill level)
         $match = MatchModel::findById($conn, $matchId);
@@ -160,7 +160,7 @@ class MatchController
         }
 
         $playerId = (int)$_SESSION['user_id'];
-        $conn = $GLOBALS['conn'];
+        $conn = Database::getInstance()->getConnection();
 
         $result = MatchPlayer::leaveMatch($conn, $matchId, $playerId);
 
@@ -199,7 +199,7 @@ class MatchController
             return "Error: Invalid match or teammate selected.";
         }
 
-        $conn = $GLOBALS['conn'];
+        $conn = Database::getInstance()->getConnection();
         $match = MatchModel::findById($conn, $matchId);
 
         // --- Authorization and Match State Check ---

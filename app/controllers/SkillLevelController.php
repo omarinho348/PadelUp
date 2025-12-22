@@ -30,7 +30,7 @@ class SkillLevelController
 
         // If user is logged in, check if they already have a score. If so, prevent re-calculation.
         if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
-            $existingProfile = PlayerProfile::findByUserId($GLOBALS['conn'], (int)$_SESSION['user_id']);
+            $existingProfile = PlayerProfile::findByUserId(Database::getInstance()->getConnection(), (int)$_SESSION['user_id']);
             if ($existingProfile && isset($existingProfile['skill_level']) && $existingProfile['skill_level'] > 0) {
                 // User already has a score, do not proceed.
                 // Redirect them to the same page on GET to show their existing score.
@@ -46,7 +46,7 @@ class SkillLevelController
         if (isset($_SESSION['user_id']) && isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
             $userId = (int)$_SESSION['user_id'];
             // Use the new method to update the skill_level
-            PlayerProfile::updateSkillLevel($GLOBALS['conn'], $userId, $score);
+            PlayerProfile::updateSkillLevel(Database::getInstance()->getConnection(), $userId, $score);
         }
 
         return $score;

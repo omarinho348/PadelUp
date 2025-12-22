@@ -5,6 +5,7 @@
 
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../app/core/dbh.inc.php';
+$conn = Database::getInstance()->getConnection();
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

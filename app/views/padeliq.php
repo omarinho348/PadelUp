@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../core/dbh.inc.php';
 require_once __DIR__ . '/../models/PlayerProfile.php';
 require_once __DIR__ . '/../models/Tournament.php';
+$conn = Database::getInstance()->getConnection();
 
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 $currentUserId = $_SESSION['user_id'] ?? null;
@@ -23,7 +24,7 @@ $recentTournaments = [];
 
 if ($currentUserId) {
     // Profile and rating
-    $profile = PlayerProfile::findByUserId($GLOBALS['conn'], (int)$currentUserId);
+    $profile = PlayerProfile::findByUserId($conn, (int)$currentUserId);
     if ($profile) {
         $skillLevel = isset($profile['skill_level']) ? (float)$profile['skill_level'] : null;
         if ($skillLevel !== null) {
@@ -50,7 +51,7 @@ if ($currentUserId) {
         ORDER BY m.match_date DESC, m.match_time DESC
         LIMIT 10
     ";
-    if ($stmt = $GLOBALS['conn']->prepare($sql)) {
+    if ($stmt = $conn->prepare($sql)) {
         $stmt->bind_param('i', $currentUserId);
         if ($stmt->execute()) {
             $res = $stmt->get_result();
@@ -92,7 +93,7 @@ if ($currentUserId) {
     }
 
     // Tournaments won
-    $wonTournaments = Tournament::getWonTournaments($GLOBALS['conn'], (int)$currentUserId);
+    $wonTournaments = Tournament::getWonTournaments($conn, (int)$currentUserId);
     $stats['tournaments_won'] = is_array($wonTournaments) ? count($wonTournaments) : 0;
 
     // Recent tournaments participated
@@ -104,7 +105,7 @@ if ($currentUserId) {
         ORDER BY t.tournament_date DESC
         LIMIT 5
     ";
-    if ($st = $GLOBALS['conn']->prepare($recentSql)) {
+    if ($st = $conn->prepare($recentSql)) {
         $st->bind_param('ii', $currentUserId, $currentUserId);
         if ($st->execute()) {
             $res = $st->get_result();

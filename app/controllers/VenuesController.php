@@ -13,7 +13,15 @@ class VenuesController
     public static function searchVenues($searchTerm)
     {
         global $conn;
-        return Venue::search($conn, $searchTerm);
+        $allVenues = Venue::listAll($conn);
+        if (empty($searchTerm)) {
+            return $allVenues;
+        }
+        return array_filter($allVenues, function($venue) use ($searchTerm) {
+            return stripos($venue['name'], $searchTerm) !== false 
+                || stripos($venue['city'], $searchTerm) !== false 
+                || stripos($venue['address'], $searchTerm) !== false;
+        });
     }
 
     public static function getVenue(int $venueId)

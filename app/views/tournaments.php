@@ -15,7 +15,8 @@ require_once __DIR__ . '/../core/dbh.inc.php';
 require_once __DIR__ . '/../models/Tournament.php';
 
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
-$tournaments = Tournament::listAll($GLOBALS['conn']);
+$conn = Database::getInstance()->getConnection();
+$tournaments = Tournament::listAll($conn);
 $currentUserId = $_SESSION['user_id'] ?? null;
 ?>
 
@@ -68,7 +69,7 @@ $currentUserId = $_SESSION['user_id'] ?? null;
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Slots</span>
-                                <?php $regCount = Tournament::getRegistrationCount($GLOBALS['conn'], (int)$t['tournament_id']); ?>
+                                <?php $regCount = Tournament::getRegistrationCount($conn, (int)$t['tournament_id']); ?>
                                 <span class="detail-value"><?php echo $regCount . ' / ' . (int)$t['max_size']; ?></span>
                             </div>
                         </div>
@@ -87,7 +88,7 @@ $currentUserId = $_SESSION['user_id'] ?? null;
 
                         <?php if ($showDraw): ?>
                             <a href="/PadelUp/app/views/tournament_draw.php?id=<?php echo (int)$t['tournament_id']; ?>" class="btn btn-primary">View Tournament Draw</a>
-                        <?php elseif ($currentUserId && Tournament::hasRegistered($GLOBALS['conn'], (int)$t['tournament_id'], (int)$currentUserId)): ?>
+                        <?php elseif ($currentUserId && Tournament::hasRegistered($conn, (int)$t['tournament_id'], (int)$currentUserId)): ?>
                             <button class="btn" disabled>Registered</button>
                         <?php elseif ($registrationClosed): ?>
                             <button class="btn" disabled>Registration Closed</button>

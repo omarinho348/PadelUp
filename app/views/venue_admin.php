@@ -281,7 +281,7 @@ if (!isset($success)) { $success = ''; }
               <td><?php echo htmlspecialchars($t['max_level']); ?></td>
               <td>$<?php echo number_format($t['entrance_fee'],2); ?></td>
               <td>$<?php echo number_format($t['total_prize_money'],2); ?></td>
-              <td><?php echo Tournament::getRegistrationCount($GLOBALS['conn'], (int)$t['tournament_id']) . ' / ' . (int)$t['max_size']; ?></td>
+              <td><?php echo Tournament::getRegistrationCount($conn, (int)$t['tournament_id']) . ' / ' . (int)$t['max_size']; ?></td>
               <td>
                 <span class="status-badge status-<?php echo $t['status']; ?>"><?php echo ucfirst($t['status']); ?></span>
               </td>
@@ -289,7 +289,7 @@ if (!isset($success)) { $success = ''; }
                 <?php if($t['status'] === 'scheduled'): ?>
                   <?php 
                     // Check if draw exists
-                    $hasDraw = Tournament::hasDraw($GLOBALS['conn'], (int)$t['tournament_id']);
+                    $hasDraw = Tournament::hasDraw($conn, (int)$t['tournament_id']);
                   ?>
                   <?php if($hasDraw): ?>
                     <button type="button" class="action-btn" onclick="openResultsModal(<?php echo (int)$t['tournament_id']; ?>, '<?php echo htmlspecialchars($t['tournament_name']); ?>')">Enter Results</button>

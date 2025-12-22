@@ -19,6 +19,7 @@
     <?php 
     require_once __DIR__ . '/../controllers/MatchController.php';
     require_once __DIR__ . '/../models/Venue.php'; // For fetching venues for the modal
+    require_once __DIR__ . '/../core/dbh.inc.php';
 
     date_default_timezone_set('Africa/Cairo'); // Set the correct timezone for all date/time operations
     require_once __DIR__ . '/../models/Venue.php'; // For fetching venues for the modal
@@ -33,7 +34,8 @@
     $matches = MatchController::showMatches();
 
     // Fetch all venues for the "Create Match" modal dropdown
-    $venues = Venue::listAll($GLOBALS['conn']);
+    $conn = Database::getInstance()->getConnection();
+    $venues = Venue::listAll($conn);
 
     $current_user_id = $_SESSION['user_id'] ?? null;
     $isLoggedIn = !is_null($current_user_id);
@@ -139,7 +141,7 @@
                                 
                                 <?php
                                 $isLoggedIn = !is_null($current_user_id);
-                                $hasJoined = $isLoggedIn && MatchPlayer::hasJoined($GLOBALS['conn'], $match['match_id'], $current_user_id);
+                                $hasJoined = $isLoggedIn && MatchPlayer::hasJoined($conn, $match['match_id'], $current_user_id);
                                 $isFull = $match['current_players'] >= $match['max_players'];
                                 $canJoin = $isLoggedIn && !$isFull && !$hasJoined;
                                 $isCreator = $isLoggedIn && ($current_user_id == $match['creator_id']);
@@ -153,7 +155,7 @@
                                                 data-match-id="<?php echo $match['match_id']; ?>"
                                                 data-players='<?php 
                                                     $other_players = array_filter(
-                                                        MatchPlayer::getPlayersForMatch($GLOBALS['conn'], $match['match_id']), 
+                                                        MatchPlayer::getPlayersForMatch($conn, $match['match_id']), 
                                                         fn($p) => $p['user_id'] != $current_user_id
                                                     );
                                                     echo htmlspecialchars(json_encode(array_values($other_players)), ENT_QUOTES, 'UTF-8'); 

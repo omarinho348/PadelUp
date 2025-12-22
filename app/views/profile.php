@@ -15,7 +15,8 @@ $wonTournaments = [];
 $coachRequests = [];
 if (isset($_SESSION['role']) && $_SESSION['role'] === 'player') {
     $profile = UserController::getPlayerProfile();
-    $wonTournaments = Tournament::getWonTournaments($GLOBALS['conn'], (int)$_SESSION['user_id']);
+     $conn = Database::getInstance()->getConnection();
+     $wonTournaments = Tournament::getWonTournaments($conn, (int)$_SESSION['user_id']);
 }
 if (isset($_SESSION['role']) && $_SESSION['role'] === 'coach') {
     $updateRequestMessage = UserController::updateSessionRequest();

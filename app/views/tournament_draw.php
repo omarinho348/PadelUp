@@ -4,6 +4,8 @@ require_once __DIR__ . '/../core/dbh.inc.php';
 require_once __DIR__ . '/../models/Tournament.php';
 require_once __DIR__ . '/../models/User.php';
 
+$conn = Database::getInstance()->getConnection();
+
 $tournamentId = (int)($_GET['id'] ?? 0);
 if ($tournamentId <= 0) {
     header('Location: tournaments.php');
@@ -15,7 +17,7 @@ $sql = "SELECT t.*, v.name as venue_name, v.city as venue_city, v.logo_path
         FROM tournaments t 
         JOIN venues v ON t.venue_id = v.venue_id 
         WHERE t.tournament_id = ?";
-$stmt = $GLOBALS['conn']->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $tournament = $stmt->get_result()->fetch_assoc();
@@ -41,7 +43,7 @@ $sql = "SELECT tt.id, tt.player1_user_id, tt.player2_user_id, u1.name AS p1_name
     JOIN users u2 ON tt.player2_user_id = u2.user_id
     WHERE tt.tournament_id = ?
     ORDER BY tt.registered_at";
-$stmt = $GLOBALS['conn']->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $teams = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -71,7 +73,7 @@ $drawSql = "SELECT d.seed_position, d.team_id, d.is_bye,
             LEFT JOIN users u2 ON tt.player2_user_id = u2.user_id
             WHERE d.tournament_id = ?
             ORDER BY d.seed_position";
-$stmt = $GLOBALS['conn']->prepare($drawSql);
+$stmt = $conn->prepare($drawSql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $existingDraw = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -101,14 +103,14 @@ if (!empty($existingDraw)) {
     ksort($draw); // Sort by seed position
 } else {
     // Generate new draw and save it
-    $draw = generateAndSaveTeamDraw($teams, (int)$tournament['max_size'], $tournamentId, $GLOBALS['conn']);
+    $draw = generateAndSaveTeamDraw($teams, (int)$tournament['max_size'], $tournamentId, $conn);
 }
 
 // Load all match results
 $resultsSql = "SELECT round_number, match_number, team1_seed, team2_seed, winner_seed 
                FROM tournament_match_results 
                WHERE tournament_id = ?";
-$stmt = $GLOBALS['conn']->prepare($resultsSql);
+$stmt = $conn->prepare($resultsSql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $resultsData = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);

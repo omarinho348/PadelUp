@@ -8,6 +8,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$conn = Database::getInstance()->getConnection();
+
 // Set JSON response header
 header('Content-Type: application/json');
 
@@ -32,7 +34,7 @@ $userId = (int)$_SESSION['user_id'];
 
 // Get tournament details to check max_level and capacity
 $sql = "SELECT max_level, max_size FROM tournaments WHERE tournament_id = ?";
-$stmt = $GLOBALS['conn']->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -50,15 +52,15 @@ if ($partnerEmail === '') {
     exit();
 }
 
-$partner = User::findByEmail($GLOBALS['conn'], $partnerEmail);
+$partner = User::findByEmail($conn, $partnerEmail);
 if (!$partner) {
     echo json_encode(['success' => false, 'error' => 'Partner not found. Please ask your partner to sign up first.']);
     exit();
 }
 
 // Fetch player profiles for both users
-$profile1 = PlayerProfile::findByUserId($GLOBALS['conn'], $userId);
-$profile2 = PlayerProfile::findByUserId($GLOBALS['conn'], (int)$partner['user_id']);
+$profile1 = PlayerProfile::findByUserId($conn, $userId);
+$profile2 = PlayerProfile::findByUserId($conn, (int)$partner['user_id']);
 if (!$profile1 || !$profile2) {
     echo json_encode(['success' => false, 'error' => 'Both players must have a completed profile with a skill level.']);
     exit();
@@ -76,7 +78,7 @@ if ($level1 > $maxLevel || $level2 > $maxLevel) {
 }
 
 // Proceed with team registration
-$res = Tournament::registerTeam($GLOBALS['conn'], $tournamentId, $userId, (int)$partner['user_id']);
+$res = Tournament::registerTeam($conn, $tournamentId, $userId, (int)$partner['user_id']);
 if ($res === true) {
     echo json_encode([
         'success' => true, 

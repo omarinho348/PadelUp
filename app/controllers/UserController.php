@@ -38,7 +38,7 @@ class UserController
             'birth_date' => htmlspecialchars($_POST['dob']),
             'preferred_side' => htmlspecialchars($_POST['side'])
         ];
-        $result = User::createPlayerUser($GLOBALS['conn'], $userData, $profileData);
+        $result = User::createPlayerUser(Database::getInstance()->getConnection(), $userData, $profileData);
         if ($result === true) {
             header('Location: signin.php?signup=success');
             exit();
@@ -56,7 +56,7 @@ class UserController
         }
         $email = $_POST['email'];
         $password = $_POST['password'];
-        $row = User::findByEmail($GLOBALS['conn'], $email);
+        $row = User::findByEmail(Database::getInstance()->getConnection(), $email);
         if (!$row) {
             return 'Invalid email or password.';
         }
@@ -84,7 +84,7 @@ class UserController
         if (!isset($_SESSION['user_id'])) {
             return null;
         }
-        return User::findById($GLOBALS['conn'], (int)$_SESSION['user_id']);
+        return User::findById(Database::getInstance()->getConnection(), (int)$_SESSION['user_id']);
     }
 
     public static function getPlayerProfile(): ?array
@@ -92,7 +92,7 @@ class UserController
         if (!isset($_SESSION['user_id'])) {
             return null;
         }
-        return PlayerProfile::findByUserId($GLOBALS['conn'], (int)$_SESSION['user_id']);
+        return PlayerProfile::findByUserId(Database::getInstance()->getConnection(), (int)$_SESSION['user_id']);
     }
 
     public static function editProfile(): array
@@ -104,7 +104,7 @@ class UserController
         $message = '';
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userId = (int)$_SESSION['user_id'];
-            $conn = $GLOBALS['conn'];
+            $conn = Database::getInstance()->getConnection();
             
             // Data for 'users' table
             $userData = [
@@ -152,7 +152,7 @@ class UserController
             if (isset($_POST['confirm_delete']) && $_POST['confirm_delete'] === 'yes') {
                 // Cascade delete via FK will remove profile rows
                 $sql = "DELETE FROM users WHERE user_id = ?";
-                $stmt = $GLOBALS['conn']->prepare($sql);
+                $stmt = Database::getInstance()->getConnection()->prepare($sql);
                 if ($stmt) {
                     $stmt->bind_param("i", $_SESSION['user_id']);
                     if ($stmt->execute()) {
@@ -218,7 +218,7 @@ class UserController
     {
         self::requireSuperAdmin();
         $searchTerm = trim($_GET['search'] ?? '');
-        return User::listVenueAdmins($GLOBALS['conn'], $searchTerm);
+        return User::listVenueAdmins(Database::getInstance()->getConnection(), $searchTerm);
     }
 
     // Handle venue admin creation
@@ -245,7 +245,7 @@ class UserController
         $hourlyRate = (int)$rawRate;
         $email = htmlspecialchars($_POST['email']);
         // Ensure email not already used
-        if(User::findByEmail($GLOBALS['conn'], $email)){
+        if(User::findByEmail(Database::getInstance()->getConnection(), $email)){
             return 'Email already in use.';
         }
         $data = [
@@ -254,7 +254,7 @@ class UserController
             'password_hash' => password_hash($_POST['password'], PASSWORD_DEFAULT),
             'phone' => htmlspecialchars($_POST['phone'] ?? '')
         ];
-        $conn = $GLOBALS['conn'];
+        $conn = Database::getInstance()->getConnection();
         $conn->begin_transaction();
         try {
             $res = User::createVenueAdminWithId($conn, $data);
@@ -292,7 +292,7 @@ class UserController
             return '';
         }
         $id = (int)$_POST['delete_admin_id'];
-        $res = User::deleteVenueAdmin($GLOBALS['conn'], $id);
+        $res = User::deleteVenueAdmin(Database::getInstance()->getConnection(), $id);
         if($res === true){
             return 'VENUE_ADMIN_DELETED';
         }
@@ -304,14 +304,14 @@ class UserController
     {
         self::requireSuperAdmin();
         $searchTerm = trim($_GET['search'] ?? '');
-        return User::listCoaches($GLOBALS['conn'], $searchTerm);
+        return User::listCoaches(Database::getInstance()->getConnection(), $searchTerm);
     }
 
     // Public coach listing for the frontend (no auth required)
     public static function getPublicCoaches(): array
     {
         $searchTerm = trim($_GET['search'] ?? '');
-        return User::listCoaches($GLOBALS['conn'], $searchTerm);
+        return User::listCoaches(Database::getInstance()->getConnection(), $searchTerm);
     }
 
     // Handle coach creation
@@ -334,7 +334,7 @@ class UserController
         }
 
         $email = htmlspecialchars($_POST['email']);
-        if(User::findByEmail($GLOBALS['conn'], $email)){
+        if(User::findByEmail(Database::getInstance()->getConnection(), $email)){
             return 'Email already in use.';
         }
 
@@ -346,7 +346,7 @@ class UserController
             'phone' => htmlspecialchars($_POST['phone'] ?? '')
         ];
 
-        $conn = $GLOBALS['conn'];
+        $conn = Database::getInstance()->getConnection();
         $conn->begin_transaction();
         try {
             $newCoachId = User::createUser($conn, $userData);
@@ -406,7 +406,7 @@ class UserController
             'message' => $message
         ];
 
-        $res = SessionRequest::create($GLOBALS['conn'], $requestData);
+        $res = SessionRequest::create(Database::getInstance()->getConnection(), $requestData);
         return $res === true ? 'REQUEST_SENT' : (is_string($res) ? $res : 'Failed to send request.');
     }
 
@@ -416,7 +416,7 @@ class UserController
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['role']) || $_SESSION['role'] !== 'coach') {
             return [];
         }
-        return SessionRequest::findByCoachId($GLOBALS['conn'], (int)$_SESSION['user_id']);
+        return SessionRequest::findByCoachId(Database::getInstance()->getConnection(), (int)$_SESSION['user_id']);
     }
 
     // Handle status update (accept / decline) by a coach for their own requests
@@ -434,7 +434,7 @@ class UserController
             return 'Invalid action';
         }
 
-        $req = SessionRequest::findById($GLOBALS['conn'], $requestId);
+        $req = SessionRequest::findById(Database::getInstance()->getConnection(), $requestId);
         if (!$req) {
             return 'Request not found';
         }
@@ -442,7 +442,7 @@ class UserController
             return 'Unauthorized';
         }
 
-        $res = SessionRequest::updateStatus($GLOBALS['conn'], $requestId, $action);
+        $res = SessionRequest::updateStatus(Database::getInstance()->getConnection(), $requestId, $action);
         return $res === true ? 'STATUS_UPDATED' : (is_string($res) ? $res : 'Failed to update status');
     }
 
@@ -453,7 +453,7 @@ class UserController
             return '';
         }
         $id = (int)$_POST['delete_coach_id'];
-        $res = User::deleteById($GLOBALS['conn'], $id);
+        $res = User::deleteById(Database::getInstance()->getConnection(), $id);
         return $res === true ? 'COACH_DELETED' : 'Failed to delete coach.';
     }
 
@@ -462,7 +462,7 @@ class UserController
     {
         self::requireSuperAdmin();
         $searchTerm = trim($_GET['search'] ?? '');
-        return User::listPlayers($GLOBALS['conn'], $searchTerm);
+        return User::listPlayers(Database::getInstance()->getConnection(), $searchTerm);
     }
 
     // Handle player deletion from the admin user management page
@@ -474,7 +474,7 @@ class UserController
         }
 
         $id = (int)$_POST['delete_player_id'];
-        $res = User::deleteById($GLOBALS['conn'], $id);
+        $res = User::deleteById(Database::getInstance()->getConnection(), $id);
         return $res === true ? 'PLAYER_DELETED' : 'Failed to delete player.';
     }
 

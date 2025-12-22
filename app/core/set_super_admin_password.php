@@ -7,9 +7,7 @@ require_once __DIR__ . '/dbh.inc.php';
 header('Content-Type: text/plain');
 
 try {
-    if (!isset($conn) || !($conn instanceof mysqli)) {
-        throw new Exception('DB connection not available.');
-    }
+    $conn = Database::getInstance()->getConnection();
 
     $email = 'admin@padelup.local';
     $newPasswordPlain = '123'; // requested value

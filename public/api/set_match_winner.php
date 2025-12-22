@@ -12,6 +12,8 @@ if (!isset($_SESSION['user_id'])) {
     exit();
 }
 
+$conn = Database::getInstance()->getConnection();
+
 $userId = (int)$_SESSION['user_id'];
 
 // Get JSON input
@@ -38,7 +40,7 @@ if ($winnerSeed != $team1Seed && $winnerSeed != $team2Seed) {
 
 // Check if user is venue admin for this tournament
 $sql = "SELECT created_by FROM tournaments WHERE tournament_id = ?";
-$stmt = $GLOBALS['conn']->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $result = $stmt->get_result()->fetch_assoc();
@@ -58,7 +60,7 @@ $sql = "INSERT INTO tournament_match_results
         recorded_by = VALUES(recorded_by),
         recorded_at = CURRENT_TIMESTAMP";
 
-$stmt = $GLOBALS['conn']->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("iiiiiii", $tournamentId, $roundNumber, $matchNumber, $team1Seed, $team2Seed, $winnerSeed, $userId);
 
 if ($stmt->execute()) {
@@ -66,7 +68,7 @@ if ($stmt->execute()) {
     
     // Get tournament max_size to calculate max rounds
     $tournamentSql = "SELECT max_size FROM tournaments WHERE tournament_id = ?";
-    $stmt = $GLOBALS['conn']->prepare($tournamentSql);
+    $stmt = $conn->prepare($tournamentSql);
     $stmt->bind_param("i", $tournamentId);
     $stmt->execute();
     $tournamentData = $stmt->get_result()->fetch_assoc();
@@ -78,7 +80,7 @@ if ($stmt->execute()) {
         // Update player skill levels based on match result
         $loserSeed = ($winnerSeed === $team1Seed) ? $team2Seed : $team1Seed;
         SkillLevelController::updateFromTournamentMatch(
-            $GLOBALS['conn'],
+            $conn,
             $tournamentId,
             $winnerSeed,
             $loserSeed,

@@ -3,6 +3,7 @@ session_start();
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../../app/core/dbh.inc.php';
+$conn = Database::getInstance()->getConnection();
 
 // Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
@@ -20,7 +21,7 @@ if (!$tournamentId) {
 
 // Verify user is the tournament creator (venue admin)
 $sql = "SELECT created_by, max_size FROM tournaments WHERE tournament_id = ?";
-$stmt = $GLOBALS['conn']->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $tournament = $stmt->get_result()->fetch_assoc();
@@ -41,7 +42,7 @@ $drawSql = "SELECT d.seed_position, d.team_id, d.is_bye,
             LEFT JOIN users u2 ON tt.player2_user_id = u2.user_id
             WHERE d.tournament_id = ?
             ORDER BY d.seed_position";
-$stmt = $GLOBALS['conn']->prepare($drawSql);
+$stmt = $conn->prepare($drawSql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $drawData = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -68,7 +69,7 @@ foreach ($drawData as $entry) {
 $resultsSql = "SELECT round_number, match_number, team1_seed, team2_seed, winner_seed 
                FROM tournament_match_results 
                WHERE tournament_id = ?";
-$stmt = $GLOBALS['conn']->prepare($resultsSql);
+$stmt = $conn->prepare($resultsSql);
 $stmt->bind_param("i", $tournamentId);
 $stmt->execute();
 $resultsData = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);

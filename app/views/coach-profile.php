@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../controllers/UserController.php';
+require_once __DIR__ . '/../core/dbh.inc.php';
+$conn = Database::getInstance()->getConnection();
 require_once __DIR__ . '/../models/CoachProfile.php';
 
 // Handle session request form submission (returns '' when not posted)
@@ -11,8 +13,8 @@ if ($id <= 0) {
     exit();
 }
 
-$user = User::findById($GLOBALS['conn'], $id);
-$profile = CoachProfile::findByUserId($GLOBALS['conn'], $id);
+$user = User::findById($conn, $id);
+$profile = CoachProfile::findByUserId($conn, $id);
 if (!$user || !$profile) {
     // If coach not found, redirect back
     header('Location: coach-finder.php');
