@@ -3,12 +3,18 @@ require_once __DIR__ . '/../../app/core/dbh.inc.php';
 require_once __DIR__ . '/../../app/models/Tournament.php';
 require_once __DIR__ . '/../../app/models/PlayerProfile.php';
 require_once __DIR__ . '/../../app/models/User.php';
+require_once __DIR__ . '/../../app/models/Mail.php';
+require_once __DIR__ . '/../../app/models/Observer.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
 $conn = Database::getInstance()->getConnection();
+
+// Create observable instance for tournament events
+class TournamentObservable extends Observable {}
+$tournamentObserver = new TournamentObservable();
 
 // Set JSON response header
 header('Content-Type: application/json');
@@ -80,6 +86,51 @@ if ($level1 > $maxLevel || $level2 > $maxLevel) {
 // Proceed with team registration
 $res = Tournament::registerTeam($conn, $tournamentId, $userId, (int)$partner['user_id']);
 if ($res === true) {
+    // Get tournament name
+    $getTournament = $conn->prepare('SELECT name FROM tournaments WHERE tournament_id = ?');
+    $getTournament->bind_param('i', $tournamentId);
+    $getTournament->execute();
+    $getTournament->bind_result($tournamentName);
+    $getTournament->fetch();
+    $getTournament->close();
+    
+    // Get current user email
+    $getUser = $conn->prepare('SELECT email, name FROM users WHERE user_id = ?');
+    $getUser->bind_param('i', $userId);
+    $getUser->execute();
+    $getUser->bind_result($userEmail, $userName);
+    $getUser->fetch();
+    $getUser->close();
+    
+    // Get partner name
+    $partnerName = $partner['name'];
+    $partnerEmailResult = $partner['email'];
+    
+    // Send confirmation email to the current user
+    if($userEmail){
+        $mailBody = "Your tournament registration is confirmed!\n\nTournament Details:\nTournament: $tournamentName\nTeam Member: $partnerName\n\nTournament draws will be available 12 hours before the start time.\n\nThank you for registering with PadelUp!";
+        Mail::send($userEmail, 'Tournament Registration Confirmation', $mailBody);
+    }
+    
+    // Send confirmation email to the teammate
+    if($partnerEmailResult){
+        $mailBody = "Your teammate $userName has registered you both in a tournament!\n\nTournament Details:\nTournament: $tournamentName\nTeam Member: $userName\n\nTournament draws will be available 12 hours before the start time.\n\nThank you for registering with PadelUp!";
+        Mail::send($partnerEmailResult, 'Tournament Registration Confirmation', $mailBody);
+    }
+    
+    // Notify observers of tournament registration
+    $registrationData = [
+        'tournament_id' => $tournamentId,
+        'tournament_name' => $tournamentName,
+        'user_id' => $userId,
+        'user_name' => $userName,
+        'user_email' => $userEmail,
+        'partner_id' => (int)$partner['user_id'],
+        'partner_name' => $partnerName,
+        'partner_email' => $partnerEmailResult
+    ];
+    $tournamentObserver->notify('tournament_registered', $registrationData);
+    
     echo json_encode([
         'success' => true, 
         'message' => 'Registration successful! Tournament draws will be available 12 hours before the start time.'

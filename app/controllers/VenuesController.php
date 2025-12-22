@@ -6,13 +6,15 @@ class VenuesController
 {
     public static function getAllVenues()
     {
-        global $conn;
+        $db = Database::getInstance();
+        $conn = $db->getConnection();
         return Venue::listAll($conn);
     }
     
     public static function searchVenues($searchTerm)
     {
-        global $conn;
+        $db = Database::getInstance();
+        $conn = $db->getConnection();
         $allVenues = Venue::listAll($conn);
         if (empty($searchTerm)) {
             return $allVenues;
@@ -26,7 +28,8 @@ class VenuesController
 
     public static function getVenue(int $venueId)
     {
-        global $conn;
+        $db = Database::getInstance();
+        $conn = $db->getConnection();
         return Venue::findById($conn, $venueId);
     }
 }

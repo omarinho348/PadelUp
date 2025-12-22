@@ -3,7 +3,13 @@
 // POST: /public/api/user_bookings.php  { booking_id } (cancels booking)
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../app/core/dbh.inc.php';
+require_once __DIR__ . '/../../app/models/Mail.php';
+require_once __DIR__ . '/../../app/models/Observer.php';
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
+$conn = Database::getInstance()->getConnection();
+// Create observable instance for booking events
+class BookingObservable extends Observable {}
+$bookingObserver = new BookingObservable();
 $userId = $_SESSION['user_id'] ?? null;
 if(!$userId){ http_response_code(401); echo json_encode(['error'=>'Not authenticated']); exit; }
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -21,13 +27,55 @@ if($method === 'POST'){
     $input = json_decode(file_get_contents('php://input'), true);
     $bookingId = isset($input['booking_id']) ? (int)$input['booking_id'] : 0;
     if(!$bookingId){ http_response_code(400); echo json_encode(['error'=>'Missing booking_id']); exit; }
+    
+    // Get booking details before cancellation
+    $getStmt = $conn->prepare('SELECT b.booking_date, b.start_time, b.end_time, b.total_price, c.court_name, v.name AS venue_name FROM bookings b JOIN courts c ON b.court_id = c.court_id JOIN venues v ON c.venue_id = v.venue_id WHERE b.booking_id = ? AND b.user_id = ?');
+    $getStmt->bind_param('ii', $bookingId, $userId);
+    $getStmt->execute();
+    $getStmt->bind_result($bookingDate, $startTime, $endTime, $totalPrice, $courtName, $venueName);
+    $hasBooking = $getStmt->fetch();
+    $getStmt->close();
+    
     // Only allow cancelling own booking and only if not already cancelled or paid
     $stmt = $conn->prepare('UPDATE bookings SET status = "cancelled" WHERE booking_id = ? AND user_id = ? AND status NOT IN ("cancelled","paid")');
     $stmt->bind_param('ii', $bookingId, $userId);
     $stmt->execute();
     $ok = $stmt->affected_rows > 0;
     $stmt->close();
-    if($ok){ echo json_encode(['success'=>true]); } else { http_response_code(400); echo json_encode(['error'=>'Could not cancel booking']); }
+    
+    if($ok){
+        // Get user email for cancellation notification
+        $userStmt = $conn->prepare('SELECT email FROM users WHERE user_id = ?');
+        $userStmt->bind_param('i', $userId);
+        $userStmt->execute();
+        $userStmt->bind_result($userEmail);
+        $userStmt->fetch();
+        $userStmt->close();
+        
+        // Send cancellation email
+        if($userEmail && $hasBooking){
+            $mailBody = "Your court booking has been cancelled.\n\nCancelled Booking Details:\nVenue: $venueName\nCourt: $courtName\nDate: $bookingDate\nTime: $startTime - $endTime\nPrice: EGP $totalPrice\n\nIf you have any questions, please contact us.";
+            Mail::send($userEmail, 'Booking Cancellation Confirmation', $mailBody);
+            
+            // Notify observers of booking cancellation
+            $cancellationData = [
+                'booking_id' => $bookingId,
+                'user_id' => $userId,
+                'court_name' => $courtName,
+                'venue_name' => $venueName,
+                'booking_date' => $bookingDate,
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'total_price' => $totalPrice,
+                'user_email' => $userEmail
+            ];
+            $bookingObserver->notify('booking_cancelled', $cancellationData);
+        }
+        echo json_encode(['success'=>true]);
+    } else {
+        http_response_code(400);
+        echo json_encode(['error'=>'Could not cancel booking']);
+    }
     exit;
 }
 http_response_code(405); echo json_encode(['error'=>'Method not allowed']);

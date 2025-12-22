@@ -1,3 +1,66 @@
+<?php
+require_once __DIR__ . '/../models/Mail.php';
+require_once __DIR__ . '/../models/Observer.php';
+
+// Create observable instance for contact events
+class ContactObservable extends Observable {}
+$contactObserver = new ContactObservable();
+
+$message = '';
+$messageType = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name = htmlspecialchars(trim($_POST['name'] ?? ''));
+    $email = htmlspecialchars(trim($_POST['email'] ?? ''));
+    $subject = htmlspecialchars(trim($_POST['subject'] ?? ''));
+    $messageContent = htmlspecialchars(trim($_POST['message'] ?? ''));
+    
+    if (empty($name) || empty($email) || empty($subject) || empty($messageContent)) {
+        $message = 'All fields are required.';
+        $messageType = 'error';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $message = 'Invalid email address.';
+        $messageType = 'error';
+    } else {
+        // Send email to oa7784055@gmail.com
+        $mailBody = "New Contact Form Submission\n\n";
+        $mailBody .= "From: $name\n";
+        $mailBody .= "Email: $email\n";
+        $mailBody .= "Subject: $subject\n\n";
+        $mailBody .= "Message:\n$messageContent";
+        
+        $result = Mail::send('oa7784055@gmail.com', "Contact Form: $subject", $mailBody);
+        
+        if ($result) {
+            // Send confirmation email to the user
+            $userMailBody = "Dear $name,\n\n";
+            $userMailBody .= "Thank you for contacting PadelUp! We have received your message and will respond to you as soon as possible.\n\n";
+            $userMailBody .= "Your Message Details:\n";
+            $userMailBody .= "Subject: $subject\n\n";
+            $userMailBody .= "Message:\n$messageContent\n\n";
+            $userMailBody .= "If you have any urgent questions, please feel free to contact us at support@padelup.com or call +20 122 315 8001.\n\n";
+            $userMailBody .= "Best regards,\nThe PadelUp Team";
+            
+            Mail::send($email, 'We Received Your Message - PadelUp', $userMailBody);
+            
+            // Notify observers
+            $contactData = [
+                'name' => $name,
+                'email' => $email,
+                'subject' => $subject,
+                'message' => $messageContent
+            ];
+            $contactObserver->notify('contact_form_submitted', $contactData);
+            
+            $message = 'Thank you for contacting us! We\'ll get back to you soon. A confirmation email has been sent to your address.';
+            $messageType = 'success';
+        } else {
+            $message = 'Failed to send message. Please try again later.';
+            $messageType = 'error';
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,11 +111,16 @@
 
     <div class="contact-form-container">
         <h2>Send Us a Message</h2>
-        <form class="contact-form" action="#" method="POST">
-            <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" required placeholder="Your Name"></div>
-            <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" required placeholder="you@example.com"></div>
-            <div class="form-group"><label for="subject">Subject</label><input type="text" id="subject" name="subject" required placeholder="How can we help?"></div>
-            <div class="form-group"><label for="message">Message</label><textarea id="message" name="message" rows="6" required placeholder="Your message..."></textarea></div>
+        <?php if ($message): ?>
+            <div class="<?php echo $messageType === 'success' ? 'success-message' : 'error-message'; ?>" style="padding: 12px; margin-bottom: 16px; border-radius: 6px; background-color: <?php echo $messageType === 'success' ? '#d4edda' : '#f8d7da'; ?>; color: <?php echo $messageType === 'success' ? '#155724' : '#721c24'; ?>; border: 1px solid <?php echo $messageType === 'success' ? '#c3e6cb' : '#f5c6cb'; ?>;">
+                <?php echo htmlspecialchars($message); ?>
+            </div>
+        <?php endif; ?>
+        <form class="contact-form" action="contact_us.php" method="POST">
+            <div class="form-group"><label for="name">Full Name</label><input type="text" id="name" name="name" required placeholder="Your Name" value="<?php echo htmlspecialchars($_POST['name'] ?? ''); ?>"></div>
+            <div class="form-group"><label for="email">Email Address</label><input type="email" id="email" name="email" required placeholder="you@example.com" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>"></div>
+            <div class="form-group"><label for="subject">Subject</label><input type="text" id="subject" name="subject" required placeholder="How can we help?" value="<?php echo htmlspecialchars($_POST['subject'] ?? ''); ?>"></div>
+            <div class="form-group"><label for="message">Message</label><textarea id="message" name="message" rows="6" required placeholder="Your message..."><?php echo htmlspecialchars($_POST['message'] ?? ''); ?></textarea></div>
             <button type="submit" class="btn btn-primary">Send Message</button>
         </form>
     </div>

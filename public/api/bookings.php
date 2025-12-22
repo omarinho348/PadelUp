@@ -5,11 +5,17 @@
 
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../app/core/dbh.inc.php';
+require_once __DIR__ . '/../../app/models/Mail.php';
+require_once __DIR__ . '/../../app/models/Observer.php';
 $conn = Database::getInstance()->getConnection();
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Create observable instance for booking events
+class BookingObservable extends Observable {}
+$bookingObserver = new BookingObservable();
 
 function respond($code, $data){
     http_response_code($code);
@@ -154,6 +160,48 @@ if ($method === 'POST') {
     }
     $bookingId = $stmt->insert_id;
     $stmt->close();
+
+    // Get user email and court name for booking confirmation
+    $userStmt = $conn->prepare('SELECT email FROM users WHERE user_id = ?');
+    $courtStmt = $conn->prepare('SELECT court_name FROM courts WHERE court_id = ?');
+    $userEmail = null;
+    $courtName = 'Court';
+    
+    if($userStmt){
+        $userStmt->bind_param('i', $userId);
+        $userStmt->execute();
+        $userStmt->bind_result($userEmail);
+        $userStmt->fetch();
+        $userStmt->close();
+    }
+    
+    if($courtStmt){
+        $courtStmt->bind_param('i', $courtId);
+        $courtStmt->execute();
+        $courtStmt->bind_result($courtName);
+        $courtStmt->fetch();
+        $courtStmt->close();
+    }
+    
+    // Send booking confirmation email
+    if($userEmail){
+        $mailBody = "Your court booking has been confirmed!\n\nDetails:\nCourt: $courtName\nDate: $date\nTime: $start - $end\nTotal Price: EGP $totalPrice\n\nThank you for booking with PadelUp!";
+        Mail::send($userEmail, 'Court Booking Confirmation', $mailBody);
+        
+        // Notify observers of booking creation
+        $bookingData = [
+            'booking_id' => $bookingId,
+            'user_id' => $userId,
+            'court_id' => $courtId,
+            'court_name' => $courtName,
+            'booking_date' => $date,
+            'start_time' => $start,
+            'end_time' => $end,
+            'total_price' => $totalPrice,
+            'user_email' => $userEmail
+        ];
+        $bookingObserver->notify('booking_created', $bookingData);
+    }
 
     respond(201, ['success' => true, 'booking_id' => $bookingId, 'total_price' => $totalPrice]);
 }

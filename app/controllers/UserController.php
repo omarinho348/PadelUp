@@ -4,11 +4,13 @@ require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/PlayerProfile.php';
 require_once __DIR__ . '/../models/Venue.php';
 require_once __DIR__ . '/../models/SessionRequest.php';
+require_once __DIR__ . '/../models/Mail.php';
+require_once __DIR__ . '/../models/Observer.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-class UserController
+class UserController extends Observable
 {
     public static function register(): string
     {
@@ -40,6 +42,8 @@ class UserController
         ];
         $result = User::createPlayerUser(Database::getInstance()->getConnection(), $userData, $profileData);
         if ($result === true) {
+            // Send welcome email after successful registration
+            Mail::send($userData['email'], 'Welcome to PadelUp!', 'Thank you for signing up to PadelUp!');
             header('Location: signin.php?signup=success');
             exit();
         }
@@ -68,6 +72,8 @@ class UserController
         $_SESSION['name'] = $row['name'];
         $_SESSION['email'] = $row['email'];
         $_SESSION['role'] = $row['role'];
+        // Send login notification email
+        Mail::send($row['email'], 'PadelUp Login Notification', 'You have successfully signed in to PadelUp!');
         // Redirect based on role
         if ($row['role'] === 'super_admin') {
             header('Location: admin.php');
@@ -180,9 +186,13 @@ class UserController
 
     public static function logout(): void
     {
+        $userEmail = $_SESSION['email'] ?? null;
         $_SESSION = [];
         if (isset($_COOKIE[session_name()])) {
             setcookie(session_name(), '', time() - 42000, '/');
+        }
+        if ($userEmail) {
+            Mail::send($userEmail, 'PadelUp Sign Out Notification', 'You have successfully signed out from PadelUp!');
         }
         session_destroy();
         header('Location: index.php');
@@ -262,22 +272,23 @@ class UserController
                 throw new Exception(is_string($res) ? $res : 'Failed to create venue admin.');
             }
             $venueAdminId = $res;
-                $venueData = [
-                    'venue_id' => $venueAdminId, // Use the new user's ID as the venue's ID
-                    'venue_admin_id' => $venueAdminId,
-                    'name' => htmlspecialchars($_POST['venue_name']),
-                    'address' => htmlspecialchars($_POST['venue_address']),
-                    'city' => htmlspecialchars($_POST['venue_city']),
-                    'opening_time' => htmlspecialchars($_POST['opening_time']),
-                    'closing_time' => htmlspecialchars($_POST['closing_time']),
-                    'hourly_rate' => $hourlyRate,
-                    'logo_path' => 'public/Photos/VenueLogos/default.jpg'
-                ];
+            $venueData = [
+                'venue_id' => $venueAdminId, // Use the new user's ID as the venue's ID
+                'venue_admin_id' => $venueAdminId,
+                'name' => htmlspecialchars($_POST['venue_name']),
+                'address' => htmlspecialchars($_POST['venue_address']),
+                'city' => htmlspecialchars($_POST['venue_city']),
+                'opening_time' => htmlspecialchars($_POST['opening_time']),
+                'closing_time' => htmlspecialchars($_POST['closing_time']),
+                'hourly_rate' => $hourlyRate,
+                'logo_path' => 'public/Photos/VenueLogos/default.jpg'
+            ];
             $vRes = Venue::create($conn, $venueData);
             if($vRes !== true){
                 throw new Exception(is_string($vRes) ? $vRes : 'Failed to create venue.');
             }
             $conn->commit();
+            self::getInstance()->notify('venue_admin_created', $data);
             return 'VENUE_ADMIN_CREATED';
         } catch (Throwable $e) {
             $conn->rollback();
@@ -294,6 +305,7 @@ class UserController
         $id = (int)$_POST['delete_admin_id'];
         $res = User::deleteVenueAdmin(Database::getInstance()->getConnection(), $id);
         if($res === true){
+            self::getInstance()->notify('venue_admin_deleted', ['id'=>$id]);
             return 'VENUE_ADMIN_DELETED';
         }
         return is_string($res) ? $res : 'Failed to delete venue admin.';
@@ -368,6 +380,7 @@ class UserController
             }
 
             $conn->commit();
+            self::getInstance()->notify('coach_created', $userData);
             return 'COACH_CREATED';
         } catch (Throwable $e) {
             $conn->rollback();
@@ -454,7 +467,11 @@ class UserController
         }
         $id = (int)$_POST['delete_coach_id'];
         $res = User::deleteById(Database::getInstance()->getConnection(), $id);
-        return $res === true ? 'COACH_DELETED' : 'Failed to delete coach.';
+        if($res === true){
+            self::getInstance()->notify('coach_deleted', ['id'=>$id]);
+            return 'COACH_DELETED';
+        }
+        return 'Failed to delete coach.';
     }
 
     // Fetch all players for the admin user management page
@@ -475,7 +492,11 @@ class UserController
 
         $id = (int)$_POST['delete_player_id'];
         $res = User::deleteById(Database::getInstance()->getConnection(), $id);
-        return $res === true ? 'PLAYER_DELETED' : 'Failed to delete player.';
+        if($res === true){
+            self::getInstance()->notify('player_deleted', ['id'=>$id]);
+            return 'PLAYER_DELETED';
+        }
+        return 'Failed to delete player.';
     }
 
     // Handle contacting a player from the admin user management page
