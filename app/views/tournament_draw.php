@@ -1,10 +1,6 @@
 <?php
 session_start();
-require_once __DIR__ . '/../core/dbh.inc.php';
-require_once __DIR__ . '/../models/Tournament.php';
-require_once __DIR__ . '/../models/User.php';
-
-$conn = Database::getInstance()->getConnection();
+require_once __DIR__ . '/../controllers/TournamentsController.php';
 
 $tournamentId = (int)($_GET['id'] ?? 0);
 if ($tournamentId <= 0) {
@@ -12,178 +8,19 @@ if ($tournamentId <= 0) {
     exit();
 }
 
-// Get tournament details
-$sql = "SELECT t.*, v.name as venue_name, v.city as venue_city, v.logo_path 
-        FROM tournaments t 
-        JOIN venues v ON t.venue_id = v.venue_id 
-        WHERE t.tournament_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $tournamentId);
-$stmt->execute();
-$tournament = $stmt->get_result()->fetch_assoc();
-$stmt->close();
-
-if (!$tournament) {
-    header('Location: tournaments.php');
+$page = TournamentsController::getTournamentDrawPageData($tournamentId);
+if (isset($page['redirect'])) {
+    header('Location: ' . $page['redirect']);
     exit();
 }
 
-// Process logo path
-$logoPath = $tournament['logo_path'] ?? '';
-if ($logoPath && !str_starts_with($logoPath, 'http')) {
-    // Remove 'public/' prefix if present since web root might be /public or /PadelUp
-    $logoPath = str_replace('public/', '', $logoPath);
-    $logoPath = '/PadelUp/public/' . ltrim($logoPath, '/');
-}
-
-// Get registered teams (doubles)
-$sql = "SELECT tt.id, tt.player1_user_id, tt.player2_user_id, u1.name AS p1_name, u2.name AS p2_name
-    FROM tournament_teams tt
-    JOIN users u1 ON tt.player1_user_id = u1.user_id
-    JOIN users u2 ON tt.player2_user_id = u2.user_id
-    WHERE tt.tournament_id = ?
-    ORDER BY tt.registered_at";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $tournamentId);
-$stmt->execute();
-$teams = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-$regCount = count($teams);
-$isFull = $regCount >= (int)$tournament['max_size'];
-
-// Check if draw is available (12 hours before start OR tournament is full)
-// BYEs fill empty slots, so we don't need a minimum number of teams
-$tournamentDateTime = strtotime($tournament['tournament_date'] . ' ' . $tournament['start_time']);
-$twelveHoursBefore = $tournamentDateTime - (12 * 60 * 60);
-$within12Hours = (time() >= $twelveHoursBefore);
-
-if (!$within12Hours && !$isFull) {
-    header('Location: tournaments.php');
-    exit();
-}
-
-// Check if draw already exists
-$drawSql = "SELECT d.seed_position, d.team_id, d.is_bye, 
-            tt.player1_user_id, tt.player2_user_id,
-            u1.name AS p1_name, u2.name AS p2_name
-            FROM tournament_draw d
-            LEFT JOIN tournament_teams tt ON d.team_id = tt.id
-            LEFT JOIN users u1 ON tt.player1_user_id = u1.user_id
-            LEFT JOIN users u2 ON tt.player2_user_id = u2.user_id
-            WHERE d.tournament_id = ?
-            ORDER BY d.seed_position";
-$stmt = $conn->prepare($drawSql);
-$stmt->bind_param("i", $tournamentId);
-$stmt->execute();
-$existingDraw = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-if (!empty($existingDraw)) {
-    // Use existing draw - build seed-indexed array
-    $draw = [];
-    foreach ($existingDraw as $entry) {
-        $seed = (int)$entry['seed_position'];
-        if ($entry['is_bye']) {
-            $draw[$seed] = [
-                'player1' => 'BYE',
-                'player2' => null,
-                'is_bye' => true,
-                'seed' => $seed
-            ];
-        } else {
-            $draw[$seed] = [
-                'player1' => $entry['p1_name'],
-                'player2' => $entry['p2_name'],
-                'is_bye' => false,
-                'seed' => $seed
-            ];
-        }
-    }
-    ksort($draw); // Sort by seed position
-} else {
-    // Generate new draw and save it
-    $draw = generateAndSaveTeamDraw($teams, (int)$tournament['max_size'], $tournamentId, $conn);
-}
-
-// Load all match results
-$resultsSql = "SELECT round_number, match_number, team1_seed, team2_seed, winner_seed 
-               FROM tournament_match_results 
-               WHERE tournament_id = ?";
-$stmt = $conn->prepare($resultsSql);
-$stmt->bind_param("i", $tournamentId);
-$stmt->execute();
-$resultsData = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
-
-// Index results by round and match
-$matchResults = [];
-foreach ($resultsData as $result) {
-    $key = $result['round_number'] . '_' . $result['match_number'];
-    $matchResults[$key] = $result;
-}
-
-// Check if user is venue admin for this tournament
-$isVenueAdmin = false;
-if (isset($_SESSION['user_id'])) {
-    $userId = (int)$_SESSION['user_id'];
-    $isVenueAdmin = ($tournament['created_by'] == $userId);
-}
-
-// Generate tournament draw and save to database
-function generateAndSaveTeamDraw($teams, $maxTeams, $tournamentId, $conn) {
-    $totalSlots = $maxTeams;
-    $drawData = [];
-
-    // Add real teams
-    foreach ($teams as $team) {
-        $drawData[] = [
-            'team_id' => $team['id'],
-            'player1' => $team['p1_name'],
-            'player2' => $team['p2_name'],
-            'is_bye' => false
-        ];
-    }
-
-    // Add BYEs
-    while (count($drawData) < $totalSlots) {
-        $drawData[] = [
-            'team_id' => null,
-            'player1' => 'BYE',
-            'player2' => null,
-            'is_bye' => true
-        ];
-    }
-
-    // Randomize the draw
-    shuffle($drawData);
-
-    // Save to database
-    $stmt = $conn->prepare("INSERT INTO tournament_draw (tournament_id, seed_position, team_id, is_bye) VALUES (?, ?, ?, ?)");
-    foreach ($drawData as $position => $entry) {
-        $seedPosition = $position + 1;
-        $teamId = $entry['team_id'];
-        $isBye = $entry['is_bye'] ? 1 : 0;
-        $stmt->bind_param("iiii", $tournamentId, $seedPosition, $teamId, $isBye);
-        $stmt->execute();
-    }
-    $stmt->close();
-
-    // Return the draw for display
-    $result = [];
-    $position = 1;
-    foreach ($drawData as $entry) {
-        $result[$position] = [
-            'player1' => $entry['player1'],
-            'player2' => $entry['player2'],
-            'is_bye' => $entry['is_bye'],
-            'seed' => $position
-        ];
-        $position++;
-    }
-    return $result;
-}
-$totalRounds = log($tournament['max_size'], 2); // Number of elimination rounds (teams)
+$tournament = $page['tournament'];
+$logoPath = $page['logoPath'];
+$teams = $page['teams'];
+$draw = $page['draw'];
+$matchResults = $page['matchResults'];
+$isVenueAdmin = (bool)$page['isVenueAdmin'];
+$totalRounds = (int)$page['totalRounds'];
 ?>
 
 <!DOCTYPE html>
@@ -237,7 +74,7 @@ $totalRounds = log($tournament['max_size'], 2); // Number of elimination rounds 
             <?php 
             $currentRoundPlayers = $draw;
             $roundNumber = 1;
-            $maxRounds = (int)log($tournament['max_size'], 2);
+            $maxRounds = $totalRounds;
             
             while (count($currentRoundPlayers) > 1): 
                 $roundName = '';

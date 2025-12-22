@@ -11,13 +11,12 @@
 <?php include __DIR__ . '/partials/navbar.php'; ?>
 
 <?php
-require_once __DIR__ . '/../core/dbh.inc.php';
-require_once __DIR__ . '/../models/Tournament.php';
+require_once __DIR__ . '/../controllers/TournamentsController.php';
 
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
-$conn = Database::getInstance()->getConnection();
-$tournaments = Tournament::listAll($conn);
-$currentUserId = $_SESSION['user_id'] ?? null;
+$pageData = TournamentsController::getTournamentsPageData();
+$tournaments = $pageData['tournaments'];
+$currentUserId = $pageData['currentUserId'];
 ?>
 
     <div class="tournaments-header">
@@ -69,26 +68,21 @@ $currentUserId = $_SESSION['user_id'] ?? null;
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Slots</span>
-                                <?php $regCount = Tournament::getRegistrationCount($conn, (int)$t['tournament_id']); ?>
-                                <span class="detail-value"><?php echo $regCount . ' / ' . (int)$t['max_size']; ?></span>
+                                <span class="detail-value"><?php echo (int)$t['reg_count'] . ' / ' . (int)$t['max_size']; ?></span>
                             </div>
                         </div>
                     </div>
                     <div class="card-footer">
                         <?php 
-                        $isFull = $regCount >= (int)$t['max_size'];
-                        // Check if tournament draw should be available (12 hours before start OR tournament is full)
-                        $tournamentDateTime = strtotime($t['tournament_date'] . ' ' . $t['start_time']);
-                        $twelveHoursBefore = $tournamentDateTime - (12 * 60 * 60);
-                        $within12Hours = (time() >= $twelveHoursBefore);
-                        // Draw shows when within 12 hours OR full (we fill empty slots with BYEs)
-                        $showDraw = $within12Hours || $isFull;
-                        $registrationClosed = $within12Hours || $isFull
+                        $isFull = (bool)$t['is_full'];
+                        $within12Hours = (bool)$t['within_12_hours'];
+                        $showDraw = (bool)$t['show_draw'];
+                        $registrationClosed = (bool)$t['registration_closed'];
                         ?>
 
                         <?php if ($showDraw): ?>
                             <a href="/PadelUp/app/views/tournament_draw.php?id=<?php echo (int)$t['tournament_id']; ?>" class="btn btn-primary">View Tournament Draw</a>
-                        <?php elseif ($currentUserId && Tournament::hasRegistered($conn, (int)$t['tournament_id'], (int)$currentUserId)): ?>
+                        <?php elseif ($currentUserId && !empty($t['has_registered'])): ?>
                             <button class="btn" disabled>Registered</button>
                         <?php elseif ($registrationClosed): ?>
                             <button class="btn" disabled>Registration Closed</button>
