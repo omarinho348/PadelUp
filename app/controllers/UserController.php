@@ -3,6 +3,7 @@ require_once __DIR__ . '/../core/dbh.inc.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/PlayerProfile.php';
 require_once __DIR__ . '/../models/Venue.php';
+require_once __DIR__ . '/EmailController.php';
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -39,6 +40,12 @@ class UserController
         ];
         $result = User::createPlayerUser($GLOBALS['conn'], $userData, $profileData);
         if ($result === true) {
+             // ✅ SEND WELCOME EMAIL
+            EmailController::sendWelcomeEmail(
+            $userData['email'],
+            $userData['name']
+            );
+
             header('Location: signin.php?signup=success');
             exit();
         }
@@ -418,7 +425,12 @@ class UserController
         // --- EMAIL SENDING LOGIC WOULD GO HERE ---
         // Example:
         // $headers = 'From: no-reply@padelup.com' . "\r\n" . 'Reply-To: no-reply@padelup.com';
-        // mail($recipientEmail, $subject, $message, $headers);
+        EmailController::sendAdminMessage(
+            $recipientEmail,
+            $subject,
+            $message
+         );
+
 
         return 'MESSAGE_SENT';
     }
@@ -439,10 +451,13 @@ class UserController
             return 'Recipient, subject, and message are required.';
         }
 
-        // --- EMAIL SENDING LOGIC WOULD GO HERE ---
-        // Example:
-        // $headers = 'From: no-reply@padelup.com' . "\r\n" . 'Reply-To: no-reply@padelup.com';
-        // mail($recipientEmail, $subject, $message, $headers);
+        EmailController::sendAdminMessage(
+            $recipientEmail,
+            $subject,
+            $message
+    );
+
+return 'MESSAGE_SENT';
 
         return 'MESSAGE_SENT';
     }

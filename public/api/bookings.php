@@ -2,8 +2,8 @@
 // public/api/bookings.php
 // GET:  /public/api/bookings.php?venue_id=ID&date=YYYY-MM-DD  -> returns { courts: [{court_id,court_name},...], bookings: {"<court_id>":["HH:MM",...] } }
 // POST: JSON { venue_id, court_id, date: 'YYYY-MM-DD', start_time: 'HH:MM', end_time: 'HH:MM' } -> creates booking
-
 header('Content-Type: application/json');
+require_once __DIR__ . '/../../app/controllers/EmailController.php';
 require_once __DIR__ . '/../../app/core/dbh.inc.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -153,6 +153,39 @@ if ($method === 'POST') {
     }
     $bookingId = $stmt->insert_id;
     $stmt->close();
+    
+    // ================= EMAIL CONFIRMATION =================
+
+// get user email and court name
+$stmt = $conn->prepare("
+    SELECT u.email, c.court_name
+    FROM users u
+    JOIN courts c ON c.court_id = ?
+    WHERE u.user_id = ?
+    LIMIT 1
+");
+$stmt->bind_param('ii', $courtId, $userId);
+$stmt->execute();
+$result = $stmt->get_result();
+$userData = $result->fetch_assoc();
+$stmt->close();
+
+// send email (do not block booking if email fails)
+if ($userData && isset($userData['email'])) {
+    $emailController = new EmailController();
+
+    $emailController->sendBookingConfirmation(
+        $userData['email'],
+        [
+            'date'  => $date,
+            'time'  => $start . ' - ' . $end,
+            'court' => $userData['court_name']
+        ]
+    );
+}
+
+// ======================================================
+
 
     respond(201, ['success' => true, 'booking_id' => $bookingId, 'total_price' => $totalPrice]);
 }
