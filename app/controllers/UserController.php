@@ -12,6 +12,181 @@ if (session_status() === PHP_SESSION_NONE) {
 
 class UserController extends Observable
 {
+    private static $instance = null;
+
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    private static function extractFirstName($fullName): string
+    {
+        $trimmed = trim((string)$fullName);
+        if ($trimmed === '') {
+            return 'PadelUp player';
+        }
+        $parts = preg_split('/\s+/', $trimmed);
+        return $parts[0] ?: 'PadelUp player';
+    }
+
+    private static function buildEmailTemplate($firstName, $heading, $welcomeText, $highlightTitle, array $highlightLines, $buttonText, $buttonUrl, $specialHeading, $specialBody, $specialNote = 'Valid for 7 days | Terms apply'): string
+    {
+        $safeHeading = htmlspecialchars((string)$heading, ENT_QUOTES, 'UTF-8');
+        $safeWelcome = htmlspecialchars((string)$welcomeText, ENT_QUOTES, 'UTF-8');
+        $safeHighlightTitle = htmlspecialchars((string)$highlightTitle, ENT_QUOTES, 'UTF-8');
+        $safeButtonText = htmlspecialchars((string)$buttonText, ENT_QUOTES, 'UTF-8');
+        $safeButtonUrl = htmlspecialchars((string)$buttonUrl, ENT_QUOTES, 'UTF-8');
+        $safeSpecialHeading = htmlspecialchars((string)$specialHeading, ENT_QUOTES, 'UTF-8');
+        $safeSpecialBody = htmlspecialchars((string)$specialBody, ENT_QUOTES, 'UTF-8');
+        $safeSpecialNote = htmlspecialchars((string)$specialNote, ENT_QUOTES, 'UTF-8');
+
+        $highlightBody = '';
+        foreach ($highlightLines as $line) {
+            $highlightBody .= htmlspecialchars((string)$line, ENT_QUOTES, 'UTF-8') . '<br>';
+        }
+
+        return <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+        .container { max-width: 600px; margin: 0 auto; background: white; }
+        .header { background: linear-gradient(135deg, #16A34A, #22C55E); padding: 40px 30px; text-align: center; }
+        .logo { color: white; font-size: 28px; font-weight: bold; margin: 0; }
+        .tagline { color: rgba(255,255,255,0.9); font-size: 16px; margin-top: 10px; }
+        .content { padding: 40px 30px; }
+        .welcome-text { font-size: 18px; line-height: 1.6; color: #334155; }
+        .highlight-box { background: #ECFDF5; border-left: 4px solid #16A34A; padding: 20px; margin: 30px 0; border-radius: 0 8px 8px 0; }
+        .button { display: inline-block; background: #16A34A; color: white; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .steps { margin: 30px 0; }
+        .step { display: flex; align-items: flex-start; margin-bottom: 20px; }
+        .step-number { background: #16A34A; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; flex-shrink: 0; font-weight: bold; }
+        .step-text { flex: 1; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 40px 0; }
+        .feature { text-align: center; padding: 20px; background: #F8FAFC; border-radius: 12px; }
+        .feature-icon { font-size: 32px; margin-bottom: 15px; }
+        .footer { background: #1E293B; color: white; padding: 30px; text-align: center; }
+        .social-links { margin: 20px 0; }
+        .social-icon { display: inline-block; margin: 0 10px; color: white; text-decoration: none; }
+        @media (max-width: 600px) {
+            .content { padding: 30px 20px; }
+            .features { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="logo">🎾 PADELUP</h1>
+            <p class="tagline">Book. Play. Repeat.</p>
+        </div>
+
+        <div class="content">
+            <h2>{$safeHeading}</h2>
+            <p class="welcome-text">{$safeWelcome}</p>
+
+            <div class="highlight-box">
+                <strong>{$safeHighlightTitle}</strong><br>
+                {$highlightBody}
+            </div>
+
+            <div style="text-align: center;">
+                <a href="{$safeButtonUrl}" class="button">{$safeButtonText}</a>
+            </div>
+
+            <div class="steps">
+                <h3>Get Started in 3 Easy Steps:</h3>
+
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-text">
+                        <strong>Complete your profile</strong>
+                        <p>Add your skill level and playing preferences</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-text">
+                        <strong>Explore courts near you</strong>
+                        <p>Find and book available slots instantly</p>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-text">
+                        <strong>Join or create matches</strong>
+                        <p>Play with players at your level</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature">
+                    <div class="feature-icon">🏆</div>
+                    <h4>Smart Matchmaking</h4>
+                    <p>Find players at your skill level</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">📅</div>
+                    <h4>Instant Booking</h4>
+                    <p>Reserve courts in 2 clicks</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Real-time Updates</h4>
+                    <p>Get notified about openings</p>
+                </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, #FEF3C7, #FDE68A); padding: 25px; border-radius: 12px; text-align: center; margin: 30px 0;">
+                <h3>{$safeSpecialHeading}</h3>
+                <p>{$safeSpecialBody}</p>
+                <small>{$safeSpecialNote}</small>
+            </div>
+
+            <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #E2E8F0;">
+                <h3>Need Help?</h3>
+                <p>
+                    Check our <a href="https://padelup.com/help" style="color: #4F46E5;">Help Center</a> or 
+                    reply to this email. We're here for you!
+                </p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>PadelUp</strong><br>
+            The modern way to play padel</p>
+            
+            <div class="social-links">
+                <a href="https://instagram.com/padelup" class="social-icon">Instagram</a>
+                <a href="https://facebook.com/padelup" class="social-icon">Facebook</a>
+                <a href="https://twitter.com/padelup" class="social-icon">Twitter</a>
+            </div>
+            
+            <p style="margin-top: 20px; font-size: 14px; color: #94A3B8;">
+                You're receiving this email because you signed up for PadelUp.<br>
+                <a href="https://padelup.com/unsubscribe" style="color: #94A3B8;">Unsubscribe</a> | 
+                <a href="https://padelup.com/privacy" style="color: #94A3B8;">Privacy Policy</a>
+            </p>
+            
+            <p style="font-size: 12px; color: #64748B; margin-top: 20px;">
+                © 2024 PadelUp. All rights reserved.<br>
+                123 Court Street, Sports City
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+HTML;
+    }
+
     public static function register(): string
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -42,8 +217,23 @@ class UserController extends Observable
         ];
         $result = User::createPlayerUser(Database::getInstance()->getConnection(), $userData, $profileData);
         if ($result === true) {
-            // Send welcome email after successful registration
-            Mail::send($userData['email'], 'Welcome to PadelUp!', 'Thank you for signing up to PadelUp!');
+            $firstName = self::extractFirstName($userData['name']);
+            $signupDate = date('F j, Y');
+            $body = self::buildEmailTemplate(
+                $firstName,
+                "Welcome to the Court, {$firstName}! 👋",
+                "We're thrilled to have you join our padel community! Get ready to book courts, find partners, and elevate your game.",
+                '🎉 Your account is ready!',
+                [
+                    'Email: ' . $userData['email'],
+                    'Member since: ' . $signupDate
+                ],
+                'Go to Your Dashboard',
+                'https://padelup.com/dashboard',
+                '🎁 First Booking Discount!',
+                'Use code WELCOME20 for 20% off your first court booking.'
+            );
+            Mail::send($userData['email'], 'Welcome to PadelUp!', $body);
             header('Location: signin.php?signup=success');
             exit();
         }
@@ -72,8 +262,24 @@ class UserController extends Observable
         $_SESSION['name'] = $row['name'];
         $_SESSION['email'] = $row['email'];
         $_SESSION['role'] = $row['role'];
-        // Send login notification email
-        Mail::send($row['email'], 'PadelUp Login Notification', 'You have successfully signed in to PadelUp!');
+        $firstName = self::extractFirstName($row['name'] ?? '');
+        $signInTime = date('F j, Y g:i A T');
+        $body = self::buildEmailTemplate(
+            $firstName,
+            "Welcome back, {$firstName}! 👋",
+            "Sign-in confirmed. If this wasn't you, secure your account in a few seconds.",
+            '⚡ Sign-in details',
+            [
+                'Email: ' . $row['email'],
+                'Signed in: ' . $signInTime
+            ],
+            'Open Dashboard',
+            'https://padelup.com/dashboard',
+            'Stay secure',
+            'If you did not sign in, please reset your password immediately.',
+            'Keep your account safe: enable strong passwords and sign out on shared devices.'
+        );
+        Mail::send($row['email'], 'PadelUp Sign-in Confirmation', $body);
         // Redirect based on role
         if ($row['role'] === 'super_admin') {
             header('Location: admin.php');
@@ -187,12 +393,30 @@ class UserController extends Observable
     public static function logout(): void
     {
         $userEmail = $_SESSION['email'] ?? null;
+        $userName = $_SESSION['name'] ?? '';
         $_SESSION = [];
         if (isset($_COOKIE[session_name()])) {
             setcookie(session_name(), '', time() - 42000, '/');
         }
         if ($userEmail) {
-            Mail::send($userEmail, 'PadelUp Sign Out Notification', 'You have successfully signed out from PadelUp!');
+            $firstName = self::extractFirstName($userName);
+            $signOutTime = date('F j, Y g:i A T');
+            $body = self::buildEmailTemplate(
+                $firstName,
+                "Signed out successfully, {$firstName}.",
+                'You are signed out. Come back anytime to book courts and join matches.',
+                '✅ Sign-out details',
+                [
+                    'Email: ' . $userEmail,
+                    'Signed out: ' . $signOutTime
+                ],
+                'Sign back in',
+                'https://padelup.com/signin',
+                'Need to jump back in?',
+                'Sign in again to keep your spot on the court.',
+                'Tip: If this sign-out was unexpected, change your password and review active sessions.'
+            );
+            Mail::send($userEmail, 'PadelUp Sign-out Confirmation', $body);
         }
         session_destroy();
         header('Location: index.php');

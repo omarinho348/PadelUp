@@ -35,6 +35,8 @@ class Mail extends Observable
             $mail->Password = $config['password'];
             $mail->SMTPSecure = $config['encryption'];
             $mail->Port = $config['port'];
+            $mail->CharSet = 'UTF-8'; // Ensure emojis render correctly
+            $mail->Encoding = 'base64';
 
             $mail->setFrom($config['from'], $config['from_name']);
             $mail->addAddress($to);
