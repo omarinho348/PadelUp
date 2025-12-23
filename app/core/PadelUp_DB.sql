@@ -31,6 +31,7 @@ CREATE TABLE `coach_profiles` (
   `hourly_rate` DECIMAL(10,2) NULL,
   `experience_years` INT NULL,
   `location` VARCHAR(120) NULL,
+  `profile_image_path` VARCHAR(255) NULL,
   CONSTRAINT `fk_coach_user` FOREIGN KEY (`coach_id`) REFERENCES `users`(`user_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

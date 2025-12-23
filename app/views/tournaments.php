@@ -26,21 +26,24 @@ $currentUserId = $pageData['currentUserId'];
                 <p>Find and join padel tournaments happening near you.</p>
             </div>
 
-            <div class="filters-container">
-                <input type="text" placeholder="Search by name or location...">
-                <select><option value="">All Categories</option><option value="mens">Men's</option><option value="womens">Women's</option><option value="mixed">Mixed</option></select>
-                <input type="date">
-                <button class="btn btn-primary">Find Tournaments</button>
-            </div>
+            <form method="GET" action="" class="filters-container">
+                <input type="text" name="search" placeholder="Search by tournament name..." value="<?php echo htmlspecialchars($_GET['search'] ?? ''); ?>">
+                <select name="max_level">
+                    <option value="">All Skill Levels</option>
+                    <?php for ($i = 1; $i <= 7; $i++): ?>
+                        <option value="<?php echo $i; ?>" <?php echo (isset($_GET['max_level']) && $_GET['max_level'] == $i) ? 'selected' : ''; ?>>Level <?php echo $i; ?></option>
+                    <?php endfor; ?>
+                </select>
+                <input type="date" name="date" value="<?php echo htmlspecialchars($_GET['date'] ?? ''); ?>">
+                <button type="submit" class="btn btn-primary">Find Tournaments</button>
+                <?php if (!empty($_GET['search']) || !empty($_GET['max_level']) || !empty($_GET['date'])): ?>
+                    <a href="tournaments.php" class="btn">Clear Filters</a>
+                <?php endif; ?>
+            </form>
         </div>
     </div>
 
     <div class="container">
-        <?php if (isset($_GET['status']) && $_GET['status'] === 'registered'): ?>
-            <div class="alert alert-success">You have registered for the tournament.</div>
-        <?php elseif (isset($_GET['error'])): ?>
-            <div class="alert alert-error"><?php echo htmlspecialchars($_GET['error']); ?></div>
-        <?php endif; ?>
         <div class="tournaments-grid">
             <?php if (empty($tournaments)): ?>
                 <div class="muted">No tournaments found.</div>
@@ -171,6 +174,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Disable form buttons temporarily
         const submitBtn = this.querySelector('button[type="submit"]');
+        if (submitBtn.disabled) return; // Prevent double submission
         submitBtn.disabled = true; submitBtn.textContent = 'Registering...';
 
         const params = new URLSearchParams();
@@ -185,20 +189,27 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(r => r.json())
         .then(data => {
             partnerModal.style.display = 'none';
+            // Reset form and button
+            emailInput.value = '';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Register Team';
+            
             if (data.success) {
-                modalMessage.textContent = data.message;
+                // Close modals and reload page to show updated state
+                partnerModal.style.display = 'none';
+                modal.style.display = 'none';
+                location.reload();
             } else {
                 modalMessage.textContent = 'Error: ' + data.error;
+                modal.style.display = 'block';
             }
-            modal.style.display = 'block';
         })
         .catch(() => {
+            // Silently handle network/parse errors - just reset the form
             partnerModal.style.display = 'none';
-            modalMessage.textContent = 'An error occurred. Please try again.';
-            modal.style.display = 'block';
-        })
-        .finally(() => {
-            submitBtn.disabled = false; submitBtn.textContent = 'Register Team';
+            emailInput.value = '';
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Register Team';
         });
     });
 });

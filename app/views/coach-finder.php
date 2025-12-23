@@ -50,6 +50,16 @@
                     $exp = htmlspecialchars($coach['experience_years'] ?? '0');
                     $email = htmlspecialchars($coach['email']);
                     $phone = htmlspecialchars($coach['phone'] ?? '');
+                    // Profile image path (if uploaded)
+                    $imagePath = $coach['profile_image_path'] ?? '';
+                    $imgUrl = '';
+                    if (!empty($imagePath)) {
+                        if (!str_starts_with($imagePath, 'http')) {
+                            $imgUrl = '/PadelUp/' . ltrim($imagePath, '/');
+                        } else {
+                            $imgUrl = $imagePath;
+                        }
+                    }
                     // Choose a fallback image from the bundled photos (cycle by id)
                     $imgIndex = ($id % 6) + 1; // 1..6
                     $names = preg_split('/\s+/', $name);
@@ -57,8 +67,12 @@
                     $avatarClass = 'avatar-bg-' . $imgIndex;
                 ?>
                 <div class="coach-card" role="link" tabindex="0" data-href="coach-profile.php?id=<?php echo $id; ?>">
-                    <div class="coach-avatar <?php echo $avatarClass; ?>">
-                        <span class="avatar-initials"><?php echo $initials; ?></span>
+                    <div class="coach-avatar <?php echo empty($imgUrl) ? $avatarClass : ''; ?>">
+                        <?php if (!empty($imgUrl)): ?>
+                            <img src="<?php echo htmlspecialchars($imgUrl); ?>" alt="Coach photo of <?php echo $name; ?>" class="coach-avatar-img" />
+                        <?php else: ?>
+                            <span class="avatar-initials"><?php echo $initials; ?></span>
+                        <?php endif; ?>
                     </div>
                     <div class="coach-info">
                         <h3 class="coach-name"><a href="coach-profile.php?id=<?php echo $id; ?>" aria-label="View profile for <?php echo $name; ?>"><?php echo $name; ?></a></h3>

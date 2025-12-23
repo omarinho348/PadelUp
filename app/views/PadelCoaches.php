@@ -130,7 +130,7 @@ $coaches = UserController::getCoaches(); // Now handles search
     <button id="closeCoachModal" style="position:absolute;top:12px;right:12px;background:transparent;border:none;font-size:20px;cursor:pointer;color:#444;">✕</button>
     <h2 style="margin:0 0 4px;font-size:26px;">New PadelUp Coach</h2>
     <p style="margin:0 0 18px;font-size:14px;color:#555;">Create a new coach account and profile.</p>    
-    <form method="POST" action="admin.php" id="coachForm" class="auth-form" style="display:grid;gap:14px; max-width: 100%;">
+    <form method="POST" action="admin.php" id="coachForm" class="auth-form" style="display:grid;gap:14px; max-width: 100%;" enctype="multipart/form-data">
       <h3 style="margin:0 0 8px;font-size:16px;">Coach Info</h3>
       <input type="text" name="name" placeholder="Full Name" required />
       <input type="email" name="email" placeholder="Email" required style="margin-top:10px;" />
@@ -151,6 +151,12 @@ $coaches = UserController::getCoaches(); // Now handles search
         </div>
       </div>
       <input type="text" name="location" placeholder="Location (e.g., Cairo, Egypt)" required style="margin-top:10px;" />
+
+      <div style="display:flex;flex-direction:column;margin-top:10px;">
+        <label style="font-size:12px;margin-bottom:4px;">Profile Image (optional)</label>
+        <input type="file" name="profile_image" accept="image/*" />
+        <small style="color:#666;">Accepted: JPG, PNG, WEBP • Max 2MB</small>
+      </div>
 
       <button type="submit" class="btn-primary" style="margin-top:4px;">Create Coach</button>
     </form>

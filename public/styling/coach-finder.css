@@ -66,18 +66,27 @@
 }
 
 .coach-avatar {
-    height: 280px;
+    height: 180px; /* reduced for a tighter card */
     display:flex;
     align-items:center;
     justify-content:center;
-    color:#fff;
-    font-size:48px;
-    font-weight:700;
+    background:#fff; /* neutral background when using contain */
+    border-bottom: 1px solid #eef3ee;
 }
 .coach-avatar .avatar-initials { font-size:48px; }
 
+/* Ensure image avatars fill the avatar container */
+.coach-avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* show whole image without cropping */
+    display: block;
+    background: #fff;
+    padding: 6px; /* small inset to avoid edge clipping */
+}
+
 .coach-info {
-    padding: 24px;
+    padding: 16px; /* slightly tighter to balance reduced image area */
 }
 
 .avatar-bg-1{background:linear-gradient(135deg,#6EE7B7,#34D399);}
@@ -181,6 +190,7 @@
 .profile-avatar { width:220px; height:220px; border-radius:12px; background-size:cover; background-position:center; box-shadow: inset 0 -20px 30px rgba(0,0,0,0.04); display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800; }
 .profile-avatar.initials { font-size:56px; }
 .avatar-initials-large { font-size:56px; }
+.profile-avatar-img { width:100%; height:100%; object-fit: contain; display:block; background:#fff; padding:8px; }
 .profile-rate { font-weight:800; color:var(--accent); font-size:1.1rem; }
 .profile-exp { color:var(--muted); margin-top:6px; }
 .profile-card-body { display:grid; grid-template-columns: 1fr 320px; gap:22px; margin-top:18px; }

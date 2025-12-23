@@ -28,15 +28,27 @@ $bio = htmlspecialchars($profile['bio'] ?? '');
 $hourly = isset($profile['hourly_rate']) ? number_format((float)$profile['hourly_rate'], 2) : '—';
 $exp = htmlspecialchars($profile['experience_years'] ?? '0');
 $location = htmlspecialchars($profile['location'] ?? '');
-$imgIndex = ($id % 6) + 1;
-$candidateWebp = __DIR__ . "/../../public/Photos/coach{$imgIndex}.webp";
-$candidateJpg = __DIR__ . "/../../public/Photos/coach{$imgIndex}.jpg";
-if (file_exists($candidateWebp)) {
-    $imgPath = "../../public/Photos/coach{$imgIndex}.webp";
-} elseif (file_exists($candidateJpg)) {
-    $imgPath = "../../public/Photos/coach{$imgIndex}.jpg";
+// Determine profile image: prefer uploaded path from profile, fallback to bundled photos
+$profileImagePath = $profile['profile_image_path'] ?? '';
+$imgUrl = '';
+if (!empty($profileImagePath)) {
+    // Use absolute path under /PadelUp for public assets stored as relative 'public/...'
+    if (!str_starts_with($profileImagePath, 'http')) {
+        $imgUrl = '/PadelUp/' . ltrim($profileImagePath, '/');
+    } else {
+        $imgUrl = $profileImagePath;
+    }
 } else {
-    $imgPath = "../../public/Photos/Coach1.jpg";
+    $imgIndex = ($id % 6) + 1;
+    $candidateWebp = __DIR__ . "/../../public/Photos/coach{$imgIndex}.webp";
+    $candidateJpg = __DIR__ . "/../../public/Photos/coach{$imgIndex}.jpg";
+    if (file_exists($candidateWebp)) {
+        $imgUrl = "/PadelUp/public/Photos/coach{$imgIndex}.webp";
+    } elseif (file_exists($candidateJpg)) {
+        $imgUrl = "/PadelUp/public/Photos/coach{$imgIndex}.jpg";
+    } else {
+        $imgUrl = "/PadelUp/public/Photos/Coach1.jpg";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -59,8 +71,12 @@ if (file_exists($candidateWebp)) {
                     $bgIndex = ($id % 6) + 1;
                     $avatarClass = 'avatar-bg-' . $bgIndex;
                 ?>
-                <div class="profile-avatar initials <?php echo $avatarClass; ?>">
-                    <span class="avatar-initials-large"><?php echo $initials; ?></span>
+                <div class="profile-avatar <?php echo empty($profileImagePath) ? 'initials ' . $avatarClass : ''; ?>">
+                    <?php if (!empty($imgUrl)): ?>
+                        <img src="<?php echo htmlspecialchars($imgUrl); ?>" alt="Coach photo of <?php echo $name; ?>" class="profile-avatar-img" />
+                    <?php else: ?>
+                        <span class="avatar-initials-large"><?php echo $initials; ?></span>
+                    <?php endif; ?>
                 </div>
 
                 <div class="profile-card-title">

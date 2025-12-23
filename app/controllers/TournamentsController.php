@@ -20,7 +20,14 @@ class TournamentsController
         $conn = Database::getInstance()->getConnection();
         $currentUserId = isset($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : null;
 
-        $tournaments = Tournament::listAll($conn);
+        // Get filter parameters
+        $filters = [
+            'search' => $_GET['search'] ?? '',
+            'max_level' => isset($_GET['max_level']) && $_GET['max_level'] !== '' ? (int)$_GET['max_level'] : null,
+            'date' => $_GET['date'] ?? ''
+        ];
+
+        $tournaments = Tournament::listAll($conn, $filters);
         $enhanced = [];
 
         foreach ($tournaments as $t) {

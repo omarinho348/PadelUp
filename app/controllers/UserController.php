@@ -590,12 +590,43 @@ HTML;
                 throw new Exception(is_string($newCoachId) ? $newCoachId : 'Failed to create coach user.');
             }
 
+            // Handle optional profile image upload
+            $profileImagePath = null;
+            if (isset($_FILES['profile_image']) && $_FILES['profile_image']['error'] === UPLOAD_ERR_OK) {
+                $tmpPath = $_FILES['profile_image']['tmp_name'];
+                $origName = $_FILES['profile_image']['name'];
+                $fileSize = (int)$_FILES['profile_image']['size'];
+                // Basic validations: size <= 2MB and mime type image/*
+                if ($fileSize <= 2 * 1024 * 1024) {
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    $mime = finfo_file($finfo, $tmpPath);
+                    finfo_close($finfo);
+                    $allowed = ['image/jpeg','image/png','image/webp'];
+                    if (in_array($mime, $allowed, true)) {
+                        $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+                        if (!in_array($ext, ['jpg','jpeg','png','webp'], true)) {
+                            // Normalize extension based on mime
+                            $ext = $mime === 'image/png' ? 'png' : ($mime === 'image/webp' ? 'webp' : 'jpg');
+                        }
+                        $uploadDir = __DIR__ . '/../../public/uploads/coaches';
+                        if (!is_dir($uploadDir)) { @mkdir($uploadDir, 0775, true); }
+                        $filename = 'coach_' . $newCoachId . '_' . time() . '.' . $ext;
+                        $destPath = $uploadDir . '/' . $filename;
+                        if (@move_uploaded_file($tmpPath, $destPath)) {
+                            // Store relative path starting with public/ to be consistent with other assets
+                            $profileImagePath = 'public/uploads/coaches/' . $filename;
+                        }
+                    }
+                }
+            }
+
             $profileData = [
                 'coach_id' => $newCoachId,
                 'bio' => htmlspecialchars($_POST['bio']),
                 'hourly_rate' => (float)$_POST['hourly_rate'],
                 'experience_years' => (int)$_POST['experience_years'],
-                'location' => htmlspecialchars($_POST['location'])
+                'location' => htmlspecialchars($_POST['location']),
+                'profile_image_path' => $profileImagePath
             ];
 
             $profileRes = User::createCoachProfile($conn, $profileData);
@@ -643,8 +674,25 @@ HTML;
             'message' => $message
         ];
 
-        $res = SessionRequest::create(Database::getInstance()->getConnection(), $requestData);
-        return $res === true ? 'REQUEST_SENT' : (is_string($res) ? $res : 'Failed to send request.');
+        $conn = Database::getInstance()->getConnection();
+        $res = SessionRequest::create($conn, $requestData);
+        if ($res === true) {
+            $coach = User::findById($conn, $coachId);
+            if ($coach && !empty($coach['email'])) {
+                $subject = 'New Training Session Request via PadelUp';
+                $body = "Hello " . htmlspecialchars(self::extractFirstName($coach['name'] ?? 'Coach')) . ",<br><br>" .
+                        "You have a new session request from:<br>" .
+                        "<strong>Name:</strong> " . $name . "<br>" .
+                        "<strong>Email:</strong> " . $email . "<br>" .
+                        (strlen($phone) ? ("<strong>Phone:</strong> " . $phone . "<br>") : "") .
+                        (strlen($message) ? ("<strong>Message:</strong> " . nl2br($message) . "<br>") : "") .
+                        "<br>Log in to your dashboard to review and respond.<br><br>" .
+                        "— PadelUp";
+                Mail::send($coach['email'], $subject, $body);
+            }
+            return 'REQUEST_SENT';
+        }
+        return is_string($res) ? $res : 'Failed to send request.';
     }
 
     // Return all session requests for the logged-in coach

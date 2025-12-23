@@ -43,15 +43,47 @@ class Tournament
         return $rows ?: [];
     }
 
-    public static function listAll(mysqli $conn): array
+    public static function listAll(mysqli $conn, array $filters = []): array
     {
         $sql = "SELECT t.*, v.name AS venue_name, v.city AS venue_city
                 FROM tournaments t
                 JOIN venues v ON t.venue_id = v.venue_id
-                WHERE t.status NOT IN ('cancelled', 'completed')
-                ORDER BY t.tournament_date ASC, t.start_time ASC";
+                WHERE t.status NOT IN ('cancelled', 'completed')";
+        
+        $params = [];
+        $types = '';
+        
+        // Filter by search term (tournament name only)
+        if (!empty($filters['search'])) {
+            $sql .= " AND t.tournament_name LIKE ?";
+            $searchTerm = '%' . $filters['search'] . '%';
+            $params[] = $searchTerm;
+            $types .= 's';
+        }
+        
+        // Filter by max skill level (exact match)
+        if (isset($filters['max_level']) && $filters['max_level'] > 0) {
+            $sql .= " AND t.max_level = ?";
+            $params[] = $filters['max_level'];
+            $types .= 'i';
+        }
+        
+        // Filter by date
+        if (!empty($filters['date'])) {
+            $sql .= " AND t.tournament_date = ?";
+            $params[] = $filters['date'];
+            $types .= 's';
+        }
+        
+        $sql .= " ORDER BY t.tournament_date ASC, t.start_time ASC";
+        
         $stmt = $conn->prepare($sql);
         if (!$stmt) { return []; }
+        
+        if (!empty($params)) {
+            $stmt->bind_param($types, ...$params);
+        }
+        
         $stmt->execute();
         $res = $stmt->get_result();
         $rows = $res ? $res->fetch_all(MYSQLI_ASSOC) : [];

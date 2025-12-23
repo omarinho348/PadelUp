@@ -226,12 +226,13 @@ class User
     }
 
     public static function createCoachProfile($conn, $data) {
-        $sql = "INSERT INTO coach_profiles (coach_id, bio, hourly_rate, experience_years, location) VALUES (?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO coach_profiles (coach_id, bio, hourly_rate, experience_years, location, profile_image_path) VALUES (?, ?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         if (!$stmt) {
             return "DB Prepare Error: " . $conn->error;
         }
-        $stmt->bind_param("isdis", $data['coach_id'], $data['bio'], $data['hourly_rate'], $data['experience_years'], $data['location']);
+        $path = isset($data['profile_image_path']) ? $data['profile_image_path'] : null;
+        $stmt->bind_param("isdiss", $data['coach_id'], $data['bio'], $data['hourly_rate'], $data['experience_years'], $data['location'], $path);
         if ($stmt->execute()) {
             return true;
         }
